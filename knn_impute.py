@@ -21,6 +21,7 @@ from Queue import Queue
 import math
 from itertools import islice
 import json
+import os
 
 logger = multiprocessing.log_to_stderr(logging.DEBUG)
 logger.setLevel(multiprocessing.SUBDEBUG)
@@ -31,9 +32,10 @@ logger2 = logging.getLogger(__name__)
 
 class imputable:
 
-    def __init__(self, filename, missingness):
+    def __init__(self, filename, missingness, nprocs):
         self.data = pd.read_csv(filename,sep='\t')
         self.miss = missingness
+        self.nprocs = nprocs
 
     def deduplicate(self):
         if self.data[self.data.columns.values[1]][0][-2] == "T":
@@ -125,7 +127,19 @@ class imputable:
         comparr = datavals[~np.isnan(datavals).any(axis=1)]
         patterns = get_patterns(datavals)
         revpatterns = {i:x for x,y in patterns.iteritems() for i in y}
-        mp_imputer(revpatterns, datavals, comparr, 7)
+        mp_imputer(revpatterns, datavals, comparr, self.nprocs)
+    def meld(self):
+        out = {}
+        for i in range(0,self.nprocs):
+            tempdict = json.loads(open('results_'+str(i)+'.txt').read())
+            os.remove('results_'+str(i)+'.txt')
+            out.update(tempdict)
+        meld = pd.DataFrame.from_dict(out,orient='index')
+        meld.index = meld.index.astype(float)
+        meld.sort_index(inplace=True)
+        self.data = meld
+    def write(self,outname):
+        self.data.to_csv(outname,sep='\t')
 
 
 
@@ -135,18 +149,5 @@ if __name__ == '__main__':
     to_impute.deduplicate()
     to_impute.drop_missing()
     to_impute.impute()
-
-# data={}
-#
-# f = open('results.txt')
-# for line in iter(f):
-#     data.update(json.loads(line))
-# f.close()
-#
-#
-# with open('results.txt', "r") as f:
-#     while line:
-#         line = f.readline()
-#         data.update(json.loads(line))
-# len(data.keys())
-# len(data['51478'])
+    to_impute.meld()
+    to_impute.write('final_imputed.txt')
