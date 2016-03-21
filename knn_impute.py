@@ -81,9 +81,7 @@ class imputable:
 
         def mp_imputer(patdict, origarr, comparr, nprocs):
             def worker(patdict, keys, origarr, comparr, out_q):
-                """ The worker function, invoked in a process. 'nums' is a
-                    list of numbers to factor. The results are placed in
-                    a dictionary that's pushed to a queue.
+                """ The worker function, invoked in a process. 
                 """
                 outdict = {}
                 n = 0
@@ -93,9 +91,6 @@ class imputable:
                     logging.info("%d / %d" % (n,len(keys)))
                 with open('results_%d.txt' % out_q, "w") as f:
                            json.dump(outdict, f)
-                               #f.write("\n")
-                # Each process will get 'chunksize' nums and a queue to put his out
-                # dict into
             out_q = Queue()
             chunksize = int(math.ceil(len(patdict.keys()) / float(nprocs)))
             procs = []
@@ -108,19 +103,6 @@ class imputable:
                 procs.append(p)
                 logging.info("Starting process %d" % i)
                 p.start()
-
-                # # Collect all results into a single result dict. We know how many dicts
-                # # with results to expect.
-                # resultdict = {}
-                # logging.info("getting output")
-                # for i in range(nprocs):
-                #     resultdict.update(out_q.get())
-                #     logging.info("got dict %d" % i)
-                # # Wait for all worker processes to finish
-                # for p in procs:
-                #     logging.info("joining dict %d" % i)
-                #     p.join()
-
             return
 
         datavals = self.data.drop(self.data.columns[:3],axis=1).values
@@ -128,6 +110,7 @@ class imputable:
         patterns = get_patterns(datavals)
         revpatterns = {i:x for x,y in patterns.iteritems() for i in y}
         mp_imputer(revpatterns, datavals, comparr, self.nprocs)
+
     def meld(self):
         out = {}
         for i in range(0,self.nprocs):
@@ -138,6 +121,7 @@ class imputable:
         meld.index = meld.index.astype(float)
         meld.sort_index(inplace=True)
         self.data = meld
+
     def write(self,outname):
         self.data.to_csv(outname,sep='\t')
 
@@ -145,7 +129,7 @@ class imputable:
 
 if __name__ == '__main__':
     # Define the parameters to test
-    to_impute = imputable('NonUniquePeptideResults.txt',0.3)
+    to_impute = imputable('NonUniquePeptideResults.txt',0.3,7)
     to_impute.deduplicate()
     to_impute.drop_missing()
     to_impute.impute()
