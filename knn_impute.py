@@ -17,25 +17,33 @@ import numpy as np
 from sklearn.neighbors import NearestNeighbors
 import pandas as pd
 import multiprocessing, logging
-from Queue import Queue
+#from Queue import Queue
 import math
-from itertools import islice
+#from itertools import islice
 import json
 import os
+import sys
+import getopt
+import time
+from ctypes import c_int
+import timeit
+
+start = timeit.timeit()
+
 
 logger = multiprocessing.log_to_stderr(logging.DEBUG)
 logger.setLevel(multiprocessing.SUBDEBUG)
 logging.basicConfig(level=logging.INFO)
 logger2 = logging.getLogger(__name__)
-
-#logging.basicConfig(filename='mp_debug.log',level=logging.DEBUG)
+logging.basicConfig(filename='mp_debug.log',level=logging.DEBUG)
 
 class imputable:
 
     def __init__(self, filename, missingness, nprocs):
         self.data = pd.read_csv(filename,sep='\t')
-        self.miss = missingness
-        self.nprocs = nprocs
+        self.miss = float(missingness)
+        self.nprocs = int(nprocs)
+        self.notdone = True
 
     def deduplicate(self):
         if self.data[self.data.columns.values[1]][0][-2] == "T":
@@ -81,7 +89,8 @@ class imputable:
 
         def mp_imputer(patdict, origarr, comparr, nprocs):
             def worker(patdict, keys, origarr, comparr, out_q):
-                """ The worker function, invoked in a process. 
+                """ The worker function, invoked in a process.
+                    it takes a
                 """
                 outdict = {}
                 n = 0
@@ -89,17 +98,15 @@ class imputable:
                     outdict[k] = sub_imputer(k,patdict[k], origarr,comparr)
                     n += 1
                     logging.info("%d / %d" % (n,len(keys)))
-                with open('results_%d.txt' % out_q, "w") as f:
+                with open('results_%d.txt' % out_q, "w+") as f:
                            json.dump(outdict, f)
-            out_q = Queue()
+                with counter_lock:
+                    counter.value += 1
             chunksize = int(math.ceil(len(patdict.keys()) / float(nprocs)))
             procs = []
 
             for i in range(nprocs):
-                p = multiprocessing.Process(
-                        target=worker,
-                        args=(patdict,patdict.keys()[chunksize * i:chunksize * (i + 1)], origarr, comparr,
-                              i))
+                p = multiprocessing.Process(target=worker,args=(patdict,patdict.keys()[chunksize * i:chunksize * (i + 1)], origarr, comparr,i))
                 procs.append(p)
                 logging.info("Starting process %d" % i)
                 p.start()
@@ -111,7 +118,13 @@ class imputable:
         revpatterns = {i:x for x,y in patterns.iteritems() for i in y}
         mp_imputer(revpatterns, datavals, comparr, self.nprocs)
 
-    def meld(self):
+    def check(self):
+        while self.notdone:
+            if counter.value == self.nprocs:
+                self.notdone = False
+            time.sleep(60)
+
+    def meld(self,outname):
         out = {}
         for i in range(0,self.nprocs):
             tempdict = json.loads(open('results_'+str(i)+'.txt').read())
@@ -120,18 +133,39 @@ class imputable:
         meld = pd.DataFrame.from_dict(out,orient='index')
         meld.index = meld.index.astype(float)
         meld.sort_index(inplace=True)
-        self.data = meld
-
-    def write(self,outname):
-        self.data.to_csv(outname,sep='\t')
+        meld.to_csv(outname,sep='\t')
 
 
-
-if __name__ == '__main__':
-    # Define the parameters to test
-    to_impute = imputable('NonUniquePeptideResults.txt',0.3,7)
+def main(argv):
+    inputfile = ''
+    outputfile = ''
+    try:
+        opts, args = getopt.getopt(argv,"hi:o:m:p:",["ifile=","ofile=","miss=","proc="])
+    except getopt.GetoptError:
+        print 'knn_impute.py -i <inputfile> -o <outputfile> -m <missing%> -p <#processors>'
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print 'knn_impute.py -i <inputfile> -o <outputfile> -m <missing%> -p <#processors>'
+            sys.exit()
+        elif opt in ("-i", "--ifile"):
+            inputfile = arg
+        elif opt in ("-o", "--ofile"):
+            outputfile = arg
+        elif opt in ("-m", "--miss"):
+            pmiss = arg
+        elif opt in ("-p", "--proc"):
+            nprocs = arg
+    to_impute = imputable(inputfile,pmiss,nprocs)
     to_impute.deduplicate()
     to_impute.drop_missing()
     to_impute.impute()
-    to_impute.meld()
-    to_impute.write('final_imputed.txt')
+    to_impute.check()
+    to_impute.meld(outputfile)
+
+if __name__ == '__main__':
+    counter = multiprocessing.Value(c_int)  # defaults to 0
+    counter_lock = multiprocessing.Lock()
+    main(sys.argv[1:])
+    end = timeit.timeit()
+    print end - start
