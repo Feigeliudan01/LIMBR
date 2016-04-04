@@ -28,9 +28,6 @@ import time
 from ctypes import c_int
 import timeit
 
-start = timeit.timeit()
-
-
 logger = multiprocessing.log_to_stderr(logging.DEBUG)
 logger.setLevel(multiprocessing.SUBDEBUG)
 logging.basicConfig(level=logging.INFO)
@@ -133,6 +130,7 @@ class imputable:
         meld = pd.DataFrame.from_dict(out,orient='index')
         meld.index = meld.index.astype(float)
         meld.sort_index(inplace=True)
+        meld.index = self.data.index
         meld.to_csv(outname,sep='\t')
 
 
@@ -164,6 +162,7 @@ def main(argv):
     to_impute.meld(outputfile)
 
 if __name__ == '__main__':
+    start = timeit.timeit()
     counter = multiprocessing.Value(c_int)  # defaults to 0
     counter_lock = multiprocessing.Lock()
     main(sys.argv[1:])
