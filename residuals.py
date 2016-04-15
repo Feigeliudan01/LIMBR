@@ -33,6 +33,19 @@ def get_tks(resarr):
          tk.append((s[i]*s[i])/denom)
      return tk
 
+def perm_test(resarr,l,n,tks):
+    rstar = resarr
+    out = np.zeros(len(tks))
+    for j in range(n):
+        for i in range(rstar.shape[0]):
+            np.random.shuffle(rstar[i,:])
+        resstar = get_res(rstar,l)
+        tkstar = get_tks(resstar)
+        for m in range(len(tks)):
+            if tkstar[m] >= tks[m]:
+                out[m] += 1
+    return out/n
+
 len(data.columns)
 classes = np.random.randint(2, size=len(data.columns))
 res = get_res(data.values,classes)
@@ -41,3 +54,4 @@ data.values
 
 tks = get_tks(res)
 np.sum(tks)
+perm_test(res,classes,10,tks)
