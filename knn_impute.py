@@ -100,16 +100,16 @@ class imputable:
                 with counter_lock:
                     counter.value += 1
             chunksize = int(math.ceil(len(patdict.keys()) / float(nprocs)))
-            procs = []
+            self.procs = []
 
             for i in range(nprocs):
                 p = multiprocessing.Process(target=worker,args=(patdict,patdict.keys()[chunksize * i:chunksize * (i + 1)], origarr, comparr,i))
-                procs.append(p)
+                self.procs.append(p)
                 logging.info("Starting process %d" % i)
                 p.start()
             return
 
-        datavals = self.data.drop(self.data.columns[:3],axis=1).values
+        datavals = self.data.values
         comparr = datavals[~np.isnan(datavals).any(axis=1)]
         patterns = get_patterns(datavals)
         revpatterns = {i:x for x,y in patterns.iteritems() for i in y}
@@ -117,9 +117,12 @@ class imputable:
 
     def check(self):
         while self.notdone:
+            time.sleep(60)
             if counter.value == self.nprocs:
                 self.notdone = False
-            time.sleep(60)
+                for p in self.procs:
+                    p.join()
+
 
     def meld(self,outname):
         out = {}
@@ -130,7 +133,8 @@ class imputable:
         meld = pd.DataFrame.from_dict(out,orient='index')
         meld.index = meld.index.astype(float)
         meld.sort_index(inplace=True)
-        meld.index = self.data.index
+        meld.set_index([self.data.index.get_level_values(0),self.data.index.get_level_values(1)], inplace=True)
+        meld.columns = self.data.columns
         meld.to_csv(outname,sep='\t')
 
 
