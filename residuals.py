@@ -26,7 +26,7 @@ def get_res(arr,l):
     return np.subtract(arr,ma)
 
 def get_tks(resarr):
-     U, s, V = svd(resarr)
+     U, s, V = pca(resarr, raw=True)
      denom = np.sum([j * j for j in s])
      tk = []
      for i in range(len(s)):
@@ -39,4 +39,5 @@ res = get_res(data.values,classes)
 classes
 data.values
 
-get_tks(res)
+tks = get_tks(res)
+np.sum(tks)
