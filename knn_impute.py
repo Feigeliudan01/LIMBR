@@ -44,7 +44,7 @@ class imputable:
 
     def deduplicate(self):
         if self.data[self.data.columns.values[1]][0][-2] == "T":
-            self.data[self.data.columns.values[1]] = self.data[self.data.columns.values[1]].str.replace('T*', '')
+            self.data[self.data.columns.values[1]] = self.data[self.data.columns.values[1]].apply(lambda x: x.split('T')[0])
             self.data = self.data.groupby(['Peptide','Protein']).mean()
         todrop = []
         for name, group in self.data.groupby(level='Peptide'):
