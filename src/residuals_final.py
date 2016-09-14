@@ -105,21 +105,19 @@ class sva:
 
         def est_pi_sig(probs_sig,l):
             pi_0 = est_pi_naught(probs_sig,l)
-
             if pi_0 > 1:
                 return 'nan'
-
             sp = np.sort(probs_sig)
             return sp[int(floor((1-pi_0)*len(probs_sig)))]
 
         lam = 0.5
         _, _, bt = np.linalg.svd(self.res)
         trends = []
-        for j, entry in tqdm(enumerate(self.ps)):
+        for j, entry in enumerate(tqdm(self.ps)):
             sub = []
             thresh = est_pi_sig(entry,lam)
             if thresh == 'nan':
-                return trends
+                self.ts = trends
             for i in range(len(entry)):
                 if entry[i] < thresh:
                     sub.append(self.data_reduced.values[i])
