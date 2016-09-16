@@ -30,6 +30,11 @@ bcprot = bcprot.set_index('ID')
 bwprot = pd.read_csv('wt_reduced_subset_lowess_qnorm_final_cor__jtkout_GammaP.txt',sep='\t')
 bwprot = bwprot.set_index('ID')
 
+
+
+uwprot = pd.read_csv('wt_unnormalized__jtkout_GammaP.txt',sep='\t')
+uwprot = uwprot.set_index('ID')
+
 x = np.reshape(bwprot['GammaP'].values,(1,-1))
 y = np.reshape(bcprot['GammaP'].values,(1,-1))
 

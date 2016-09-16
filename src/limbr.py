@@ -21,6 +21,8 @@ import json
 import time
 from ctypes import c_int
 
+seed(4574)
+
 class imputable:
 
     def __init__(self, filename, missingness):

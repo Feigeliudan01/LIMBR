@@ -24,7 +24,7 @@ def qnorm(df):
         df[df.columns[i]] = ref
     return df.sort_index()
 
-data = pd.read_csv('../output/imputed_peptide_final.txt',sep='\t')
+data = pd.read_csv('../output/imputed_peptide.txt',sep='\t')
 data = data.set_index(['Peptide','Protein'])
 norm_map = gen_norm_dict(data.columns.values)
 data = pool_normalize(data,norm_map)
