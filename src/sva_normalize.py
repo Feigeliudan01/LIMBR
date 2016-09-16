@@ -6,13 +6,13 @@ def main(argv):
     inputfile = ''
     outputfile = ''
     try:
-        opts, args = getopt.getopt(argv,"h:i:o:s:p:a:",["help","ifile=","ofile=","sub=","perm=","alpha="])
+        opts, args = getopt.getopt(argv,"h:i:o:s:p:a:d:",["help","ifile=","ofile=","sub=","perm=","alpha=","design="])
     except getopt.GetoptError:
-        print 'residuals.py -i <inputfile> -o <outputfile> -s <subset%> -p <#permutations> -a <alphalevel>'
+        print 'residuals.py -i <inputfile> -o <outputfile> -s <subset%> -p <#permutations> -a <alphalevel> -d <designtype>'
         sys.exit(2)
     for opt, arg in opts:
         if opt in ('-h',"--help"):
-            print 'residuals.py -i <inputfile> -o <outputfile> -s <subset%> -p <#permutations> -a <alphalevel>'
+            print 'residuals.py -i <inputfile> -o <outputfile> -s <subset%> -p <#permutations> -a <alphalevel> -d <designtype>'
             sys.exit()
         elif opt in ("-i", "--ifile"):
             inputfile = arg
@@ -24,20 +24,22 @@ def main(argv):
             perm = arg
         elif opt in ("-a", "--alpha"):
             a = arg
+        elif opt in ("-d", "--design"):
+            d = arg
     print('reading data')
-    to_sva = sva(inputfile)
+    to_sva = sva(inputfile,d)
     to_sva.get_tpoints()
     print('calculating primary trend correlations')
     to_sva.prim_cor()
     print('reducing')
-    to_sva.reduce(psub)
+    to_sva.reduce_circ(psub)
     print('calculating residuals')
-    to_sva.get_res()
+    to_sva.set_res()
     print('calculating explained variance ratios')
-    to_sva.get_tks()
+    to_sva.set_tks()
     print('permutation testing')
     to_sva.perm_test(perm)
-    print('regressing eigentrends')
+    print('\nregressing eigentrends')
     to_sva.eig_reg(a)
     print('performing subset SVD')
     l = 0.5

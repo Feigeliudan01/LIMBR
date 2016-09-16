@@ -104,8 +104,10 @@ class imputable:
 
 class sva:
 
-    def __init__(self, filename):
+    def __init__(self, filename,design,blocks=None):
         self.data = pd.read_csv(filename,sep='\t').set_index(['Peptide','Protein'])
+        self.designtype = str(design)
+        self.block_design = blocks
         self.notdone = True
 
     def get_tpoints(self):
@@ -127,45 +129,53 @@ class sva:
             cors.append((autocorr(ave,per) - autocorr(ave,(per//2))))
         self.cors = np.asarray(cors)
 
-    def reduce(self,percsub):
+    def reduce_circ(self,percsub):
         percsub = float(percsub)
         uncor = [(i<(np.percentile(self.cors,percsub))) for i in self.cors]
         self.data_reduced = self.data[uncor]
 
-    def get_res(self):
-        res = []
-        for row in tqdm(self.data_reduced.values):
-            ys = lowess(row, self.tpoints,delta=4)[:,1]
-            res.append(row - ys)
-        self.res = res
-
-    def get_tks(self):
-        pca = RandomizedPCA()
-        pca.fit(self.res)
-        self.tks = pca.explained_variance_ratio_
-
-    def perm_test(self,nperm):
-        nperm = int(nperm)
-        def get_res(arr,l):
+    def get_res(self,in_arr):
+        def get_l_res(arr):
             res = []
-            for row in arr:
-                ys = lowess(row, l,delta=4)[:,1]
+            for row in tqdm(arr):
+                ys = lowess(row, self.tpoints,delta=4)[:,1]
                 res.append(row - ys)
             return res
 
-        def get_tks(arr):
-            pca = RandomizedPCA()
-            pca.fit(arr)
-            return pca.explained_variance_ratio_
+        def get_b_res(arr):
+            m = {}
+            for v in tqdm(set(self.block_design)):
+                indices = [i for i, x in enumerate(self.block_design) if x == v]
+                m[v] = np.mean(arr[:,indices],axis=1)
+            ma = np.zeros(np.shape(arr))
+            for i in tqdm(range(len(self.block_design))):
+                ma[:,i]=m[self.block_design[i]]
+            return np.subtract(arr,ma)
+        if self.designtype == 'l':
+            return get_l_res(in_arr)
+        elif self.designtype == 'b':
+            return get_b_res(in_arr,in_l)
 
+    def set_res(self):
+        self.res = self.get_res(self.data_reduced.values)
+
+    def get_tks(self,arr):
+        pca = RandomizedPCA()
+        pca.fit(arr)
+        return pca.explained_variance_ratio_
+
+    def set_tks(self):
+        self.tks = self.get_tks(self.res)
+
+    def perm_test(self,nperm):
+        nperm = int(nperm)
         rstar = np.copy(self.res)
         out = np.zeros(len(self.tks))
         for j in tqdm(range(nperm)):
             for i in range(rstar.shape[0]):
                 np.random.shuffle(rstar[i,:])
-            resstar = get_res(rstar,self.tpoints)
-            tkstar = get_tks(resstar)
-            #tkstar = get_tks(rstar)
+            resstar = self.get_res(rstar)
+            tkstar = self.get_tks(resstar)
             for m in range(len(self.tks)):
                 if tkstar[m] > self.tks[m]:
                     out[m] += 1
