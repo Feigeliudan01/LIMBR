@@ -39,7 +39,7 @@ def main(argv):
         elif opt in ("-p", "--proc"):
             nprocs = arg
     print('Reading Data')
-    to_impute = imputable_st(inputfile,pmiss)
+    to_impute = imputable(inputfile,pmiss)
     print('Deduplicating')
     to_impute.deduplicate()
     print('Dropping Rows Over Missing Value Threshold')

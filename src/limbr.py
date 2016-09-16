@@ -23,111 +23,6 @@ from ctypes import c_int
 
 class imputable:
 
-    def __init__(self, filename, missingness, nprocs):
-        logger = multiprocessing.log_to_stderr(logging.DEBUG)
-        logger.setLevel(multiprocessing.SUBDEBUG)
-        logging.basicConfig(level=logging.INFO)
-        logger2 = logging.getLogger(__name__)
-        logging.basicConfig(filename='mp_debug.log',level=logging.DEBUG)
-        self.data = pd.read_csv(filename,sep='\t')
-        self.miss = float(missingness)
-        self.nprocs = int(nprocs)
-        self.notdone = True
-
-    def deduplicate(self):
-        if self.data[self.data.columns.values[1]][0][-2] == "T":
-            self.data[self.data.columns.values[1]] = self.data[self.data.columns.values[1]].apply(lambda x: x.split('T')[0])
-            self.data = self.data.groupby(['Peptide','Protein']).mean()
-        todrop = []
-        for name, group in self.data.groupby(level='Peptide'):
-            if len(group) > 1:
-                todrop.append(name)
-        self.data = self.data.drop(todrop)
-
-    def drop_missing(self):
-        self.miss = np.rint(len(self.data.columns)*self.miss)
-        self.data = self.data[self.data.isnull().sum(axis=1)<=self.miss]
-
-    def impute(self):
-        def match_pat(l,d,i):
-            l = "".join(np.isnan(l).astype(int).astype(str))
-            if l not in d.keys():
-                d[l] = [i]
-            else:
-                d[l].append(i)
-
-        def get_patterns(arr):
-            patts = {}
-            for ind, val in enumerate(arr):
-                match_pat(val,patts,ind)
-            return patts
-
-        def sub_imputer(key,pattern,origarr,comparr):
-            newarr = comparr[:,~np.array(list(pattern)).astype(bool)]
-            nbrs = NearestNeighbors(n_neighbors=10).fit(newarr)
-            indexes = nbrs.kneighbors([origarr[key,~np.array(list(pattern)).astype(bool)]],return_distance=False)
-            means = np.mean(comparr[indexes[0][1:]], axis=0)
-            outl = []
-            for ind, v in enumerate(origarr[key]):
-                if not np.isnan(v):
-                    outl.append(v)
-                else:
-                    outl.append(means[ind])
-            return outl
-
-        def mp_imputer(patdict, origarr, comparr, nprocs):
-            def worker(patdict, keys, origarr, comparr, out_q):
-                """ The worker function, invoked in a process.
-                """
-                outdict = {}
-                n = 0
-                for k in keys:
-                    outdict[k] = sub_imputer(k,patdict[k], origarr,comparr)
-                    n += 1
-                with open('results_%d.txt' % out_q, "w+") as f:
-                           json.dump(outdict, f)
-                with counter_lock:
-                    counter.value += 1
-            chunksize = int(math.ceil(len(patdict.keys()) / float(nprocs)))
-            self.procs = []
-
-            for i in range(nprocs):
-                p = multiprocessing.Process(target=worker,args=(patdict,patdict.keys()[chunksize * i:chunksize * (i + 1)], origarr, comparr,i))
-                self.procs.append(p)
-                logging.info("Starting process %d" % i)
-                p.start()
-            return
-
-        datavals = self.data.values
-        comparr = datavals[~np.isnan(datavals).any(axis=1)]
-        patterns = get_patterns(datavals)
-        revpatterns = {i:x for x,y in patterns.iteritems() for i in y}
-        mp_imputer(revpatterns, datavals, comparr, self.nprocs)
-
-    def check(self):
-        while self.notdone:
-            time.sleep(60)
-            if counter.value == self.nprocs:
-                self.notdone = False
-                for p in self.procs:
-                    p.join()
-
-
-    def meld(self,outname):
-        out = {}
-        for i in range(0,self.nprocs):
-            tempdict = json.loads(open('results_'+str(i)+'.txt').read())
-            os.remove('results_'+str(i)+'.txt')
-            out.update(tempdict)
-        meld = pd.DataFrame.from_dict(out,orient='index')
-        meld.index = meld.index.astype(float)
-        meld.sort_index(inplace=True)
-        meld.set_index([self.data.index.get_level_values(0),self.data.index.get_level_values(1)], inplace=True)
-        meld.columns = self.data.columns
-        meld.to_csv(outname,sep='\t')
-
-class imputable_st:
-
     def __init__(self, filename, missingness):
         self.data = pd.read_csv(filename,sep='\t')
         self.miss = float(missingness)
@@ -149,7 +44,9 @@ class imputable_st:
         self.data = self.data[self.data.isnull().sum(axis=1)<=self.miss]
 
     def impute(self,outname):
+
         def match_pat(l,i):
+            #make vector of missing/non-missing
             l = "".join(np.isnan(l).astype(int).astype(str))
             if l not in self.pats.keys():
                 self.pats[l] = [i]
@@ -161,13 +58,19 @@ class imputable_st:
                 match_pat(val,ind)
 
         def sub_imputer(inds,pattern,origarr,comparr):
+            #drop missing columns given missingness pattern
             newarr = comparr[:,~np.array(list(pattern)).astype(bool)]
+            #fit nearest neighbors
             nbrs = NearestNeighbors(n_neighbors=10).fit(newarr)
             outa = []
+            #iterate over rows matching missingness pattern
             for rowind, row in enumerate(origarr[inds]):
                 outl = []
+                #get indexes of given rows nearest neighbors
                 indexes = nbrs.kneighbors([origarr[inds[rowind],~np.array(list(pattern)).astype(bool)]],return_distance=False)
+                #get array of nearest neighbors
                 means = np.mean(comparr[indexes[0][1:]], axis=0)
+                #iterate over entries in each row
                 for ind, v in enumerate(row):
                     if not np.isnan(v):
                         outl.append(v)
