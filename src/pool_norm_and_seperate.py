@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import scale, MinMaxScaler
+import pickle
 
 def gen_norm_dict(l):
     newd = {}
@@ -54,3 +55,6 @@ csp_norm = pd.DataFrame(scale(csp_norm.values,axis=1),columns=csp_norm.columns,i
 
 wt_norm.to_csv('../output/wt_pool_qnormed.txt',sep='\t')
 csp_norm.to_csv('../output/csp_pool_qnormed.txt',sep='\t')
+
+block_design = [j for i in range(1,12) for j in [i]*3]*2 + [j for i in range(1,3) for j in [i]*3]
+pickle.dump(block_design, open( "../output/block_design.p", "wb" ) )

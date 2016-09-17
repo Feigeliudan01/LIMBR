@@ -6,7 +6,7 @@ import scipy.stats as stats
 from numpy.linalg import svd, lstsq
 import timeit
 from sklearn.decomposition import RandomizedPCA
-from scipy.stats import linregress
+from scipy.stats import linregress, f_oneway
 import itertools
 import sys
 import getopt
@@ -20,6 +20,7 @@ import math
 import json
 import time
 from ctypes import c_int
+import pickle
 
 seed(4574)
 
@@ -107,7 +108,8 @@ class sva:
     def __init__(self, filename,design,blocks=None):
         self.data = pd.read_csv(filename,sep='\t').set_index(['Peptide','Protein'])
         self.designtype = str(design)
-        self.block_design = blocks
+        if self.designtype == 'b':
+            self.block_design = pickle.load( open( blocks, "rb" ) )
         self.notdone = True
 
     def get_tpoints(self):
@@ -116,23 +118,38 @@ class sva:
         self.tpoints = np.asarray(tpoints)
 
     def prim_cor(self):
+        def circ_cor():
+            def autocorr(l,shift):
+                return dot(l, np.roll(l, shift)) / dot(l, l)
 
-        def autocorr(l,shift):
-            return dot(l, np.roll(l, shift)) / dot(l, l)
+            per = 12
+            cors = []
+            for row in tqdm(self.data.values):
+                ave = []
+                for k in set(self.tpoints):
+                    ave.append((np.mean([row[i] for i, j in enumerate(self.tpoints) if j == k])*1000000))
+                cors.append((autocorr(ave,per) - autocorr(ave,(per//2))))
+            self.cors = np.asarray(cors)
 
-        per = 12
-        cors = []
-        for row in tqdm(self.data.values):
-            ave = []
-            for k in set(self.tpoints):
-                ave.append((np.mean([row[i] for i, j in enumerate(self.tpoints) if j == k])*1000000))
-            cors.append((autocorr(ave,per) - autocorr(ave,(per//2))))
-        self.cors = np.asarray(cors)
+        def block_cor():
+            cors = []
+            for row in tqdm(self.data.values):
+                blist = []
+                for k in set(self.block_design):
+                    blist.append(([row[i] for i, j in enumerate(self.block_design) if j == k]))
+                cors.append(f_oneway(*blist))
+            self.cors = np.asarray(cors)
+        if self.designtype == 'c':
+            circ_cor()
+        elif self.designtype == 'b':
+            block_cor()
 
-    def reduce_circ(self,percsub):
+
+    def reduce(self,percsub):
         percsub = float(percsub)
         uncor = [(i<(np.percentile(self.cors,percsub))) for i in self.cors]
         self.data_reduced = self.data[uncor]
+
 
     def get_res(self,in_arr):
         def get_l_res(arr):
@@ -151,10 +168,10 @@ class sva:
             for i in tqdm(range(len(self.block_design))):
                 ma[:,i]=m[self.block_design[i]]
             return np.subtract(arr,ma)
-        if self.designtype == 'l':
+        if self.designtype == 'c':
             return get_l_res(in_arr)
         elif self.designtype == 'b':
-            return get_b_res(in_arr,in_l)
+            return get_b_res(in_arr)
 
     def set_res(self):
         self.res = self.get_res(self.data_reduced.values)
