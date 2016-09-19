@@ -114,7 +114,8 @@ class sva:
 
     def get_tpoints(self):
         tpoints = [i.replace('CT','') for i in self.data.columns.values]
-        tpoints = [int(i.split('_')[0]) for i in tpoints]
+        #tpoints = [int(i.split('_')[0]) for i in tpoints]
+        tpoints = [int(i.split('.')[0]) for i in tpoints]
         self.tpoints = np.asarray(tpoints)
 
     def prim_cor(self):
@@ -137,7 +138,7 @@ class sva:
                 blist = []
                 for k in set(self.block_design):
                     blist.append(([row[i] for i, j in enumerate(self.block_design) if j == k]))
-                cors.append(f_oneway(*blist))
+                cors.append(f_oneway(*blist)[0])
             self.cors = np.asarray(cors)
         if self.designtype == 'c':
             circ_cor()
