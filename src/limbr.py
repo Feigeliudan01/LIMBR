@@ -114,8 +114,8 @@ class sva:
 
     def get_tpoints(self):
         tpoints = [i.replace('CT','') for i in self.data.columns.values]
-        #tpoints = [int(i.split('_')[0]) for i in tpoints]
-        tpoints = [int(i.split('.')[0]) for i in tpoints]
+        tpoints = [int(i.split('_')[0]) for i in tpoints]
+        #tpoints = [int(i.split('.')[0]) for i in tpoints]
         self.tpoints = np.asarray(tpoints)
 
     def prim_cor(self):
@@ -132,6 +132,13 @@ class sva:
                 cors.append((autocorr(ave,per) - autocorr(ave,(per//2))))
             self.cors = np.asarray(cors)
 
+        def l_cor():
+            cors = []
+            for row in tqdm(self.data.values):
+                ys = lowess(row, self.tpoints, it=1)[:,1]
+                cors.append(-sum((row - ys)**2))
+            self.cors = np.asarray(cors)
+
         def block_cor():
             cors = []
             for row in tqdm(self.data.values):
@@ -140,8 +147,9 @@ class sva:
                     blist.append(([row[i] for i, j in enumerate(self.block_design) if j == k]))
                 cors.append(f_oneway(*blist)[0])
             self.cors = np.asarray(cors)
+
         if self.designtype == 'c':
-            circ_cor()
+            l_cor()
         elif self.designtype == 'b':
             block_cor()
 
@@ -156,7 +164,7 @@ class sva:
         def get_l_res(arr):
             res = []
             for row in tqdm(arr):
-                ys = lowess(row, self.tpoints,delta=4)[:,1]
+                ys = lowess(row, self.tpoints, it=1)[:,1]
                 res.append(row - ys)
             return res
 

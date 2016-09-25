@@ -1,8 +1,10 @@
-from random import randint
+from random import *
 import numpy as np
 import pandas as pd
 import pickle
 from sklearn.preprocessing import scale
+
+seed(4574)
 
 cols = pickle.load( open( 'output/simdata/labels.p', "rb" ) )
 cols = cols[2:]
