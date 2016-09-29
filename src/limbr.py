@@ -149,7 +149,7 @@ class sva:
             self.cors = np.asarray(cors)
 
         if self.designtype == 'c':
-            l_cor()
+            circ_cor()
         elif self.designtype == 'b':
             block_cor()
 

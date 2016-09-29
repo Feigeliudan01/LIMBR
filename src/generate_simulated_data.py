@@ -5,7 +5,6 @@ import pickle
 from sklearn.preprocessing import scale
 
 seed(4574)
-
 cols = pickle.load( open( 'output/simdata/labels.p', "rb" ) )
 cols = cols[2:]
 randBinList = lambda n: [randint(0,1) for b in range(n)]
@@ -22,9 +21,9 @@ def gen_sim_data(suf):
             temp=[]
             p = randint(0,1)
             phases.append(p)
-            temp.append(np.sin(base+np.random.normal(0,0.4,1)+np.pi*p)+np.random.normal(0,1.75,24))
-            temp.append(np.sin(base+np.random.normal(0,0.4,1)+np.pi*p)+np.random.normal(0,1.75,24))
-            temp.append(np.sin(base+np.random.normal(0,0.4,1)+np.pi*p)+np.random.normal(0,1.75,24))
+            temp.append(np.sin(base+np.random.normal(0,0.25,1)+np.pi*p)+np.random.normal(0,1,24))
+            temp.append(np.sin(base+np.random.normal(0,0.25,1)+np.pi*p)+np.random.normal(0,1,24))
+            temp.append(np.sin(base+np.random.normal(0,0.25,1)+np.pi*p)+np.random.normal(0,1,24))
             temp2 = []
             for i in range(len(temp[0])):
                 temp2.append(temp[0][i])
@@ -42,25 +41,29 @@ def gen_sim_data(suf):
     simnoise = []
     trend1list = []
     trend2list = []
-    basetrend = randBinList(72)
-    basetrend2 = randBinList(72)
+    trend3list = []
+    trend4list = []
+    basetrend = np.random.normal(0,1.75,72)
+    basetrend2 = np.random.normal(0,1.75,72)
+    basetrend3 = np.random.normal(0,1.75,72)
+    basetrend4 = np.random.normal(0,1.75,72)
     for i in sim:
         temp = []
         t1 = randint(0,1)
         t2 = randint(0,1)
+        t3 = randint(0,1)
+        t4 = randint(0,1)
         trend1list.append(t1)
         trend2list.append(t2)
+        trend3list.append(t3)
+        trend4list.append(t4)
         for j in range(len(i)):
             trend = [k*t1 for k in basetrend]
             trend2 = [k*t2 for k in basetrend2]
-            temp.append(i[j]+trend[j]+trend2[j])
+            trend3 = [k*t3 for k in basetrend3]
+            trend4 = [k*t4 for k in basetrend4]
+            temp.append(i[j]+trend[j]+trend2[j]+trend3[j]+trend4[j])
         simnoise.append(temp)
-
-    temp =[]
-
-    for i in sim:
-        for j in range(len(i)):
-            temp.append(j)
 
     simndf = pd.DataFrame(np.asarray(simnoise),columns=cols)
     simndf.index.names = ['#']

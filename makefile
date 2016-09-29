@@ -16,6 +16,14 @@ FILES += $(shell for i in 1 2 3; do echo output/simdata/circ_lowess_$$i\_pvals.t
 FILES += $(shell for i in 1 2 3; do echo output/simdata/circ_lowess_$$i\_classes.txt; done)
 FILES += $(shell for i in 1 2 3; do echo output/simdata/circ_lowess_$$i\_classifications.txt; done)
 FILES += $(shell for i in 1 2 3; do echo output/simdata/block_$$i\_classifications.txt; done)
+FILES += $(shell for i in 1 2 3; do echo output/simdata/simulated_data_baseline_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3; do echo output/simdata/simulated_data_baseline_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3; do echo output/simdata/simulated_data_baseline_$$i\_classifications.txt; done)
+FILES += $(shell for i in 1 2 3; do echo output/simdata/simulated_data_with_noise_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3; do echo output/simdata/simulated_data_with_noise_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3; do echo output/simdata/simulated_data_with_noise_$$i\_classifications.txt; done)
+FILES += output/simdata/ROC_curves.pdf
+
 
 all: ${FILES}
 
@@ -33,11 +41,11 @@ output/simdata/simulated_data%__jtkout_GammaP.txt: output/simdata/simulated_data
 
 $(CSVA) :  output/simdata/simulated_data_with_noise_for_sva_%.txt
 	@echo Circadian Lowess SVA Normalizing $<
-	@for i in 1 2 3 4 5 6 7 8 9 10; do python src/sva_normalize.py -i $< -o $(subst _1.txt,_$$i.txt,$@) -s 25 -p 1000 -a .05 -d c; done
+	@for i in 1 2 3 4 5 6 7 8 9 10; do python src/sva_normalize.py -i $< -o $(subst _3.txt,_$$i.txt,$@) -s 25 -p 1000 -a .05 -d c; done
 
 $(BSVA) :  output/simdata/simulated_data_with_noise_for_sva_%.txt
 	@echo Circadian Block SVA Normalizing $<
-	@for i in 1 2 3 4 5 6 7 8 9 10; do python src/sva_normalize.py -i $< -o $(subst _1.txt,_$$i.txt,$@) -s 25 -p 1000 -a .05 -d b -b output/block_design.p; done
+	@for i in 1 2 3 4 5 6 7 8 9 10; do python src/sva_normalize.py -i $< -o $(subst _3.txt,_$$i.txt,$@) -s 25 -p 1000 -a .05 -d b -b output/block_design.p; done
 
 output/simdata/denoised_circ_lowess_%__jtkout_GammaP.txt output/simdata/denoised_block_%__jtkout_GammaP.txt : output/simdata/denoised_circ_lowess_%.txt output/simdata/denoised_block_%.txt
 	@echo Running eJTK on $<
@@ -49,21 +57,30 @@ output/simdata/denoised_circ_lowess_%__jtkout_GammaP.txt output/simdata/denoised
 	@rm output/simdata/*__jtknull1000.txt
 	@rm output/simdata/*__jtkout.txt
 
-output/simdata/block_%_pvals.txt : $(shell for i in 1 2 3 4 5 6 7 8 9 10; do echo output/simdata/denoised_block_%_$$i\__jtkout_GammaP.txt; done)
+output/simdata/%_pvals.txt : $(shell for i in 1 2 3 4 5 6 7 8 9 10; do echo output/simdata/denoised_%_$$i\__jtkout_GammaP.txt; done)
+	@tail -q -n +2 $^ |cut -f 19 > $@
+
+output/simdata/%_pvals.txt : $(shell for i in 1 2 3 4 5 6 7 8 9 10; do echo output/simdata/%__jtkout_GammaP.txt; done)
 	@tail -q -n +2 $^ |cut -f 19 > $@
 
 output/simdata/block_%_classes.txt : output/simdata/simulated_data_key_%.txt
-	@$(shell for i in 1 2 3 4 5 6 7 8 9 10; do tail -q -n +2 $< |cut -f 2 > $@; done)
-
-output/simdata/circ_lowess_%_pvals.txt : $(shell for i in 1 2 3 4 5 6 7 8 9 10; do echo output/simdata/denoised_circ_lowess_%_$$i\__jtkout_GammaP.txt; done)
-	@tail -q -n +2 $^ |cut -f 19 > $@
+	@$(shell for i in 1 2 3 4 5 6 7 8 9 10; do tail -q -n +2 $< |cut -f 2 >> $@; done)
 
 output/simdata/circ_lowess_%_classes.txt : output/simdata/simulated_data_key_%.txt
-	@$(shell for i in 1 2 3 4 5 6 7 8 9 10; do tail -q -n +2 $< |cut -f 2 > $@; done)
+	@$(shell for i in 1 2 3 4 5 6 7 8 9 10; do tail -q -n +2 $< |cut -f 2 >> $@; done)
+
+output/simdata/simulated_data_baseline_%_classes.txt : output/simdata/simulated_data_key_%.txt
+	@tail -q -n +2 $< |cut -f 2 >> $@
+
+output/simdata/simulated_data_with_noise_%_classes.txt : output/simdata/simulated_data_key_%.txt
+	@$(shell for i in 1 2 3 4 5 6 7 8 9 10; do tail -q -n +2 $< |cut -f 2 >> $@; done)
 
 output/simdata/%_classifications.txt : output/simdata/%_pvals.txt output/simdata/%_classes.txt
 	@paste $^ > $@
 
+output/simdata/ROC_curves.pdf : output/simdata/simulated_data_with_noise_1_classifications.txt output/simdata/simulated_data_baseline_1_classifications.txt output/simdata/block_1_classifications.txt output/simdata/circ_lowess_1_classifications.txt
+	@echo Generating ROC curves
+	@python src/analysis/ROC_curves.py
 
 clean:
 	@echo Cleaning up files..
