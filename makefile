@@ -22,7 +22,7 @@ FILES += $(shell for i in 1 2 3; do echo output/simdata/simulated_data_baseline_
 FILES += $(shell for i in 1 2 3; do echo output/simdata/simulated_data_with_noise_$$i\_pvals.txt; done)
 FILES += $(shell for i in 1 2 3; do echo output/simdata/simulated_data_with_noise_$$i\_classes.txt; done)
 FILES += $(shell for i in 1 2 3; do echo output/simdata/simulated_data_with_noise_$$i\_classifications.txt; done)
-FILES += output/simdata/ROC_curves.pdf
+FILES += output/simdata/ROC_curves_1.pdf output/simdata/ROC_curves_2.pdf output/simdata/ROC_curves_3.pdf
 
 
 all: ${FILES}
@@ -78,7 +78,7 @@ output/simdata/simulated_data_with_noise_%_classes.txt : output/simdata/simulate
 output/simdata/%_classifications.txt : output/simdata/%_pvals.txt output/simdata/%_classes.txt
 	@paste $^ > $@
 
-output/simdata/ROC_curves.pdf : output/simdata/simulated_data_with_noise_1_classifications.txt output/simdata/simulated_data_baseline_1_classifications.txt output/simdata/block_1_classifications.txt output/simdata/circ_lowess_1_classifications.txt
+output/simdata/ROC_curves_1.pdf output/simdata/ROC_curves_2.pdf output/simdata/ROC_curves_3.pdf : output/simdata/simulated_data_with_noise_1_classifications.txt output/simdata/simulated_data_baseline_1_classifications.txt output/simdata/block_1_classifications.txt output/simdata/circ_lowess_1_classifications.txt
 	@echo Generating ROC curves
 	@python src/analysis/ROC_curves.py
 
