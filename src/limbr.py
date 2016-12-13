@@ -20,7 +20,7 @@ import json
 from ctypes import c_int
 import pickle
 
-#seed(4574)
+
 
 class imputable:
 
@@ -189,7 +189,7 @@ class sva:
         self.res = self.get_res(self.data_reduced.values)
 
     def get_tks(self,arr):
-        pca = PCA(svd_solver='randomized')
+        pca = PCA(svd_solver='randomized',random_state=4574)
         pca.fit(arr)
         return pca.explained_variance_ratio_
 
@@ -197,6 +197,7 @@ class sva:
         self.tks = self.get_tks(self.res)
 
     def perm_test(self,nperm):
+        np.seed(4574)
         nperm = int(nperm)
         rstar = np.copy(self.res)
         out = np.zeros(len(self.tks))
