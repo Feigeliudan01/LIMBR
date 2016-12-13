@@ -58,3 +58,8 @@ csp_norm.to_csv('../output/csp_pool_qnormed.txt',sep='\t')
 
 block_design = [j for i in range(1,12) for j in [i]*3]*2 + [j for i in range(1,3) for j in [i]*3]
 pickle.dump(block_design, open( "../output/block_design.p", "wb" ) )
+
+rna =  pd.read_csv('../data/Jen_rnaseq_formatted_raw_counts.txt',sep='\t')
+rna = rna.set_index('Transcript')
+rna = qnorm(rna)
+rna.to_csv('../output/rna_qnormed.txt',sep='\t')

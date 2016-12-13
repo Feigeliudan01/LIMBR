@@ -5,13 +5,14 @@ import os
 import scipy.stats as stats
 from numpy.linalg import svd, lstsq
 import timeit
-from sklearn.decomposition import RandomizedPCA
+from sklearn.decomposition import PCA
 from scipy.stats import linregress, f_oneway
 import itertools
 import sys
 import getopt
 from pylab import dot, floor
 from statsmodels.nonparametric.smoothers_lowess import lowess
+#from scipy.signal import savgol_filter
 from tqdm import tqdm
 from sklearn.preprocessing import scale
 from sklearn.neighbors import NearestNeighbors
@@ -22,7 +23,7 @@ import time
 from ctypes import c_int
 import pickle
 
-seed(4574)
+#seed(4574)
 
 class imputable:
 
@@ -127,6 +128,7 @@ class sva:
             cors = []
             for row in tqdm(self.data.values):
                 ave = []
+                #might eventually need to account for case where all replicates of a timepoint are missing (in this case the experiment is probably irreparably broken anyway though)
                 for k in set(self.tpoints):
                     ave.append((np.mean([row[i] for i, j in enumerate(self.tpoints) if j == k])*1000000))
                 cors.append((autocorr(ave,per) - autocorr(ave,(per//2))))
@@ -152,6 +154,8 @@ class sva:
             circ_cor()
         elif self.designtype == 'b':
             block_cor()
+        elif self.designtype == 'l':
+            l_cor()
 
 
     def reduce(self,percsub):
@@ -181,12 +185,14 @@ class sva:
             return get_l_res(in_arr)
         elif self.designtype == 'b':
             return get_b_res(in_arr)
+        elif self.designtype == 'l':
+            return get_l_res(in_arr)
 
     def set_res(self):
         self.res = self.get_res(self.data_reduced.values)
 
     def get_tks(self,arr):
-        pca = RandomizedPCA()
+        pca = PCA(svd_solver='randomized')
         pca.fit(arr)
         return pca.explained_variance_ratio_
 
