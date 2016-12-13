@@ -1,4 +1,4 @@
-FROM limbr
+FROM acrowell/limbr:v1
 MAINTAINER Alec Crowell <alexander.m.crowell.gr@dartmouth.edu>
  
 # Install all the software needed to run the pipeline
@@ -8,6 +8,7 @@ RUN pip install -U pandas scipy sklearn numpy statsmodels
   
 # clone the most recent version of the pipeline
 RUN git clone https://github.com/aleccrowell/LIMBR.git
+WORKDIR /LIMBR/
 
 #make actual data files
 RUN make -f make_actual

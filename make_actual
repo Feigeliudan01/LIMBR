@@ -8,6 +8,8 @@ FILES += output/actual/wt_lowess_normed__jtkout_GammaP.txt output/actual/csp_low
 
 all: ${FILES}
 
+data/Formatted_input.txt :
+
 output/actual/imputed_peptide.txt : data/Formatted_input.txt
 	@echo Imputing
 	@python src/knn_impute.py -i $< -o $@ -m 0.3 -p 2
