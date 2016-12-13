@@ -4,22 +4,19 @@ import pandas as pd
 import os
 import scipy.stats as stats
 from numpy.linalg import svd, lstsq
-import timeit
 from sklearn.decomposition import PCA
 from scipy.stats import linregress, f_oneway
 import itertools
 import sys
-import getopt
-from pylab import dot, floor
+#import getopt
 from statsmodels.nonparametric.smoothers_lowess import lowess
 #from scipy.signal import savgol_filter
 from tqdm import tqdm
 from sklearn.preprocessing import scale
 from sklearn.neighbors import NearestNeighbors
-import multiprocessing, logging
+#import multiprocessing, logging
 import math
 import json
-import time
 from ctypes import c_int
 import pickle
 
@@ -122,7 +119,7 @@ class sva:
     def prim_cor(self):
         def circ_cor():
             def autocorr(l,shift):
-                return dot(l, np.roll(l, shift)) / dot(l, l)
+                return np.dot(l, np.roll(l, shift)) / np.dot(l, l)
 
             per = 12
             cors = []
@@ -236,7 +233,7 @@ class sva:
             if pi_0 > 1:
                 return 'nan'
             sp = np.sort(probs_sig)
-            return sp[int(floor((1-pi_0)*len(probs_sig)))]
+            return sp[int(np.floor((1-pi_0)*len(probs_sig)))]
 
         _, _, bt = np.linalg.svd(self.res)
         trends = []
