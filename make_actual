@@ -1,21 +1,32 @@
-FILES += output/imputed_peptide.txt output/csp_imputed.txt output/wt_imputed.txt
+FILES += output/actual/imputed_peptide.txt output/actual/csp_imputed.txt output/actual/wt_imputed.txt
 
-FILES += output/wt_lowess_normed.txt output/csp_lowess_normed.txt output/rna_lowess_normed.txt
+FILES += output/actual/wt_lowess_normed.txt output/actual/csp_lowess_normed.txt output/actual/rna_lowess_normed.txt
+
+FILES += output/actual/wt_lowess_normed.txt output/actual/csp_lowess_normed.txt output/actual/rna_lowess_normed.txt
+
+FILES += output/actual/wt_lowess_normed__jtkout_GammaP.txt output/actual/csp_lowess_normed__jtkout_GammaP.txt output/actual/rna_lowess_normed__jtkout_GammaP.txt
 
 all: ${FILES}
 
-output/imputed_peptide.txt : data/Formatted_input.txt
+output/actual/imputed_peptide.txt : data/Formatted_input.txt
 	@echo Imputing
 	@python src/knn_impute.py -i $< -o $@ -m 0.3 -p 2
 
-output/csp_imputed.txt output/wt_imputed.txt : output/imputed_peptide.txt
+output/actual/csp_imputed.txt output/actual/wt_imputed.txt : output/actual/imputed_peptide.txt
 	@echo pool normalizing
 	@python src/pool_norm_and_seperate.py
 
-output/wt_lowess_normed.txt output/csp_lowess_normed.txt output/rna_lowess_normed.txt : output/csp_imputed.txt output/rna_imputed.txt 
+output/actual/wt_lowess_normed.txt output/actual/csp_lowess_normed.txt : output/actual/wt_imputed.txt output/actual/csp_imputed.txt 
 	@echo Lowess normalizing $<
-	@python src/sva_normalize.py -i $< -s 25 -p 10000 -a .05 -d c
+	@python src/sva_normalize.py -i $< -s 25 -p 10000 -a .05 -d c -e p
 
-output/%_lowess_normed.txt : output/%_pool_qnormed.txt
+output/actual/rna_lowess_normed.txt : output/actual/rna_imputed.txt
 	@echo Lowess normalizing $<
-	@python src/sva_normalize.py -i $< -s 25 -p 10000 -a .05 -d c
+	@python src/sva_normalize.py -i $< -s 25 -p 10000 -a .05 -d c -e r
+
+output/actual/%__jtkout_GammaP.txt: output/actual/%.txt
+	@echo Running eJTK on $<
+	@sed -i '' -e 's/_[[:digit:]]//g' $<
+	@eJTK-CalcP.py -f $< -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
+	@rm output/simdata/*__jtknull1000.txt
+	@rm output/simdata/*__jtkout.txt
