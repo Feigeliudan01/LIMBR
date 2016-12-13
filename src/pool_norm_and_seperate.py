@@ -32,7 +32,7 @@ data = pool_normalize(data,norm_map)
 data = data.replace([np.inf, -np.inf], np.nan)
 data = data.dropna()
 data = data.sort_index(axis=1)
-data = qnorm(data)
+#data = qnorm(data)
 
 csp_norm = data[data.columns.values[:75]]
 wt_norm = data[data.columns.values[75:]]
@@ -53,13 +53,14 @@ wt_norm = pd.DataFrame(scale(wt_norm.values,axis=1),columns=wt_norm.columns,inde
 
 csp_norm = pd.DataFrame(scale(csp_norm.values,axis=1),columns=csp_norm.columns,index=csp_norm.index)
 
-wt_norm.to_csv('../output/wt_pool_qnormed.txt',sep='\t')
-csp_norm.to_csv('../output/csp_pool_qnormed.txt',sep='\t')
+wt_norm.to_csv('../output/wt_for_sva.txt',sep='\t')
+csp_norm.to_csv('../output/csp_for_sva.txt',sep='\t')
 
 block_design = [j for i in range(1,12) for j in [i]*3]*2 + [j for i in range(1,3) for j in [i]*3]
 pickle.dump(block_design, open( "../output/block_design.p", "wb" ) )
 
 rna =  pd.read_csv('../data/Jen_rnaseq_formatted_raw_counts.txt',sep='\t')
 rna = rna.set_index('Transcript')
-rna = qnorm(rna)
-rna.to_csv('../output/rna_qnormed.txt',sep='\t')
+rna.index.names = ['#']
+#rna = qnorm(rna)
+rna.to_csv('../output/rna_for_sva.txt',sep='\t')
