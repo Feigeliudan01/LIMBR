@@ -103,8 +103,12 @@ class imputable:
 
 class sva:
 
-    def __init__(self, filename,design,blocks=None):
-        self.data = pd.read_csv(filename,sep='\t').set_index(['Peptide','Protein'])
+    def __init__(self, filename,design,data_type,blocks=None):
+        self.data_type = str(data_type)
+        if self.data_type == 'p':
+            self.data = pd.read_csv(filename,sep='\t').set_index(['Peptide','Protein'])
+        if self.data_type == 'r':
+            self.data = pd.read_csv(filename,sep='\t').set_index('Transcript')
         self.designtype = str(design)
         if self.designtype == 'b':
             self.block_design = pickle.load( open( blocks, "rb" ) )

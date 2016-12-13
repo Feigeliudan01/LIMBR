@@ -1,0 +1,21 @@
+FILES += output/imputed_peptide.txt output/csp_imputed.txt output/wt_imputed.txt
+
+FILES += output/wt_lowess_normed.txt output/csp_lowess_normed.txt output/rna_lowess_normed.txt
+
+all: ${FILES}
+
+output/imputed_peptide.txt : data/Formatted_input.txt
+	@echo Imputing
+	@python src/knn_impute.py -i $< -o $@ -m 0.3 -p 2
+
+output/csp_imputed.txt output/wt_imputed.txt : output/imputed_peptide.txt
+	@echo pool normalizing
+	@python src/pool_norm_and_seperate.py
+
+output/wt_lowess_normed.txt output/csp_lowess_normed.txt output/rna_lowess_normed.txt : output/csp_imputed.txt output/rna_imputed.txt 
+	@echo Lowess normalizing $<
+	@python src/sva_normalize.py -i $< -s 25 -p 10000 -a .05 -d c
+
+output/%_lowess_normed.txt : output/%_pool_qnormed.txt
+	@echo Lowess normalizing $<
+	@python src/sva_normalize.py -i $< -s 25 -p 10000 -a .05 -d c

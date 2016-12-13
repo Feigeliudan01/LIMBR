@@ -8,12 +8,12 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv,"h:i:o:s:p:a:d:b:",["help","ifile=","ofile=","sub=","perm=","alpha=","design=","blocks="])
     except getopt.GetoptError:
-        print 'residuals.py -i <inputfile> -o <outputfile> -s <subset%> -p <#permutations> -a <alphalevel> -d <designtype> -b <bdesignpath>'
+        print 'residuals.py -i <inputfile> -o <outputfile> -s <subset%> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath>'
         sys.exit(2)
     b = None
     for opt, arg in opts:
         if opt in ('-h',"--help"):
-            print 'residuals.py -i <inputfile> -o <outputfile> -s <subset%> -p <#permutations> -a <alphalevel> -d <designtype> -b <bdesignpath>'
+            print 'residuals.py -i <inputfile> -o <outputfile> -s <subset%> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath>'
             sys.exit()
         elif opt in ("-i", "--ifile"):
             inputfile = arg
@@ -27,10 +27,12 @@ def main(argv):
             a = arg
         elif opt in ("-d", "--design"):
             d = arg
+        elif opt in ("-e", "--experiment"):
+            e = arg
         elif opt in ("-b", "--bpath"):
             b = arg
     print('reading data')
-    to_sva = sva(inputfile,d,b)
+    to_sva = sva(inputfile,d,e,b)
     to_sva.get_tpoints()
     print('calculating primary trend correlations')
     to_sva.prim_cor()
