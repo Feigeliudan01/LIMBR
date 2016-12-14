@@ -6,7 +6,7 @@ def main(argv):
     inputfile = ''
     outputfile = ''
     try:
-        opts, args = getopt.getopt(argv,"h:i:o:s:p:a:d:b:",["help","ifile=","ofile=","sub=","perm=","alpha=","design=","blocks="])
+        opts, args = getopt.getopt(argv,"h:i:o:s:p:a:d:e:b:",["help","ifile=","ofile=","sub=","perm=","alpha=","design=","experiment=","blocks="])
     except getopt.GetoptError:
         print 'residuals.py -i <inputfile> -o <outputfile> -s <subset%> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath>'
         sys.exit(2)

@@ -32,7 +32,7 @@ data = pool_normalize(data,norm_map)
 data = data.replace([np.inf, -np.inf], np.nan)
 data = data.dropna()
 data = data.sort_index(axis=1)
-#data = qnorm(data)
+data = qnorm(data)
 
 csp_norm = data[data.columns.values[:75]]
 wt_norm = data[data.columns.values[75:]]
@@ -62,5 +62,5 @@ pickle.dump(block_design, open( "./output/actual/block_design.p", "wb" ) )
 rna =  pd.read_csv('./data/Jen_rnaseq_formatted_raw_counts.txt',sep='\t')
 rna = rna.set_index('Transcript')
 rna.index.names = ['#']
-#rna = qnorm(rna)
+rna = qnorm(rna)
 rna.to_csv('./output/actual/rna_for_sva.txt',sep='\t')
