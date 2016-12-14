@@ -63,4 +63,4 @@ rna =  pd.read_csv('../data/Jen_rnaseq_formatted_raw_counts.txt',sep='\t')
 rna = rna.set_index('Transcript')
 rna.index.names = ['#']
 #rna = qnorm(rna)
-rna.to_csv('../output/actual/rna_for_sva.txt',sep='\t')
+rna.to_csv('./output/rna_for_sva.txt',sep='\t')
