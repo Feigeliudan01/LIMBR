@@ -25,7 +25,7 @@ def qnorm(df):
         df[df.columns[i]] = ref
     return df.sort_index()
 
-data = pd.read_csv('../output/imputed_peptide.txt',sep='\t')
+data = pd.read_csv('./output/actual/imputed_peptide.txt',sep='\t')
 data = data.set_index(['Peptide','Protein'])
 norm_map = gen_norm_dict(data.columns.values)
 data = pool_normalize(data,norm_map)
@@ -53,8 +53,8 @@ wt_norm = pd.DataFrame(scale(wt_norm.values,axis=1),columns=wt_norm.columns,inde
 
 csp_norm = pd.DataFrame(scale(csp_norm.values,axis=1),columns=csp_norm.columns,index=csp_norm.index)
 
-wt_norm.to_csv('../output/actual/wt_for_sva.txt',sep='\t')
-csp_norm.to_csv('../output/actual/csp_for_sva.txt',sep='\t')
+wt_norm.to_csv('./output/actual/wt_for_sva.txt',sep='\t')
+csp_norm.to_csv('./output/actual/csp_for_sva.txt',sep='\t')
 
 block_design = [j for i in range(1,12) for j in [i]*3]*2 + [j for i in range(1,3) for j in [i]*3]
 pickle.dump(block_design, open( "../output/actual/block_design.p", "wb" ) )
