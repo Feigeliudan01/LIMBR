@@ -8,13 +8,13 @@ FILES += output/actual/wt_lowess_normed__jtkout_GammaP.txt output/actual/csp_low
 
 all: ${FILES}
 
-data/Formatted_input.txt :
+data/Formatted_input.txt data/Jen_rnaseq_formatted_raw_counts.txt :
 
 output/actual/imputed_peptide.txt : data/Formatted_input.txt
 	@echo Imputing
 	@python src/knn_impute.py -i $< -o $@ -m 0.3 -p 2
 
-output/actual/csp_imputed.txt output/actual/wt_imputed.txt : output/actual/imputed_peptide.txt
+output/actual/csp_imputed.txt output/actual/wt_imputed.txt output/actual/rna_for_sva.txt : data/Jen_rnaseq_formatted_raw_counts.txt output/actual/imputed_peptide.txt
 	@echo pool normalizing
 	@python src/pool_norm_and_seperate.py
 
@@ -22,7 +22,7 @@ output/actual/wt_lowess_normed.txt output/actual/csp_lowess_normed.txt : output/
 	@echo Lowess normalizing $<
 	@python src/sva_normalize.py -i $< -s 25 -p 10000 -a .05 -d c -e p
 
-output/actual/rna_lowess_normed.txt : output/actual/rna_imputed.txt
+output/actual/rna_lowess_normed.txt : output/actual/rna_for_sva.txt
 	@echo Lowess normalizing $<
 	@python src/sva_normalize.py -i $< -s 25 -p 10000 -a .05 -d c -e r
 
