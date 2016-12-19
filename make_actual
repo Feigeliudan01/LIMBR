@@ -12,7 +12,8 @@ data/Formatted_input.csv data/Jen_rnaseq_formatted_raw_counts.csv :
 
 output/actual/imputed_peptide.txt : data/Formatted_input.csv
 	@echo Imputing
-	@python src/knn_impute.py -i $< -o $@ -m 0.3 -p 2
+	@head -n 100 data/Formatted_input.csv > temp.csv
+	@python src/knn_impute.py -i temp.csv -o $@ -m 0.3 -p 2
 
 output/actual/csp_for_sva.txt output/actual/wt_for_sva.txt output/actual/rna_for_sva.txt : data/Jen_rnaseq_formatted_raw_counts.txt output/actual/imputed_peptide.txt
 	@echo pool normalizing
