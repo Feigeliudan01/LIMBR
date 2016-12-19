@@ -22,8 +22,7 @@ import pickle
 class imputable:
 
     def __init__(self, filename, missingness):
-        #self.data = pd.read_csv(filename,sep='\t')
-        self.data = pd.read_csv(filename)
+        self.data = pd.read_csv(filename,sep='\t')
         self.miss = float(missingness)
         self.pats = {}
         self.notdone = True
