@@ -217,13 +217,16 @@ class sva:
         U, s, V = np.linalg.svd(self.res)
         sig = V.T[:,:len([i for i in itertools.takewhile(lambda x: x < alpha, self.sigs)])]
         pvals = []
-        for trend in tqdm(sig.T):
-            temp = []
-            for row in self.data_reduced.values:
-                slope, intercept, r_value, p_value, std_err = linregress(row,trend)
-                temp.append(p_value)
-            pvals.append(temp)
-        self.ps =  pvals
+        if len(sig)>0:
+            for trend in tqdm(sig.T):
+                temp = []
+                for row in self.data_reduced.values:
+                    slope, intercept, r_value, p_value, std_err = linregress(row,trend)
+                    temp.append(p_value)
+                pvals.append(temp)
+            self.ps =  pvals
+        else:
+            print('No Significant Trends')
 
     def subset_svd(self,lam):
 

@@ -44,7 +44,7 @@ def main(argv):
     to_sva.set_tks()
     print('permutation testing')
     to_sva.perm_test(perm)
-    print('regressing eigentrends')
+    print('\nregressing eigentrends')
     to_sva.eig_reg(a)
     print('performing subset SVD')
     l = 0.5
