@@ -6,7 +6,7 @@ def main(argv):
     inputfile = ''
     outputfile = ''
     try:
-        opts, args = getopt.getopt(argv,"h:i:o:s:p:a:d:e:b:",["help","ifile=","ofile=","sub=","perm=","alpha=","design=","experiment=","blocks="])
+        opts, args = getopt.getopt(argv,"h:i:o:s:p:a:d:e:b:",["help","ifile=","ofile=","sub=","perm=","alpha=","design=","d=","blocks="])
     except getopt.GetoptError:
         print 'residuals.py -i <inputfile> -o <outputfile> -s <subset%> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath>'
         sys.exit(2)
@@ -44,7 +44,7 @@ def main(argv):
     to_sva.set_tks()
     print('permutation testing')
     to_sva.perm_test(perm)
-    print('\nregressing eigentrends')
+    print('regressing eigentrends')
     to_sva.eig_reg(a)
     print('performing subset SVD')
     l = 0.5

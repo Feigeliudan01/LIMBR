@@ -8,13 +8,10 @@ from sklearn.decomposition import PCA
 from scipy.stats import linregress, f_oneway
 import itertools
 import sys
-#import getopt
 from statsmodels.nonparametric.smoothers_lowess import lowess
-#from scipy.signal import savgol_filter
 from tqdm import tqdm
 from sklearn.preprocessing import scale
 from sklearn.neighbors import NearestNeighbors
-#import multiprocessing, logging
 import math
 import json
 from ctypes import c_int
@@ -104,6 +101,7 @@ class imputable:
 class sva:
 
     def __init__(self, filename,design,data_type,blocks=None):
+        np.random.seed(4574)
         self.data_type = str(data_type)
         if self.data_type == 'p':
             self.data = pd.read_csv(filename,sep='\t').set_index(['Peptide','Protein'])
@@ -201,7 +199,6 @@ class sva:
         self.tks = self.get_tks(self.res)
 
     def perm_test(self,nperm):
-        np.random.seed(4574)
         nperm = int(nperm)
         rstar = np.copy(self.res)
         out = np.zeros(len(self.tks))
