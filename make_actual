@@ -8,12 +8,12 @@ FILES += output/actual/wt_lowess_normed__jtkout_GammaP.txt output/actual/csp_low
 
 all: ${FILES}
 
-data/Formatted_input.csv data/Jen_rnaseq_formatted_raw_counts.csv :
+data/Formatted_input.txt data/Jen_rnaseq_formatted_raw_counts.txt :
 
-output/actual/imputed_peptide.txt : data/Formatted_input.csv
+output/actual/imputed_peptide.txt : data/Formatted_input.txt
 	@echo Imputing
-	@head -n 100 data/Formatted_input.csv > temp.csv
-	@python src/knn_impute.py -i temp.csv -o $@ -m 0.3 -p 2
+	@head -n 100 data/Formatted_input.txt > temp.txt
+	@python src/knn_impute.py -i temp.txt -o $@ -m 0.3 -p 2
 
 output/actual/csp_for_sva.txt output/actual/wt_for_sva.txt output/actual/rna_for_sva.txt : data/Jen_rnaseq_formatted_raw_counts.txt output/actual/imputed_peptide.txt
 	@echo pool normalizing
@@ -21,11 +21,11 @@ output/actual/csp_for_sva.txt output/actual/wt_for_sva.txt output/actual/rna_for
 
 output/actual/wt_lowess_normed.txt output/actual/csp_lowess_normed.txt : output/actual/wt_for_sva.txt output/actual/csp_for_sva.txt 
 	@echo Lowess normalizing $<
-	@python src/sva_normalize.py -i $< -s 25 -p 10000 -a .05 -d c -e p
+	@python src/sva_normalize.py -i $< -o $@ -s 25 -p 100 -a .05 -d c -e p
 
 output/actual/rna_lowess_normed.txt : output/actual/rna_for_sva.txt
 	@echo Lowess normalizing $<
-	@python src/sva_normalize.py -i $< -s 25 -p 10000 -a .05 -d c -e r
+	@python src/sva_normalize.py -i $< -o $@ -s 25 -p 100 -a .05 -d c -e r
 
 output/actual/%__jtkout_GammaP.txt: output/actual/%.txt
 	@echo Running eJTK on $<
