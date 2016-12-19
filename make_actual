@@ -16,16 +16,16 @@ output/actual/imputed_peptide.txt : data/Formatted_input.txt
         @python src/knn_impute.py -i temp.txt -o $@ -m 0.3 -p 2
 
 output/actual/csp_for_sva.txt output/actual/wt_for_sva.txt output/actual/rna_for_sva.txt : data/Jen_rnaseq_formatted_raw_counts.txt output/actual/imputed_peptide.txt
-        @echo pool normalizing
-        @python src/pool_norm_and_seperate.py
+	@echo pool normalizing
+	@python src/pool_norm_and_seperate.py
 
 output/actual/wt_lowess_normed.txt : output/actual/wt_for_sva.txt
-        @echo Lowess normalizing $<
-        @python src/sva_normalize.py -i $< -o $@ -s 25 -p 10 -a .05 -d c -e p
+	@echo Lowess normalizing $<
+	@python src/sva_normalize.py -i $< -o $@ -s 25 -p 10 -a .05 -d c -e p
 
 output/actual/csp_lowess_normed.txt : output/actual/csp_for_sva.txt
-        @echo Lowess normalizing $<
-        @python src/sva_normalize.py -i $< -o $@ -s 25 -p 10 -a .05 -d c -e p
+	@echo Lowess normalizing $<
+	@python src/sva_normalize.py -i $< -o $@ -s 25 -p 10 -a .05 -d c -e p
 
 output/actual/rna_lowess_normed.txt : output/actual/rna_for_sva.txt
         @echo Lowess normalizing $<
