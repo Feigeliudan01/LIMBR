@@ -106,7 +106,7 @@ class sva:
         if self.data_type == 'p':
             self.data = pd.read_csv(filename,sep='\t').set_index(['Peptide','Protein'])
         if self.data_type == 'r':
-            self.data = pd.read_csv(filename,sep='\t').set_index('Transcript')
+            self.data = pd.read_csv(filename,sep='\t').set_index('#')
         self.designtype = str(design)
         if self.designtype == 'b':
             self.block_design = pickle.load( open( blocks, "rb" ) )
@@ -169,7 +169,7 @@ class sva:
             for row in tqdm(arr):
                 ys = lowess(row, self.tpoints, it=1)[:,1]
                 res.append(row - ys)
-            return res
+            return np.array(res)
 
         def get_b_res(arr):
             m = {}
@@ -263,6 +263,7 @@ class sva:
         self.svd_norm = self.data.values - fin_res
         self.svd_norm = pd.DataFrame(self.svd_norm,index=self.data.index,columns=self.data.columns)
         self.svd_norm = pd.DataFrame(scale(self.svd_norm.values,axis=1),columns=self.svd_norm.columns,index=self.svd_norm.index)
-        self.svd_norm = self.svd_norm.groupby(level='Protein').mean()
+        if self.data_type == 'p':
+            self.svd_norm = self.svd_norm.groupby(level='Protein').mean()
         self.svd_norm.index.names = ['#']
         self.svd_norm.to_csv(outname,sep='\t')

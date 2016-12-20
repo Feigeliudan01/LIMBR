@@ -35,5 +35,5 @@ output/actual/%__jtkout_GammaP.txt: output/actual/%.txt
 	@echo Running eJTK on $<
 	@sed -i '' -e 's/_[[:digit:]]//g' $<
 	@eJTK-CalcP.py -f $< -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
-	@rm output/simdata/*__jtknull1000.txt
-	@rm output/simdata/*__jtkout.txt
+	@rm output/actual/*__jtknull1000.txt
+	@rm output/actual/*__jtkout.txt
