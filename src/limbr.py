@@ -257,6 +257,7 @@ class sva:
                 temp.append(p_value)
             trends.append(V.T[:,np.argmin(temp)])
         self.ts = trends
+        trends.to_csv(outname[:-4]+'_trends.txt',sep='\t')
 
     def normalize(self,outname):
         fin_res = np.dot(np.linalg.lstsq(np.asarray(self.ts).T,self.data.values.T)[0].T,np.asarray(self.ts))
