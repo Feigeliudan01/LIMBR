@@ -199,10 +199,9 @@ class sva:
         self.tks = self.get_tks(self.res)
 
     def perm_test(self,nperm):
-        nperm = int(nperm)
-        rstar = np.copy(self.res)
-        out = np.zeros(len(self.tks))
-        for j in tqdm(range(nperm)):
+        def single_it(self):
+            rstar = np.copy(self.res)
+            out = np.zeros(len(self.tks))
             for i in range(rstar.shape[0]):
                 np.random.shuffle(rstar[i,:])
             resstar = self.get_res(rstar)
@@ -210,7 +209,8 @@ class sva:
             for m in range(len(self.tks)):
                 if tkstar[m] > self.tks[m]:
                     out[m] += 1
-        self.sigs = out/nperm
+        results = [pool.apply_async(single_it, args=()) for x in tqdm(range(int(nperm)))]
+        self.sigs = np.sum(np.asarray(results), axis=0)/int(nperm)
 
     def eig_reg(self,alpha):
         alpha = float(alpha)
