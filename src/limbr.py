@@ -209,6 +209,7 @@ class sva:
             for m in range(len(self.tks)):
                 if tkstar[m] > self.tks[m]:
                     out[m] += 1
+            return out
         results = [pool.apply_async(single_it, args=()) for x in tqdm(range(int(nperm)))]
         self.sigs = np.sum(np.asarray(results), axis=0)/int(nperm)
 
