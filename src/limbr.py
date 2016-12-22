@@ -16,6 +16,7 @@ import math
 import json
 from ctypes import c_int
 import pickle
+import multiprocessing as mp
 
 
 
@@ -214,6 +215,7 @@ class sva:
         results = [pool.apply_async(single_it, args=()) for x in tqdm(range(int(nperm)))]
         output = [p.get() for p in results]
         self.sigs = np.sum(np.asarray(output), axis=0)/int(nperm)
+        print(output)
 
     def eig_reg(self,alpha):
         alpha = float(alpha)
