@@ -16,7 +16,7 @@ import math
 import json
 from ctypes import c_int
 import pickle
-from multiprocess import Pool
+from multiprocess import Pool, current_process
 
 class imputable:
 
@@ -165,18 +165,18 @@ class sva:
     def get_res(self,in_arr):
         def get_l_res(arr):
             res = []
-            for row in tqdm(arr):
+            for row in tqdm(arr, desc='get lowess residuals', leave=False):
                 ys = lowess(row, self.tpoints, it=1)[:,1]
                 res.append(row - ys)
             return np.array(res)
 
         def get_b_res(arr):
             m = {}
-            for v in tqdm(set(self.block_design)):
+            for v in tqdm(set(self.block_design), desc='get block residuals 1', leave=False, position=current_process[0]):
                 indices = [i for i, x in enumerate(self.block_design) if x == v]
                 m[v] = np.mean(arr[:,indices],axis=1)
             ma = np.zeros(np.shape(arr))
-            for i in tqdm(range(len(self.block_design))):
+            for i in tqdm(range(len(self.block_design)), desc='get block residuals 2', leave=False):
                 ma[:,i]=m[self.block_design[i]]
             return np.subtract(arr,ma)
         if self.designtype == 'c':
@@ -214,8 +214,9 @@ class sva:
             return out
         #switch this to with mp.Pool(4) as pool after switching to python3
         with Pool(4) as pool:
-            results = pool.map_async(single_it, tqdm(range(int(nperm))))
-            output = [p.get() for p in results]
+            output = pool.map(single_it, range(int(nperm)))
+            remaining = output._number_left
+            print "Waiting for", remaining, "tasks to complete..."
         self.sigs = np.sum(np.asarray(output), axis=0)/int(nperm)
         print(output)
 
