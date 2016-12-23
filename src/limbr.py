@@ -16,9 +16,7 @@ import math
 import json
 from ctypes import c_int
 import pickle
-import multiprocessing as mp
-
-
+from multiprocess import Pool
 
 class imputable:
 
@@ -215,13 +213,11 @@ class sva:
                     out[m] += 1
             return out
         #switch this to with mp.Pool(4) as pool after switching to python3
-        with mp.Pool(processes=4) as pool:
-            it = pool.imap_unordered(single_it, range(int(nperm)))
-            results = []
-            for output in tqdm(it):
-                results.append(output)
-        self.sigs = np.sum(np.asarray(results), axis=0)/int(nperm)
-        print(results)
+        with Pool(4) as pool:
+            results = pool.map_async(single_it, tqdm(range(int(nperm))))
+            output = [p.get() for p in results]
+        self.sigs = np.sum(np.asarray(output), axis=0)/int(nperm)
+        print(output)
 
     def eig_reg(self,alpha):
         alpha = float(alpha)
