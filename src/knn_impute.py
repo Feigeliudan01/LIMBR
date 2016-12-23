@@ -24,11 +24,11 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv,"hi:o:m:p:",["ifile=","ofile=","miss=","proc="])
     except getopt.GetoptError:
-        print 'knn_impute.py -i <inputfile> -o <outputfile> -m <missing%> -p <#processors>'
+        print('knn_impute.py -i <inputfile> -o <outputfile> -m <missing%> -p <#processors>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print 'knn_impute.py -i <inputfile> -o <outputfile> -m <missing%> -p <#processors>'
+            print('knn_impute.py -i <inputfile> -o <outputfile> -m <missing%> -p <#processors>')
             sys.exit()
         elif opt in ("-i", "--ifile"):
             inputfile = arg
