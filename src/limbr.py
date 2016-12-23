@@ -199,10 +199,13 @@ class sva:
     def set_tks(self):
         self.tks = self.get_tks(self.res)
 
+    #switch to python 3
     def perm_test(self,nperm):
-        def single_it(self):
+        def single_it(rseed):
+            np.random.seed(rseed)
             rstar = np.copy(self.res)
             out = np.zeros(len(self.tks))
+            #transition this to yield?
             for i in range(rstar.shape[0]):
                 np.random.shuffle(rstar[i,:])
             resstar = self.get_res(rstar)
@@ -211,9 +214,13 @@ class sva:
                 if tkstar[m] > self.tks[m]:
                     out[m] += 1
             return out
-        pool = mp.Pool(processes=4)
-        results = pool.map(single_it, tqdm(itertools.repeat(int(nperm))))
-        self.sigs = np.sum(np.asarray(output), axis=0)/int(nperm)
+        #switch this to with mp.Pool(4) as pool after switching to python3
+        with mp.Pool(processes=4) as pool:
+            it = pool.imap_unordered(single_it, range(int(nperm)))
+            results = []
+            for output in tqdm(it):
+                results.append(output)
+        self.sigs = np.sum(np.asarray(results), axis=0)/int(nperm)
         print(results)
 
     def eig_reg(self,alpha):
