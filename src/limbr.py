@@ -1,4 +1,3 @@
-from random import *
 import numpy as np
 import pandas as pd
 import os
@@ -17,7 +16,6 @@ import json
 from ctypes import c_int
 import pickle
 from multiprocess import Pool, current_process, Manager
-from astropy import progressbar
 
 class imputable:
 
@@ -198,35 +196,31 @@ class sva:
     def set_tks(self):
         self.tks = self.get_tks(self.res)
 
-    #switch to python 3
-    def perm_test(self,nperm,np):
+    def perm_test(self,nperm,npr):
         mgr = Manager()
         output = mgr.list()
         def single_it(rseed):
-            np.random.seed(rseed)
+            rstate = np.random.RandomState(rseed*100)
             rstar = np.copy(self.res)
             out = np.zeros(len(self.tks))
-            #transition this to yield?
             for i in range(rstar.shape[0]):
-                np.random.shuffle(rstar[i,:])
+                rstate.shuffle(rstar[i,:])
             resstar = self.get_res(rstar)
             tkstar = self.get_tks(resstar)
             for m in range(len(self.tks)):
                 if tkstar[m] > self.tks[m]:
                     out[m] += 1
             return out
-        #switch this to with mp.Pool(4) as pool after switching to python3
-        with Pool(np) as pool:
-            pbar = tqdm(total=int(nperm), desc='permutation testing', leave=False, position=0, smoothing=0)
-            imap_it = pool.imap(single_it, range(int(nperm)))
+        with Pool(int(npr)) as pool:
+            pbar = tqdm(total=int(nperm), desc='permuting', leave=False, position=0, smoothing=0)
+            imap_it = pool.imap_unordered(single_it, range(int(nperm)))
             for x in imap_it:
                 pbar.update(1)
                 output.append(x)
         pool.close()
         pool.join()
         self.sigs = np.sum(np.asarray(output), axis=0)/float(nperm)
-        print(output)
-
+        
     def eig_reg(self,alpha):
         alpha = float(alpha)
         U, s, V = np.linalg.svd(self.res)
