@@ -6,14 +6,14 @@ def main(argv):
     inputfile = ''
     outputfile = ''
     try:
-        opts, args = getopt.getopt(argv,"h:i:o:s:p:a:d:e:b:",["help","ifile=","ofile=","sub=","perm=","alpha=","design=","d=","blocks="])
+        opts, args = getopt.getopt(argv,"h:i:o:s:n:p:a:d:e:b:",["help","ifile=","ofile=","sub=","nprocs=","perm=","alpha=","design=","d=","blocks="])
     except getopt.GetoptError:
-        print('residuals.py -i <inputfile> -o <outputfile> -s <subset%> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath>')
+        print('residuals.py -i <inputfile> -o <outputfile> -s <subset%> -n <#processes> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath>')
         sys.exit(2)
     b = None
     for opt, arg in opts:
         if opt in ('-h',"--help"):
-            print('residuals.py -i <inputfile> -o <outputfile> -s <subset%> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath>')
+            print('residuals.py -i <inputfile> -o <outputfile> -s <subset%> -n <#processes> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath>')
             sys.exit()
         elif opt in ("-i", "--ifile"):
             inputfile = arg
@@ -21,6 +21,8 @@ def main(argv):
             outputfile = arg
         elif opt in ("-s", "--sub"):
             psub = arg
+        elif opt in ("-n", "--nprocs"):
+            nproc = arg
         elif opt in ("-p", "--perm"):
             perm = arg
         elif opt in ("-a", "--alpha"):
@@ -43,7 +45,7 @@ def main(argv):
     print('calculating explained variance ratios')
     to_sva.set_tks()
     print('permutation testing')
-    to_sva.perm_test(perm)
+    to_sva.perm_test(perm,nproc)
     print('\nregressing eigentrends')
     to_sva.eig_reg(a)
     print('performing subset SVD')

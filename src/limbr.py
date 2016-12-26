@@ -16,7 +16,8 @@ import math
 import json
 from ctypes import c_int
 import pickle
-from multiprocess import Pool, current_process
+from multiprocess import Pool, current_process, Manager
+from astropy import progressbar
 
 class imputable:
 
@@ -165,14 +166,14 @@ class sva:
     def get_res(self,in_arr):
         def get_l_res(arr):
             res = []
-            for row in tqdm(arr, desc='get lowess residuals', leave=False):
+            for row in arr:
                 ys = lowess(row, self.tpoints, it=1)[:,1]
                 res.append(row - ys)
             return np.array(res)
 
         def get_b_res(arr):
             m = {}
-            for v in tqdm(set(self.block_design), desc='get block residuals 1', leave=False, position=current_process[0]):
+            for v in set(self.block_design):
                 indices = [i for i, x in enumerate(self.block_design) if x == v]
                 m[v] = np.mean(arr[:,indices],axis=1)
             ma = np.zeros(np.shape(arr))
@@ -198,7 +199,9 @@ class sva:
         self.tks = self.get_tks(self.res)
 
     #switch to python 3
-    def perm_test(self,nperm):
+    def perm_test(self,nperm,np):
+        mgr = Manager()
+        output = mgr.list()
         def single_it(rseed):
             np.random.seed(rseed)
             rstar = np.copy(self.res)
@@ -213,16 +216,21 @@ class sva:
                     out[m] += 1
             return out
         #switch this to with mp.Pool(4) as pool after switching to python3
-        with Pool(4) as pool:
-            output = pool.map(single_it, range(int(nperm)))
-            remaining = output._number_left
-            print "Waiting for", remaining, "tasks to complete..."
-        self.sigs = np.sum(np.asarray(output), axis=0)/int(nperm)
+        with Pool(np) as pool:
+            pbar = tqdm(total=int(nperm), desc='permutation testing', leave=False, position=0, smoothing=0)
+            imap_it = pool.imap(single_it, range(int(nperm)))
+            for x in imap_it:
+                pbar.update(1)
+                output.append(x)
+        pool.close()
+        pool.join()
+        self.sigs = np.sum(np.asarray(output), axis=0)/float(nperm)
         print(output)
 
     def eig_reg(self,alpha):
         alpha = float(alpha)
         U, s, V = np.linalg.svd(self.res)
+        #this takewhile might not be working, need to check
         sig = V.T[:,:len([i for i in itertools.takewhile(lambda x: x < alpha, self.sigs)])]
         pvals = []
         if len(sig)>0:
