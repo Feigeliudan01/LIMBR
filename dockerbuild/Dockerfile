@@ -7,7 +7,7 @@ RUN apt-get install -y wget git python python3 nano python-tk python3-pip python
 RUN pip2 install --upgrade pip
 RUN pip3 install --upgrade pip
 RUN pip3 install -U pandas scipy sklearn numpy statsmodels cython matplotlib tqdm multiprocess
-RUN pip2 install -U numpy scipy cython
+RUN pip2 install -U numpy scipy cython matplotlib pandas statsmodels
 
 # clone the most recent version of the pipeline
 RUN git clone https://github.com/aleccrowell/LIMBR.git
