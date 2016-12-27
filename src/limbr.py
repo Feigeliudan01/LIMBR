@@ -231,8 +231,11 @@ class sva:
             for trend in tqdm(sig.T.copy()):
                 temp = []
                 for row in self.data_reduced.values.copy():
-                    slope, intercept, r_value, p_value, std_err = linregress(row,trend)
-                    temp.append(p_value)
+                    try:
+                        slope, intercept, r_value, p_value, std_err = linregress(row,trend)
+                        temp.append(p_value)
+                    except Exception:
+                        pass
                 pvals.append(temp)
             self.ps =  pvals
         else:
