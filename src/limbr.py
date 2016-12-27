@@ -225,10 +225,10 @@ class sva:
         alpha = float(alpha)
         U, s, V = np.linalg.svd(self.res)
         #this takewhile might not be working, need to check
-        sig = V.T[:,:len([i for i in itertools.takewhile(lambda x: x < alpha, self.sigs)])]
+        sig = V.T[:,:len([i for i in itertools.takewhile(lambda x: x < alpha, self.sigs.copy())])]
         pvals = []
         if len(sig)>0:
-            for trend in tqdm(sig.T):
+            for trend in tqdm(sig.T.copy()):
                 temp = []
                 for row in self.data_reduced.values:
                     slope, intercept, r_value, p_value, std_err = linregress(row,trend)
