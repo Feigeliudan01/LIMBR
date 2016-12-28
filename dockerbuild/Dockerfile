@@ -1,4 +1,4 @@
-çFROM acrowell/limbr:v1
+FROM acrowell/limbr:v1
 MAINTAINER Alec Crowell <alexander.m.crowell.gr@dartmouth.edu>
  
 # Install all the software needed to run the pipeline
