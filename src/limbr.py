@@ -219,6 +219,7 @@ class sva:
                 output.append(x)
         pool.close()
         pool.join()
+        pool.terminate()
         self.sigs = np.sum(np.asarray(output), axis=0)/float(nperm)
 
     def eig_reg(self,alpha):
@@ -231,11 +232,8 @@ class sva:
             for trend in tqdm(sig.T.copy()):
                 temp = []
                 for row in self.data_reduced.values.copy():
-                    try:
-                        slope, intercept, r_value, p_value, std_err = linregress(row,trend)
-                        temp.append(p_value)
-                    except Exception:
-                        pass
+                    slope, intercept, r_value, p_value, std_err = linregress(row,trend)
+                    temp.append(p_value)
                 pvals.append(temp)
             self.ps =  pvals
         else:
