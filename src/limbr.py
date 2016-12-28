@@ -214,7 +214,7 @@ class sva:
             return out
         with Pool(int(npr)) as pool:
             pbar = tqdm(total=int(nperm), desc='permuting', leave=False, position=0, smoothing=0)
-            imap_it = pool.imap_unordered(single_it, range(int(nperm)))
+            imap_it = pool.imap(single_it, range(int(nperm)))
             for x in imap_it:
                 pbar.update(1)
                 output.append(x)
