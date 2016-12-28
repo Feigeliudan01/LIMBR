@@ -17,6 +17,7 @@ import json
 from ctypes import c_int
 import pickle
 from multiprocess import Pool, current_process, Manager
+from functools import partial
 
 class imputable:
 
@@ -212,12 +213,14 @@ class sva:
                 if tkstar[m] > self.tks[m]:
                     out[m] += 1
             return out
+        l = mgr.Lock()
         with Pool(int(npr)) as pool:
             pbar = tqdm(total=int(nperm), desc='permuting', leave=False, position=0, smoothing=0)
             imap_it = pool.imap(single_it, range(int(nperm)))
             for x in imap_it:
                 pbar.update(1)
-                output.append(x)
+                with l:
+                    output.append(x)
         pool.close()
         pool.join()
         pool.terminate()
