@@ -19,6 +19,8 @@ import pickle
 from multiprocess import Pool, current_process, Manager
 from functools import partial
 
+tqdm.tqdm.monitor_interval = 0
+
 class imputable:
 
     def __init__(self, filename, missingness):
@@ -215,7 +217,7 @@ class sva:
             return out
         l = mgr.Lock()
         with Pool(int(npr)) as pool:
-            pbar = tqdm(total=int(nperm), desc='permuting', leave=False, position=0, smoothing=0)
+            pbar = tqdm(total=int(nperm), desc='permuting', position=0, smoothing=0)
             imap_it = pool.imap(single_it, range(int(nperm)))
             for x in imap_it:
                 pbar.update(1)
