@@ -216,12 +216,12 @@ class sva:
         l = mgr.Lock()
         with Pool(int(npr)) as pool:
             pbar = tqdm(total=int(nperm), desc='permuting', position=0, smoothing=0)
-            pbar.tqdm.monitor_interval = 0
             imap_it = pool.imap(single_it, range(int(nperm)))
             for x in imap_it:
                 pbar.update(1)
                 with l:
                     output.append(x)
+        pbar.close()
         pool.close()
         pool.join()
         pool.terminate()
