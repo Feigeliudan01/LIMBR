@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+import time
 import scipy.stats as stats
 from numpy.linalg import svd, lstsq
 from sklearn.decomposition import PCA
@@ -221,6 +222,7 @@ class sva:
         pool.join()
         pool.terminate()
         self.sigs = np.sum(np.asarray(output), axis=0)/float(nperm)
+        time.sleep(40)
 
     def eig_reg(self,alpha):
         alpha = float(alpha)
