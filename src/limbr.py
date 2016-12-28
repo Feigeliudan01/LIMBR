@@ -216,7 +216,7 @@ class sva:
         l = mgr.Lock()
         with Pool(int(npr)) as pool:
             pbar = tqdm(total=int(nperm), desc='permuting', position=0, smoothing=0)
-            imap_it = pool.imap(single_it, range(int(nperm)))
+            imap_it = pool.imap_unordered(single_it, range(int(nperm)))
             for x in imap_it:
                 pbar.update(1)
                 with l:
@@ -224,7 +224,6 @@ class sva:
         pbar.close()
         pool.close()
         pool.join()
-        pool.terminate()
         self.sigs = np.sum(np.asarray(output), axis=0)/float(nperm)
         time.sleep(40)
 
