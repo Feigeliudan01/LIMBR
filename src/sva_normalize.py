@@ -35,6 +35,8 @@ def main(argv):
             b = arg
     print('reading data')
     to_sva = sva(inputfile,d,e,b)
+    print('pool normalizing')
+    to_sva.pool_normalize()
     to_sva.get_tpoints()
     print('calculating primary trend correlations')
     to_sva.prim_cor()

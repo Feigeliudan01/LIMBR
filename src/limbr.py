@@ -18,6 +18,7 @@ from ctypes import c_int
 import pickle
 from multiprocess import Pool, current_process, Manager
 from functools import partial
+from sklearn import preprocessing
 
 class imputable:
 
@@ -104,13 +105,42 @@ class sva:
         np.random.seed(4574)
         self.data_type = str(data_type)
         if self.data_type == 'p':
-            self.data = pd.read_csv(filename,sep='\t').set_index(['Peptide','Protein'])
+            self.raw_data = pd.read_csv(filename,sep='\t').set_index(['Peptide','Protein'])
         if self.data_type == 'r':
             self.data = pd.read_csv(filename,sep='\t').set_index('#')
         self.designtype = str(design)
         if self.designtype == 'b':
             self.block_design = pickle.load( open( blocks, "rb" ) )
         self.notdone = True
+
+    def pool_normalize(self):
+        def gen_norm_dict(l):
+            newd = {}
+            for i in range(len(l)):
+                newd[l[i]] = int(np.ceil((i+1)/5))
+            return newd
+
+        def pool_normalize(df,dmap):
+            newdf = pd.DataFrame(index=df.index)
+            for column in df.columns.values:
+                newdf[column] = df[column].div(df['pool_'+'%02d' % dmap[column]],axis='index')
+            return newdf
+
+        def qnorm(df):
+            ref = pd.concat([df[col].sort_values().reset_index(drop=True) for col in df], axis=1, ignore_index=True).mean(axis=1).values
+            for i in range(0,len(df.columns)):
+                df = df.sort_values(df.columns[i])
+                df[df.columns[i]] = ref
+            return df.sort_index()
+
+        norm_map = gen_norm_dict(self.raw_data.columns.values)
+        self.data_pnorm = pool_normalize(self.raw_data,norm_map)
+        self.data_pnorm = self.data_pnorm.replace([np.inf, -np.inf], np.nan)
+        self.data_pnorm = self.data_pnorm.dropna()
+        self.data_pnorm = self.data_pnorm.sort_index(axis=1)
+        self.data_pnorm = qnorm(self.data_pnorm)
+        self.scaler = preprocessing.StandardScaler().fit(self.data_pnorm.values.T)
+        self.data = pd.DataFrame(scaler.transform(self.data_pnorm.values.T).T,columns=self.data_pnorm.columns,index=self.data_pnorm.index)
 
     def get_tpoints(self):
         tpoints = [i.replace('CT','') for i in self.data.columns.values]
@@ -275,11 +305,15 @@ class sva:
         self.ts = trends
 
     def normalize(self,outname):
+        #self.raw_data.mean(axis=1).to_csv(outname.split('.txt')[0]+'_mean.txt',sep='\t')
+        #(self.data.std(axis=1)/self.data.mean(axis=1)).to_csv(outname.split('.txt')[0]+'_cv.txt',sep='\t')
         pd.DataFrame(self.ts,columns=self.data.columns).to_csv(outname.split('.txt')[0]+'_trends.txt',sep='\t')
         pd.DataFrame(self.sigs).to_csv(outname.split('.txt')[0]+'_perms.txt',sep='\t')
         pd.DataFrame(self.tks).to_csv(outname.split('.txt')[0]+'_tks.txt',sep='\t')
         fin_res = np.dot(np.linalg.lstsq(np.asarray(self.ts).T,self.data.values.T)[0].T,np.asarray(self.ts))
-        self.svd_norm = self.data.values - fin_res
+        #self.svd_norm = self.data.values - fin_res
+        self.svd_norm = self.scaler.inverse_transform(self.data.values - fin_res)
+        self.svd_norm = self.svd_norm*(self.svd_norm.mean(axis=1)/self.raw_data.mean(axis=1))
         self.svd_norm = pd.DataFrame(self.svd_norm,index=self.data.index,columns=self.data.columns)
         self.svd_norm = pd.DataFrame(scale(self.svd_norm.values,axis=1),columns=self.svd_norm.columns,index=self.svd_norm.index)
         if self.data_type == 'p':
