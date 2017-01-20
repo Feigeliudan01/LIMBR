@@ -17,7 +17,7 @@ output/actual/imputed_peptide.txt : data/Formatted_input.txt
 
 output/actual/csp_for_sva.txt output/actual/wt_for_sva.txt output/actual/rna_for_sva.txt : data/Jen_rnaseq_formatted_raw_counts.txt output/actual/imputed_peptide.txt
 	@echo pool normalizing
-	@python3 src/seperate.py
+	@python3 src/separate.py
 
 output/actual/wt_lowess_normed.txt : output/actual/wt_for_sva.txt
 	@echo Lowess normalizing $<
