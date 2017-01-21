@@ -295,6 +295,7 @@ class sva:
             thresh = est_pi_sig(entry,lam)
             if thresh == 'nan':
                 self.ts = trends
+                return
             for i in range(len(entry)):
                 if entry[i] < thresh:
                     sub.append(self.data_reduced.values[i])
@@ -314,10 +315,10 @@ class sva:
         pd.DataFrame(self.tks).to_csv(outname.split('.txt')[0]+'_tks.txt',sep='\t')
         fin_res = np.dot(np.linalg.lstsq(np.asarray(self.ts).T,self.data.values.T)[0].T,np.asarray(self.ts))
         #self.svd_norm = self.data.values - fin_res
-        self.svd_norm = self.scaler.inverse_transform(self.data.values - fin_res)
-        self.svd_norm = self.svd_norm*(self.svd_norm.mean(axis=1)/self.raw_data.mean(axis=1))
+        self.svd_norm = self.scaler.inverse_transform((self.data.values - fin_res).T).T
         self.svd_norm = pd.DataFrame(self.svd_norm,index=self.data.index,columns=self.data.columns)
-        self.svd_norm = pd.DataFrame(scale(self.svd_norm.values,axis=1),columns=self.svd_norm.columns,index=self.svd_norm.index)
+        self.svd_norm = self.svd_norm.mul((self.raw_data[self.raw_data.index.isin(self.data.index)].mean(axis=1)/self.svd_norm.mean(axis=1)),axis=0)
+        #self.svd_norm = pd.DataFrame(scale(self.svd_norm.values,axis=1),columns=self.svd_norm.columns,index=self.svd_norm.index)
         if self.data_type == 'p':
             self.svd_norm = self.svd_norm.groupby(level='Protein').mean()
         self.svd_norm.index.names = ['#']

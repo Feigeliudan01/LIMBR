@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pickle
 
 data = pd.read_csv('./output/actual/imputed_peptide.txt',sep='\t')
 data = data.set_index(['Peptide','Protein'])
@@ -19,3 +20,20 @@ csp.columns = [i.replace('-','_') for i in csp.columns.values]
 
 wt.to_csv('./output/actual/wt_for_sva.txt',sep='\t')
 csp.to_csv('./output/actual/csp_for_sva.txt',sep='\t')
+
+block_design = [j for i in range(1,12) for j in [i]*3]*2 + [j for i in range(1,3) for j in [i]*3]
+pickle.dump(block_design, open( "./output/actual/block_design.p", "wb" ) )
+
+def qnorm(df):
+    ref = pd.concat([df[col].sort_values().reset_index(drop=True) for col in df], axis=1, ignore_index=True).mean(axis=1).values
+    for i in range(0,len(df.columns)):
+        df = df.sort_values(df.columns[i])
+        df[df.columns[i]] = ref
+    return df.sort_index()
+
+rna =  pd.read_csv('./data/Jen_rnaseq_formatted_raw_counts.txt',sep='\t')
+rna = rna.set_index('Transcript')
+rna.index.names = ['#']
+rna = qnorm(rna)
+rna = rna[rna.sum(axis=1)>0]
+rna.to_csv('./output/actual/rna_for_sva.txt',sep='\t')
