@@ -140,7 +140,7 @@ class sva:
         self.data_pnorm = self.data_pnorm.sort_index(axis=1)
         self.data_pnorm = qnorm(self.data_pnorm)
         self.scaler = preprocessing.StandardScaler().fit(self.data_pnorm.values.T)
-        self.data = pd.DataFrame(scaler.transform(self.data_pnorm.values.T).T,columns=self.data_pnorm.columns,index=self.data_pnorm.index)
+        self.data = pd.DataFrame(self.scaler.transform(self.data_pnorm.values.T).T,columns=self.data_pnorm.columns,index=self.data_pnorm.index)
 
     def get_tpoints(self):
         tpoints = [i.replace('CT','') for i in self.data.columns.values]
