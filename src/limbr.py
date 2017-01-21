@@ -107,7 +107,7 @@ class sva:
         if self.data_type == 'p':
             self.raw_data = pd.read_csv(filename,sep='\t').set_index(['Peptide','Protein'])
         if self.data_type == 'r':
-            self.data = pd.read_csv(filename,sep='\t').set_index('#')
+            self.raw_data = pd.read_csv(filename,sep='\t').set_index('#')
         self.designtype = str(design)
         if self.designtype == 'b':
             self.block_design = pickle.load( open( blocks, "rb" ) )
@@ -134,15 +134,20 @@ class sva:
                 df = df.sort_values(df.columns[i])
                 df[df.columns[i]] = ref
             return df.sort_index()
+        if self.data_type == 'r':
+            self.data = qnorm(self.raw_data)
+            self.scaler = preprocessing.StandardScaler().fit(self.data.values.T)
+            self.data = pd.DataFrame(self.scaler.transform(self.data.values.T).T,columns=self.data.columns,index=self.data.index)
+        else:
+            norm_map = gen_norm_dict(self.raw_data.columns.values)
+            self.data_pnorm = pool_normalize(self.raw_data,norm_map)
+            self.data_pnorm = self.data_pnorm.replace([np.inf, -np.inf], np.nan)
+            self.data_pnorm = self.data_pnorm.dropna()
+            self.data_pnorm = self.data_pnorm.sort_index(axis=1)
+            self.data_pnorm = qnorm(self.data_pnorm)
+            self.scaler = preprocessing.StandardScaler().fit(self.data_pnorm.values.T)
+            self.data = pd.DataFrame(self.scaler.transform(self.data_pnorm.values.T).T,columns=self.data_pnorm.columns,index=self.data_pnorm.index)
 
-        norm_map = gen_norm_dict(self.raw_data.columns.values)
-        self.data_pnorm = pool_normalize(self.raw_data,norm_map)
-        self.data_pnorm = self.data_pnorm.replace([np.inf, -np.inf], np.nan)
-        self.data_pnorm = self.data_pnorm.dropna()
-        self.data_pnorm = self.data_pnorm.sort_index(axis=1)
-        self.data_pnorm = qnorm(self.data_pnorm)
-        self.scaler = preprocessing.StandardScaler().fit(self.data_pnorm.values.T)
-        self.data = pd.DataFrame(self.scaler.transform(self.data_pnorm.values.T).T,columns=self.data_pnorm.columns,index=self.data_pnorm.index)
 
     def get_tpoints(self):
         tpoints = [i.replace('CT','') for i in self.data.columns.values]
