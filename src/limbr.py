@@ -124,6 +124,8 @@ class sva:
             newdf = pd.DataFrame(index=df.index)
             for column in df.columns.values:
                 newdf[column] = df[column].div(df['pool_'+'%02d' % dmap[column]],axis='index')
+            nonpool = [i for i in newdf.columns if 'pool' not in i]
+            newdf = newdf[nonpool]
             return newdf
 
         def qnorm(df):
