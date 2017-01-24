@@ -240,6 +240,8 @@ class sva:
         output = mgr.list()
         def single_it(rseed):
             rstate = np.random.RandomState(rseed*100)
+            print(rseed)
+            print(rstate.randint(0,101))
             rstar = np.copy(self.res)
             out = np.zeros(len(self.tks))
             for i in range(rstar.shape[0]):
