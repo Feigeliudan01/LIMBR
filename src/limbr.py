@@ -295,6 +295,7 @@ class sva:
 
         _, _, bt = np.linalg.svd(self.res)
         trends = []
+        pep_trends = []
         for j, entry in enumerate(tqdm(self.ps)):
             sub = []
             thresh = est_pi_sig(entry,lam)
@@ -310,7 +311,9 @@ class sva:
                 _, _, _, p_value, _ = linregress(bt[j],trend)
                 temp.append(p_value)
             trends.append(V.T[:,np.argmin(temp)])
+            pep_trends.append(U[:,np.argmin(temp)])
         self.ts = trends
+        self.pep_ts = pep_trends
 
     def normalize(self,outname):
         #self.raw_data.mean(axis=1).to_csv(outname.split('.txt')[0]+'_mean.txt',sep='\t')
@@ -318,7 +321,7 @@ class sva:
         pd.DataFrame(self.ts,columns=self.data.columns).to_csv(outname.split('.txt')[0]+'_trends.txt',sep='\t')
         pd.DataFrame(self.sigs).to_csv(outname.split('.txt')[0]+'_perms.txt',sep='\t')
         pd.DataFrame(self.tks).to_csv(outname.split('.txt')[0]+'_tks.txt',sep='\t')
-        pd.DataFrame(np.linalg.lstsq(np.asarray(self.ts).T,self.data.values.T)[0].T).to_csv(outname.split('.txt')[0]+'_pep_bias.txt',sep='\t')
+        pd.DataFrame(self.pep_ts).to_csv(outname.split('.txt')[0]+'_pep_bias.txt',sep='\t')
         fin_res = np.dot(np.linalg.lstsq(np.asarray(self.ts).T,self.data.values.T)[0].T,np.asarray(self.ts))
         #self.svd_norm = self.data.values - fin_res
         self.svd_norm = self.scaler.inverse_transform((self.data.values - fin_res).T).T
