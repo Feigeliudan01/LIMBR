@@ -31,7 +31,15 @@ output/actual/rna_lowess_normed.txt : output/actual/rna_for_sva.txt
 	@echo Lowess normalizing $<
 	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -n 12 -p 1000 -a .05 -d c -e r
 
-output/actual/%__jtkout_GammaP.txt: output/actual/%.txt
+output/actual/wt_lowess_normed__jtkout_GammaP.txt output/actual/csp_lowess_normed__jtkout_GammaP.txt: output/actual/wt_lowess_normed.txt output/actual/csp_lowess_normed.txt
+	@echo Running eJTK on $<
+	@sed -e 's/_[[:digit:]]//g' $< > temp.txt
+	@cut -f 1,5- temp.txt > $<
+	@python src/eJTK-CalcP.py -f $< -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
+	@rm output/actual/*__jtknull1000.txt
+	@rm output/actual/*__jtkout.txt
+
+output/actual/rna_lowess_normed__jtkout_GammaP.txt: output/actual/rna_lowess_normed.txt
 	@echo Running eJTK on $<
 	@sed -e 's/_[[:digit:]]//g' $< > temp.txt
 	@mv temp.txt $<
