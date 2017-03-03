@@ -312,8 +312,10 @@ class sva:
                 temp.append(p_value)
             trends.append(V.T[:,np.argmin(temp)])
             pep_trends.append(U[:,np.argmin(temp)])
-        self.ts = trends
+            print(U[:,np.argmin(temp)])
         self.pep_ts = pep_trends
+        self.ts = trends
+
 
     def normalize(self,outname):
         #self.raw_data.mean(axis=1).to_csv(outname.split('.txt')[0]+'_mean.txt',sep='\t')
