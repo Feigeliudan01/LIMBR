@@ -312,8 +312,8 @@ class sva:
                 temp.append(p_value)
             trends.append(V.T[:,np.argmin(temp)])
             pep_trends.append(U[:,np.argmin(temp)])
-            print(U[:,np.argmin(temp)])
-        self.pep_ts = pep_trends
+        print(pep_trends)
+        self.pepts = pep_trends
         self.ts = trends
 
 
@@ -323,7 +323,7 @@ class sva:
         pd.DataFrame(self.ts,columns=self.data.columns).to_csv(outname.split('.txt')[0]+'_trends.txt',sep='\t')
         pd.DataFrame(self.sigs).to_csv(outname.split('.txt')[0]+'_perms.txt',sep='\t')
         pd.DataFrame(self.tks).to_csv(outname.split('.txt')[0]+'_tks.txt',sep='\t')
-        pd.DataFrame(self.pep_ts).to_csv(outname.split('.txt')[0]+'_pep_bias.txt',sep='\t')
+        pd.DataFrame(self.pepts).to_csv(outname.split('.txt')[0]+'_pep_bias.txt',sep='\t')
         fin_res = np.dot(np.linalg.lstsq(np.asarray(self.ts).T,self.data.values.T)[0].T,np.asarray(self.ts))
         #self.svd_norm = self.data.values - fin_res
         self.svd_norm = self.scaler.inverse_transform((self.data.values - fin_res).T).T
