@@ -312,7 +312,7 @@ class sva:
                 _, _, _, p_value, _ = linregress(bt[j],trend)
                 temp.append(p_value)
             trends.append(V.T[:,np.argmin(temp)])
-            pep_trends.append(U[np.argmin(temp)])
+            pep_trends.append(U[:,np.argmin(temp)])
         self.pepts = pep_trends
         self.ts = trends
 
