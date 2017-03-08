@@ -293,7 +293,7 @@ class sva:
             sp = np.sort(probs_sig)
             return sp[int(np.floor((1-pi_0)*len(probs_sig)))]
 
-        _, _, bt = np.linalg.svd(self.res)
+        pt, _, bt = np.linalg.svd(self.res)
         trends = []
         pep_trends = []
         for j, entry in enumerate(tqdm(self.ps)):
@@ -312,7 +312,7 @@ class sva:
                 _, _, _, p_value, _ = linregress(bt[j],trend)
                 temp.append(p_value)
             trends.append(V.T[:,np.argmin(temp)])
-            pep_trends.append(U[:,np.argmin(temp)])
+            pep_trends.append(pt[:,j])
         self.pepts = pep_trends
         self.ts = trends
 
