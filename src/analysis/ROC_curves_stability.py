@@ -51,10 +51,10 @@ def main(argv):
         yls = float(len(ls[(ls[0]<.05) & (ls[1]==1)]))/(len(ls[(ls[0]<.05) & (ls[1]==1)])+len(ls[(ls[0]>.05) & (ls[1]==1)]))
         xls = float(len(ls[(ls[0]<.05) & (ls[1]==0)]))/(len(ls[(ls[0]<.05) & (ls[1]==0)])+len(ls[(ls[0]>.05) & (ls[1]==0)]))
 
-        plt.plot(fpr, tpr, label=' Lowess ROC curve (area = %0.2f)' % roc_auc, color = 'y')
+        plt.plot(fpr, tpr, label='Circadian ROC curve (area = %0.2f)' % roc_auc, color = 'y')
         plt.scatter(xl,yl,color='y',marker='x')
 
-        plt.plot(fprb, tprb, label='Block ROC curve (area = %0.2f)' % roc_aucb, color='b')
+        plt.plot(fprb, tprb, label='Replicate Block ROC curve (area = %0.2f)' % roc_aucb, color='b')
         plt.scatter(xb,yb,color='b',marker='x')
 
         plt.plot(fprbl, tprbl, label='Baseline ROC curve (area = %0.2f)' % roc_aucbl, color='g')
@@ -63,7 +63,7 @@ def main(argv):
         plt.plot(fprn, tprn, label='Noise ROC curve (area = %0.2f)' % roc_aucn, color='r')
         plt.scatter(xn,yn,color='r',marker='x')
 
-        plt.plot(fprls, tprls, label='Lowess SSE ROC curve (area = %0.2f)' % roc_aucls, color='black')
+        plt.plot(fprls, tprls, label='Time Series ROC curve (area = %0.2f)' % roc_aucls, color='black')
         plt.scatter(xls,yls,color='black',marker='x')
 
     plt.axvline(x=0.05,color='black',ls='dashed')
