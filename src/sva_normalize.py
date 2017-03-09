@@ -6,7 +6,7 @@ def main(argv):
     inputfile = ''
     outputfile = ''
     try:
-        opts, args = getopt.getopt(argv,"h:i:o:s:n:p:a:d:e:b:pp:",["help","ifile=","ofile=","sub=","nprocs=","perm=","alpha=","design=","d=","blocks=","pools="])
+        opts, args = getopt.getopt(argv,"h:i:o:s:n:p:a:d:e:b:pp:",["help","ifile=","ofile=","sub=","nprocs=","perm=","alpha=","design=","experiment","blocks=","pools="])
     except getopt.GetoptError:
         print('residuals.py -i <inputfile> -o <outputfile> -s <subset%> -n <#processes> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath> -pp <pdesignpath>')
         sys.exit(2)
@@ -31,9 +31,9 @@ def main(argv):
             d = arg
         elif opt in ("-e", "--experiment"):
             e = arg
-        elif opt in ("-b", "--bpath"):
+        elif opt in ("-b", "--blocks"):
             b = arg
-        elif opt in ("-pp", "--ppath"):
+        elif opt in ("-pp", "--pools"):
             pool = arg
     print('reading data')
     to_sva = sva(inputfile,d,e,b,pp)

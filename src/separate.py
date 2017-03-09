@@ -37,8 +37,6 @@ def gen_norm_dict(l):
         newd[l[i]] = int(np.ceil((i+1)/5))
     return newd
 
-norm_map =
-
 pickle.dump(gen_norm_dict(wt.columns.values), open( "./output/actual/wt_pool_design.p", "wb" ) )
 pickle.dump(gen_norm_dict(csp.columns.values), open( "./output/actual/csp_pool_design.p", "wb" ) )
 

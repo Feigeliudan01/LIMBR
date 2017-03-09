@@ -2,9 +2,12 @@ FILES += output/actual/imputed_peptide.txt output/actual/csp_for_sva.txt output/
 
 FILES += output/actual/wt_lowess_normed.txt output/actual/csp_lowess_normed.txt output/actual/rna_lowess_normed.txt
 
-FILES += output/actual/wt_lowess_normed.txt output/actual/csp_lowess_normed.txt output/actual/rna_lowess_normed.txt
-
 FILES += output/actual/wt_lowess_normed__jtkout_GammaP.txt output/actual/csp_lowess_normed__jtkout_GammaP.txt output/actual/rna_lowess_normed__jtkout_GammaP.txt
+
+FILES += output/actual/wt_old_normed.txt output/actual/csp_old_normed.txt output/actual/rna_old_normed.txt
+
+FILES += output/actual/wt_old_normed__jtkout_GammaP.txt output/actual/csp_old_normed__jtkout_GammaP.txt output/actual/rna_old_normed__jtkout_GammaP.txt
+
 
 all: ${FILES}
 
@@ -31,7 +34,19 @@ output/actual/rna_lowess_normed.txt : output/actual/rna_for_sva.txt
 	@echo Lowess normalizing $<
 	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -n 12 -p 1000 -a .05 -d c -e r
 
-output/actual/wt_lowess_normed__jtkout_GammaP.txt output/actual/csp_lowess_normed__jtkout_GammaP.txt: output/actual/wt_lowess_normed.txt output/actual/csp_lowess_normed.txt
+output/actual/wt_old_normed.txt : output/actual/wt_for_sva.txt
+	@echo old fashioned normalizing $<
+	@python3 src/old_normalize.py -i $< -o $@ -e p -pp output/actual/wt_pool_design.p
+
+output/actual/csp_old_normed.txt : output/actual/csp_for_sva.txt
+	@echo old fashioned normalizing $<
+	@python3 src/old_normalize.py -i $< -o $@ -e p -pp output/actual/csp_pool_design.p
+
+output/actual/rna_old_normed.txt : output/actual/rna_for_sva.txt
+	@echo old fashioned normalizing $<
+	@python3 src/old_normalize.py -i $< -o $@ -e r
+
+output/actual/wt_lowess_normed__jtkout_GammaP.txt output/actual/csp_lowess_normed__jtkout_GammaP.txt output/actual/wt_old_normed__jtkout_GammaP.txt output/actual/csp_old_normed__jtkout_GammaP.txt: output/actual/wt_lowess_normed.txt output/actual/csp_lowess_normed.txt output/actual/wt_old_normed.txt output/actual/csp_old_normed.txt
 	@echo Running eJTK on $<
 	@sed -e 's/_[[:digit:]]//g' $< > temp.txt
 	@cut -f 1,5- temp.txt > $<
@@ -39,7 +54,7 @@ output/actual/wt_lowess_normed__jtkout_GammaP.txt output/actual/csp_lowess_norme
 	@rm output/actual/*__jtknull1000.txt
 	@rm output/actual/*__jtkout.txt
 
-output/actual/rna_lowess_normed__jtkout_GammaP.txt: output/actual/rna_lowess_normed.txt
+output/actual/rna_lowess_normed__jtkout_GammaP.txt output/actual/rna_old_normed__jtkout_GammaP.txt: output/actual/rna_old_normed.txt
 	@echo Running eJTK on $<
 	@sed -e 's/_[[:digit:]]//g' $< > temp.txt
 	@mv temp.txt $<
