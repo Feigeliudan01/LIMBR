@@ -31,6 +31,17 @@ def qnorm(df):
         df[df.columns[i]] = ref
     return df.sort_index()
 
+def gen_norm_dict(l):
+    newd = {}
+    for i in range(len(l)):
+        newd[l[i]] = int(np.ceil((i+1)/5))
+    return newd
+
+norm_map =
+
+pickle.dump(gen_norm_dict(wt.columns.values), open( "./output/actual/wt_pool_design.p", "wb" ) )
+pickle.dump(gen_norm_dict(csp.columns.values), open( "./output/actual/csp_pool_design.p", "wb" ) )
+
 rna =  pd.read_csv('./data/Jen_rnaseq_formatted_raw_counts.txt',sep='\t')
 rna = rna.set_index('Transcript')
 rna.index.names = ['#']
