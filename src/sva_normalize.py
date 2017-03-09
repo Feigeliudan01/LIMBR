@@ -34,7 +34,7 @@ def main(argv):
         elif opt in ("-b", "--blocks"):
             b = arg
         elif opt in ("-pp", "--pools"):
-            pool = arg
+            pp = arg
     print('reading data')
     to_sva = sva(inputfile,d,e,b,pp)
     print('pool normalizing')
