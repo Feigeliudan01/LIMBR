@@ -29,10 +29,7 @@ FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10; do echo output/simdata/simulated
 FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10; do echo output/simdata/simulated_data_with_noise_$$i\_classes.txt; done)
 FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10; do echo output/simdata/simulated_data_with_noise_$$i\_classifications.txt; done)
 FILES += output/simdata/ROC_curves_1.pdf output/simdata/ROC_curves_2.pdf output/simdata/ROC_curves_3.pdf output/simdata/ROC_curves_4.pdf output/simdata/ROC_curves_5.pdf output/simdata/ROC_curves_6.pdf output/simdata/ROC_curves_7.pdf output/simdata/ROC_curves_8.pdf output/simdata/ROC_curves_9.pdf output/simdata/ROC_curves_10.pdf
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10; do echo output/simdata/circ_lowess_$$i\_classifications_adjusted.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10; do echo output/simdata/block_$$i\_classifications_adjusted.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10; do echo output/simdata/circ_lowess_sse_$$i\_classifications_adjusted.txt; done)
-FILES += output/simdata/ROC_curves_1_adjusted.pdf output/simdata/ROC_curves_2_adjusted.pdf output/simdata/ROC_curves_3_adjusted.pdf output/simdata/ROC_curves_4_adjusted.pdf output/simdata/ROC_curves_5_adjusted.pdf output/simdata/ROC_curves_6_adjusted.pdf output/simdata/ROC_curves_7_adjusted.pdf output/simdata/ROC_curves_8_adjusted.pdf output/simdata/ROC_curves_9_adjusted.pdf output/simdata/ROC_curves_10_adjusted.pdf
+
 
 
 all: ${FILES}

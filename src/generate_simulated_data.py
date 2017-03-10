@@ -5,7 +5,7 @@ import pickle
 from sklearn.preprocessing import scale
 
 seed(4574)
-cols = pickle.load( open( 'output/simdata/labels.p', "rb" ) )
+cols = pickle.load( open( 'data/labels.p', "rb" ) )
 cols = cols[2:]
 randBinList = lambda n: [randint(0,1) for b in range(n)]
 circ = [randint(0,1) for b in range(10000)]
