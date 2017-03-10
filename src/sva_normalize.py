@@ -11,6 +11,7 @@ def main(argv):
         print('residuals.py -i <inputfile> -o <outputfile> -s <subset%> -n <#processes> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath> -j <pdesignpath>')
         sys.exit(2)
     b = None
+    pp = None
     for opt, arg in opts:
         if opt in ('-h',"--help"):
             print('residuals.py -i <inputfile> -o <outputfile> -s <subset%> -n <#processes> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath> -j <pdesignpath>')
