@@ -20,5 +20,6 @@ RUN python setup.py build_ext --inplace
 WORKDIR /LIMBR/
 
 #make actual data files
+RUN make -f make_sim
 RUN make -f make_actual
 
