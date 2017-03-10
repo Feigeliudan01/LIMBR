@@ -50,10 +50,10 @@ def main(argv):
     yls = float(len(ls[(ls[0]<.05) & (ls[1]==1)]))/(len(ls[(ls[0]<.05) & (ls[1]==1)])+len(ls[(ls[0]>.05) & (ls[1]==1)]))
     xls = float(len(ls[(ls[0]<.05) & (ls[1]==0)]))/(len(ls[(ls[0]<.05) & (ls[1]==0)])+len(ls[(ls[0]>.05) & (ls[1]==0)]))
 
-    plt.plot(fpr, tpr, label=' Lowess ROC curve (area = %0.2f)' % roc_auc, color = 'y')
+    plt.plot(fpr, tpr, label='Circadian ROC curve (area = %0.2f)' % roc_auc, color = 'y')
     plt.scatter(xl,yl,color='y',marker='x')
 
-    plt.plot(fprb, tprb, label='Block ROC curve (area = %0.2f)' % roc_aucb, color='b')
+    plt.plot(fprb, tprb, label='Replicate Block ROC curve (area = %0.2f)' % roc_aucb, color='b')
     plt.scatter(xb,yb,color='b',marker='x')
 
     plt.plot(fprbl, tprbl, label='Baseline ROC curve (area = %0.2f)' % roc_aucbl, color='g')
@@ -62,7 +62,7 @@ def main(argv):
     plt.plot(fprn, tprn, label='Noise ROC curve (area = %0.2f)' % roc_aucn, color='r')
     plt.scatter(xn,yn,color='r',marker='x')
 
-    plt.plot(fprls, tprls, label='Lowess SSE ROC curve (area = %0.2f)' % roc_aucls, color='black')
+    plt.plot(fprls, tprls, label='Time Series ROC curve (area = %0.2f)' % roc_aucls, color='black')
     plt.scatter(xls,yls,color='black',marker='x')
 
     plt.axvline(x=0.05,color='black',ls='dashed')
@@ -72,6 +72,19 @@ def main(argv):
     plt.ylabel('True Positive Rate')
     plt.savefig(options.inputfiles[5])
     plt.close()
+
+    it = options.inputfiles[0].split('simulated_data_with_noise_')[1]
+    it = it.split('_classifications.txt')[0]
+
+    try:
+        outdata = pd.read_csv('output/simdata/simdata.csv')
+    except:
+        pass
+    if outdata != None:
+        outdata.append(pd.DataFrame([[it,xbl,ybl,xl,yl,xls,yls,xb,yb,xn,yn,roc_aucbl,roc_auc,roc_aucls,roc_aucb,roc_aucn]], columns=['Iteration','Base_FPR','Base_TPR','Circ_FPR','Circ_TPR','TS_FPR','TS_TPR','Block_FPR','Block_TPR','Noise_FPR','Noise_TPR','Base_auc','Circ_auc','TS_auc','Block_auc','Noise_auc']))
+    else:
+        outdata = pd.DataFrame([[it,xbl,ybl,xl,yl,xls,yls,xb,yb,xn,yn,roc_aucbl,roc_auc,roc_aucls,roc_aucb,roc_aucn]], columns=['Iteration','Base_FPR','Base_TPR','Circ_FPR','Circ_TPR','TS_FPR','TS_TPR','Block_FPR','Block_TPR','Noise_FPR','Noise_TPR','Base_auc','Circ_auc','TS_auc','Block_auc','Noise_auc'])
+    outdata.to_csv('output/simdata/simdata.csv')
 
 if __name__ == '__main__':
     main(sys.argv[1:])
