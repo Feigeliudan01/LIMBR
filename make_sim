@@ -43,7 +43,7 @@ output/simdata/simulated_data%__jtkout_GammaP.txt: output/simdata/simulated_data
 	@echo Running eJTK on $<
 	@sed -e 's/_[[:digit:]]//g' $< > temp.txt
 	@mv temp.txt $<
-	@eJTK-CalcP.py -f $< -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
+	@python src/eJTK-CalcP.py -f $< -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
 	@rm output/simdata/*__jtknull1000.txt
 	@rm output/simdata/*__jtkout.txt
 
@@ -65,9 +65,9 @@ output/simdata/denoised_circ_lowess_%__jtkout_GammaP.txt output/simdata/denoised
 	@mv temp.txt $<
 	@sed -e 's/_[[:digit:]]//g' $(word 2, $^) > temp.txt
 	@mv temp.txt $(word 2, $^)
-	@eJTK-CalcP.py -f $< -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
+	@python src/eJTK-CalcP.py -f $< -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
 	@echo Running eJTK on $(word 2, $^)
-	@eJTK-CalcP.py -f $(word 2, $^) -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
+	@python src/eJTK-CalcP.py -f $(word 2, $^) -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
 	@rm output/simdata/*__jtknull1000.txt
 	@rm output/simdata/*__jtkout.txt
 
@@ -75,7 +75,7 @@ output/simdata/denoised_circ_lowess_sse_%__jtkout_GammaP.txt: output/simdata/den
 	@echo Running eJTK on $<
 	@sed -e 's/_[[:digit:]]//g' $< > temp.txt
 	@mv temp.txt $<
-	@eJTK-CalcP.py -f $< -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
+	@python src/eJTK-CalcP.py -f $< -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
 	@rm output/simdata/*__jtknull1000.txt
 	@rm output/simdata/*__jtkout.txt
 
