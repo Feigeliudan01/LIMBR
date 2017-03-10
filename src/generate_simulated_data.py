@@ -84,5 +84,5 @@ def gen_sim_data(suf):
     trends=pd.DataFrame([basetrend])
     trends.to_csv('output/simdata/trends_'+str(m)+'.txt',sep='\t')
 
-for m in range(1,11):
+for m in range(1,21):
     gen_sim_data(m)
