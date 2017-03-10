@@ -14,7 +14,7 @@ RUN git clone https://github.com/aleccrowell/LIMBR.git
 RUN mkdir ./LIMBR/data/
 RUN mkdir ./LIMBR/output/actual/
 RUN cp ./data/*.txt ./LIMBR/data/
-RUN mkdir ./data/simdata/
+RUN mkdir ./LIMBR/output/simdata/
 WORKDIR /LIMBR/src/bin/
 RUN python3 setup.py build_ext --inplace
 RUN python setup.py build_ext --inplace
