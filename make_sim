@@ -39,7 +39,7 @@ all: ${FILES}
 
 $(BLINE) :
 	@echo Generating Simulated Data
-	@python src/generate_simulated_data.py
+	@python3 src/generate_simulated_data.py
 
 
 output/simdata/simulated_data%__jtkout_GammaP.txt: output/simdata/simulated_data%.txt
@@ -51,15 +51,15 @@ output/simdata/simulated_data%__jtkout_GammaP.txt: output/simdata/simulated_data
 
 $(CSVA) :  output/simdata/simulated_data_with_noise_for_sva_%.txt
 	@echo Circadian Lowess SVA Normalizing $<
-	@python src/sva_normalize.py -i $< -o $@ -s 25 -p 1000 -a .05 -d c -e r
+	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -p 1000 -a .05 -d c -e r
 
 $(LSVA) :  output/simdata/simulated_data_with_noise_for_sva_%.txt
 	@echo Circadian Lowess SSE SVA Normalizing $<
-	@python src/sva_normalize.py -i $< -o $@ -s 25 -p 1000 -a .05 -d l -e r
+	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -p 1000 -a .05 -d l -e r
 
 $(BSVA) :  output/simdata/simulated_data_with_noise_for_sva_%.txt
 	@echo Circadian Block SVA Normalizing $<
-	@python src/sva_normalize.py -i $< -o $@ -s 25 -p 1000 -a .05 -d b -b output/block_design.p -e r
+	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -p 1000 -a .05 -d b -b output/block_design.p -e r
 
 output/simdata/denoised_circ_lowess_%__jtkout_GammaP.txt output/simdata/denoised_block_%__jtkout_GammaP.txt : output/simdata/denoised_circ_lowess_%.txt output/simdata/denoised_block_%.txt
 	@echo Running eJTK on $<
@@ -104,7 +104,7 @@ output/simdata/%_classifications.txt : output/simdata/%_pvals.txt output/simdata
 
 output/simdata/ROC_curves_%.pdf: output/simdata/simulated_data_with_noise_%_classifications.txt output/simdata/simulated_data_baseline_%_classifications.txt output/simdata/block_%_classifications.txt output/simdata/circ_lowess_%_classifications.txt output/simdata/circ_lowess_sse_%_classifications.txt
 	@echo Generating ROC curves
-	@python src/analysis/ROC_curves.py -l $^ $@
+	@python3 src/analysis/ROC_curves.py -l $^ $@
 
 
 clean:
