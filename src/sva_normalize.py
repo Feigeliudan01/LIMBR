@@ -6,14 +6,14 @@ def main(argv):
     inputfile = ''
     outputfile = ''
     try:
-        opts, args = getopt.getopt(argv,"h:i:o:s:n:p:a:d:e:b:pp:",["help","ifile=","ofile=","sub=","nprocs=","perm=","alpha=","design=","experiment","blocks=","pools="])
+        opts, args = getopt.getopt(argv,"h:i:o:s:n:p:a:d:e:b:j:",["help","ifile=","ofile=","sub=","nprocs=","perm=","alpha=","design=","experiment","blocks=","pools="])
     except getopt.GetoptError:
-        print('residuals.py -i <inputfile> -o <outputfile> -s <subset%> -n <#processes> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath> -pp <pdesignpath>')
+        print('residuals.py -i <inputfile> -o <outputfile> -s <subset%> -n <#processes> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath> -j <pdesignpath>')
         sys.exit(2)
     b = None
     for opt, arg in opts:
         if opt in ('-h',"--help"):
-            print('residuals.py -i <inputfile> -o <outputfile> -s <subset%> -n <#processes> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath> -pp <pdesignpath>')
+            print('residuals.py -i <inputfile> -o <outputfile> -s <subset%> -n <#processes> -p <#permutations> -a <alphalevel> -d <designtype> -e <experimenttype> -b <bdesignpath> -j <pdesignpath>')
             sys.exit()
         elif opt in ("-i", "--ifile"):
             inputfile = arg
@@ -33,7 +33,7 @@ def main(argv):
             e = arg
         elif opt in ("-b", "--blocks"):
             b = arg
-        elif opt in ("-pp", "--pools"):
+        elif opt in ("-j", "--pools"):
             pp = arg
     print('reading data')
     to_sva = sva(inputfile,d,e,b,pp)
