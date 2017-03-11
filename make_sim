@@ -49,15 +49,15 @@ output/simdata/simulated_data%__jtkout_GammaP.txt: output/simdata/simulated_data
 
 $(CSVA) :  output/simdata/simulated_data_with_noise_for_sva_%.txt
 	@echo Circadian Lowess SVA Normalizing $<
-	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -p 1000 -a .05 -d c -e r
+	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -p 1000 -a .05 -d c -e p
 
 $(LSVA) :  output/simdata/simulated_data_with_noise_for_sva_%.txt
 	@echo Circadian Lowess SSE SVA Normalizing $<
-	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -p 1000 -a .05 -d l -e r
+	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -p 1000 -a .05 -d l -e p
 
 $(BSVA) :  output/simdata/simulated_data_with_noise_for_sva_%.txt
 	@echo Circadian Block SVA Normalizing $<
-	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -p 1000 -a .05 -d b -b output/block_design.p -e r
+	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -p 1000 -a .05 -d b -b output/block_design.p -e p
 
 output/simdata/denoised_circ_lowess_%__jtkout_GammaP.txt output/simdata/denoised_block_%__jtkout_GammaP.txt : output/simdata/denoised_circ_lowess_%.txt output/simdata/denoised_block_%.txt
 	@echo Running eJTK on $<
