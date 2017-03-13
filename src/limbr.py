@@ -113,6 +113,8 @@ class sva:
             self.block_design = pickle.load( open( blocks, "rb" ) )
         if pool != None:
             self.norm_map = pickle.load( open( pool, "rb" ) )
+        elif pool == None:
+            self.norm_map = None
         self.notdone = True
 
     def pool_normalize(self):
