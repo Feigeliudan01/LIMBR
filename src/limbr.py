@@ -132,7 +132,7 @@ class sva:
                 df = df.sort_values(df.columns[i])
                 df[df.columns[i]] = ref
             return df.sort_index()
-        if self.data_type == 'r' | self.norm_map == None:
+        if (self.data_type == 'r') or (self.norm_map == None):
             self.data = qnorm(self.raw_data)
             self.scaler = preprocessing.StandardScaler().fit(self.data.values.T)
             self.data = pd.DataFrame(self.scaler.transform(self.data.values.T).T,columns=self.data.columns,index=self.data.index)
