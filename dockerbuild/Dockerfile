@@ -3,7 +3,7 @@ MAINTAINER Alec Crowell <alexander.m.crowell.gr@dartmouth.edu>
  
 # Install all the software needed to run the pipeline
 RUN apt-get -qq update
-RUN apt-get install -y wget git python python3 nano python-tk python3-pip python-pip
+RUN apt-get install -y wget git python python3 nano python-tk python3-pip python-pip python3-tk
 RUN pip2 install --upgrade pip
 RUN pip3 install --upgrade pip
 RUN pip3 install -U pandas scipy sklearn numpy statsmodels cython matplotlib tqdm multiprocess
