@@ -322,7 +322,6 @@ class sva:
         fin_res = np.dot(np.linalg.lstsq(np.asarray(self.ts).T,self.data.values.T)[0].T,np.asarray(self.ts))
         self.svd_norm = self.scaler.inverse_transform((self.data.values - fin_res).T).T
         self.svd_norm = pd.DataFrame(self.svd_norm,index=self.data.index,columns=self.data.columns)
-        self.svd_norm = self.svd_norm.mul((self.raw_data[self.raw_data.index.isin(self.data.index)].mean(axis=1)/self.svd_norm.mean(axis=1)),axis=0)
         if self.data_type == 'p':
             self.svd_norm = self.svd_norm.groupby(level='Protein').mean()
         self.svd_norm.index.names = ['#']
@@ -372,7 +371,6 @@ class old_fashioned:
     def normalize(self,outname):
         self.old_norm = self.scaler.inverse_transform(self.data.values.T).T
         self.old_norm = pd.DataFrame(self.old_norm,index=self.data.index,columns=self.data.columns)
-        self.old_norm = self.old_norm.mul((self.raw_data[self.raw_data.index.isin(self.data.index)].mean(axis=1)/self.old_norm.mean(axis=1)),axis=0)
         if self.data_type == 'p':
             self.old_norm = self.old_norm.groupby(level='Protein').mean()
         self.old_norm.index.names = ['#']
