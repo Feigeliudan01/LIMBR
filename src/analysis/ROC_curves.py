@@ -83,7 +83,7 @@ def main(argv):
         outdata = pd.read_csv('output/simdata/simdata.csv')
     except:
         pass
-    if outdata != None:
+    if outdata is not None:
         outdata.append(pd.DataFrame([[it,xbl,ybl,xl,yl,xls,yls,xb,yb,xn,yn,roc_aucbl,roc_auc,roc_aucls,roc_aucb,roc_aucn]], columns=['Iteration','Base_FPR','Base_TPR','Circ_FPR','Circ_TPR','TS_FPR','TS_TPR','Block_FPR','Block_TPR','Noise_FPR','Noise_TPR','Base_auc','Circ_auc','TS_auc','Block_auc','Noise_auc']))
     else:
         outdata = pd.DataFrame([[it,xbl,ybl,xl,yl,xls,yls,xb,yb,xn,yn,roc_aucbl,roc_auc,roc_aucls,roc_aucb,roc_aucn]], columns=['Iteration','Base_FPR','Base_TPR','Circ_FPR','Circ_TPR','TS_FPR','TS_TPR','Block_FPR','Block_TPR','Noise_FPR','Noise_TPR','Base_auc','Circ_auc','TS_auc','Block_auc','Noise_auc'])
