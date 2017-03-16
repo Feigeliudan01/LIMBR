@@ -78,6 +78,7 @@ def main(argv):
     it = options.inputfiles[0].split('simulated_data_with_noise_')[1]
     it = it.split('_classifications.txt')[0]
 
+    outdata = None
     try:
         outdata = pd.read_csv('output/simdata/simdata.csv')
     except:
