@@ -1,6 +1,8 @@
 import pandas as pd
 from sklearn import metrics
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import sys
 import getopt
