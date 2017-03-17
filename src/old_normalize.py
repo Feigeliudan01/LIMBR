@@ -24,7 +24,7 @@ def main(argv):
         elif opt in ("-pp", "--pools"):
             pool = arg
     print('reading data')
-    to_old = old_fashioned(inputfile,e,pp)
+    to_old = old_fashioned(inputfile,e,pool)
     print('pool normalizing')
     to_old.pool_normalize()
     print('normalizing')
