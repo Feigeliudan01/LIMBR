@@ -36,11 +36,11 @@ output/actual/rna_lowess_normed.txt : output/actual/rna_for_sva.txt
 
 output/actual/wt_old_normed.txt : output/actual/wt_for_sva.txt
 	@echo old fashioned normalizing $<
-	@python3 src/old_normalize.py -i $< -o $@ -e p -pp output/actual/wt_pool_design.p
+	@python3 src/old_normalize.py -i $< -o $@ -e p -j output/actual/wt_pool_design.p
 
 output/actual/csp_old_normed.txt : output/actual/csp_for_sva.txt
 	@echo old fashioned normalizing $<
-	@python3 src/old_normalize.py -i $< -o $@ -e p -pp output/actual/csp_pool_design.p
+	@python3 src/old_normalize.py -i $< -o $@ -e p -j output/actual/csp_pool_design.p
 
 output/actual/rna_old_normed.txt : output/actual/rna_for_sva.txt
 	@echo old fashioned normalizing $<
