@@ -11,6 +11,7 @@ def main(argv):
         print('residuals.py -i <inputfile> -o <outputfile> -e <experimenttype> -j <pdesignpath>')
         sys.exit(2)
     b = None
+    pool = None
     for opt, arg in opts:
         if opt in ('-h',"--help"):
             print('residuals.py -i <inputfile> -o <outputfile> -e <experimenttype> -j <pdesignpath>')
