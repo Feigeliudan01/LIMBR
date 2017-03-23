@@ -80,14 +80,14 @@ def main(argv):
 
     outdata = None
     try:
-        outdata = pd.read_csv('output/simdata/simdata.csv')
+        outdata = pd.read_csv('output/simdata/simdata.csv').values
     except:
         pass
     if outdata is not None:
         outdata.append(pd.DataFrame([[it,xbl,ybl,xl,yl,xls,yls,xb,yb,xn,yn,roc_aucbl,roc_auc,roc_aucls,roc_aucb,roc_aucn]], columns=['Iteration','Base_FPR','Base_TPR','Circ_FPR','Circ_TPR','TS_FPR','TS_TPR','Block_FPR','Block_TPR','Noise_FPR','Noise_TPR','Base_auc','Circ_auc','TS_auc','Block_auc','Noise_auc']))
     else:
-        outdata = pd.DataFrame([[it,xbl,ybl,xl,yl,xls,yls,xb,yb,xn,yn,roc_aucbl,roc_auc,roc_aucls,roc_aucb,roc_aucn]], columns=['Iteration','Base_FPR','Base_TPR','Circ_FPR','Circ_TPR','TS_FPR','TS_TPR','Block_FPR','Block_TPR','Noise_FPR','Noise_TPR','Base_auc','Circ_auc','TS_auc','Block_auc','Noise_auc'])
-    outdata.to_csv('output/simdata/simdata.csv')
+        outdata = [[it,xbl,ybl,xl,yl,xls,yls,xb,yb,xn,yn,roc_aucbl,roc_auc,roc_aucls,roc_aucb,roc_aucn]]
+    pd.DataFrame(outdata, columns=['Iteration','Base_FPR','Base_TPR','Circ_FPR','Circ_TPR','TS_FPR','TS_TPR','Block_FPR','Block_TPR','Noise_FPR','Noise_TPR','Base_auc','Circ_auc','TS_auc','Block_auc','Noise_auc']).to_csv('output/simdata/simdata.csv')
 
 if __name__ == '__main__':
     main(sys.argv[1:])
