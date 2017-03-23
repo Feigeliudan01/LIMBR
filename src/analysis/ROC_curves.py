@@ -80,7 +80,7 @@ def main(argv):
 
     outdata = None
     try:
-        outdata = pd.read_csv('output/simdata/simdata.csv').values
+        outdata = pd.read_csv('output/simdata/simdata.csv').values.tolist()
     except:
         pass
     if outdata is not None:
