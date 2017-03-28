@@ -15,6 +15,7 @@ RUN mkdir ./LIMBR/data/
 RUN mkdir ./LIMBR/output/actual/
 RUN cp ./data/*.txt ./LIMBR/data/
 RUN mkdir ./LIMBR/output/simdata/
+RUN mkdir ./LIMBR/output/figs/
 WORKDIR /LIMBR/src/bin/
 RUN python3 setup.py build_ext --inplace
 RUN python setup.py build_ext --inplace
@@ -23,4 +24,4 @@ WORKDIR /LIMBR/
 #make actual data files
 RUN make -f make_sim
 RUN make -f make_actual
-
+RUN make -f make_figs
