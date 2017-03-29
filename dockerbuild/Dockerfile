@@ -7,7 +7,7 @@ RUN sudo sh -c 'echo "deb http://cran.rstudio.com/bin/linux/ubuntu trusty/" >> /
 RUN gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9
 RUN gpg -a --export E084DAB9 | sudo apt-key add -
 RUN apt-get install -y wget git python python3 nano python-tk python3-pip python-pip python3-tk r-base r-base-dev
-sudo su - -c "R -e \"install.packages('circular', repos = 'http://cran.rstudio.com/')\""
+RUN sudo su - -c "R -e \"install.packages('circular', repos = 'http://cran.rstudio.com/')\""
 RUN pip2 install --upgrade pip
 RUN pip3 install --upgrade pip
 RUN pip3 install -U pandas scipy sklearn numpy statsmodels cython matplotlib tqdm multiprocess seaborn astroML rpy2
