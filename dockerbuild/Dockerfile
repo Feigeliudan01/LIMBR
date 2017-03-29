@@ -6,7 +6,7 @@ RUN apt-get -qq update
 RUN apt-get install -y wget git python python3 nano python-tk python3-pip python-pip python3-tk
 RUN pip2 install --upgrade pip
 RUN pip3 install --upgrade pip
-RUN pip3 install -U pandas scipy sklearn numpy statsmodels cython matplotlib tqdm multiprocess
+RUN pip3 install -U pandas scipy sklearn numpy statsmodels cython matplotlib tqdm multiprocess seaborn astroML rpy2
 RUN pip2 install -U numpy scipy cython matplotlib pandas statsmodels
 
 # clone the most recent version of the pipeline
