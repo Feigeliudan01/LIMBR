@@ -1,3 +1,6 @@
+import matplotlib
+# Force matplotlib to not use any Xwindows backend.
+matplotlib.use('Agg')
 import numpy as np, pandas as pd, matplotlib.pyplot as plt; plt.rc('text', usetex=True)
 import seaborn as sns; sns.set(style="white", context="talk")
 from  matplotlib import colors, ticker, cm
