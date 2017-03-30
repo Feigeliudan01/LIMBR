@@ -12,6 +12,28 @@ RUN pip2 install --upgrade pip
 RUN pip3 install --upgrade pip
 RUN pip3 install -U pandas scipy sklearn numpy statsmodels cython matplotlib tqdm multiprocess seaborn astroML rpy2
 RUN pip2 install -U numpy scipy cython matplotlib pandas statsmodels
+ENV TLDIR texlive
+RUN mkdir -p $TLDIR
+WORKDIR $TLDIR
+
+# Download and uncompress latest version of texlive
+RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz && \
+   tar -xzf install-tl-unx.tar.gz
+
+# Run the installer
+RUN cd install-tl-*/. && touch default.profile && \
+   ./install-tl --persistent-downloads --profile default.profile
+
+# Set symlinks to installed program
+RUN ln -s /usr/local/texlive/2015/bin/* /opt/texbin
+
+# Set the PATH to use the newly installed tex
+ENV PATH $PATH:/opt/texbin
+
+# Clean installation files
+WORKDIR /
+RUN rm -rf $TLDIR
+
 
 # clone the most recent version of the pipeline
 RUN git clone https://github.com/aleccrowell/LIMBR.git
