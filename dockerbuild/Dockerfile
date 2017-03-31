@@ -4,7 +4,7 @@ MAINTAINER Alec Crowell <alexander.m.crowell.gr@dartmouth.edu>
 # Install all the software needed to run the pipeline
 RUN apt-get -qq update
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
-RUN apt-get install software-properties-common
+RUN apt-get -y install software-properties-common
 RUN add-apt-repository 'deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/'
 RUN apt-get install -y wget git python python3 nano python-tk python3-pip python-pip python3-tk r-base texlive-full
 RUN su - -c "R -e \"install.packages('circular', repos = 'http://cran.rstudio.com/')\""
