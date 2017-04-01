@@ -216,7 +216,7 @@ plot_cormat(scale_df(wt_old),'output/figs/initial_cormat','Correlation Matrix of
 
 
 #Figure 1B
-rawdata = pd.read_csv('data/Formatted_input.csv')
+rawdata = pd.read_csv('data/Formatted_input.txt',sep='\t')
 dist = rawdata.isnull().sum(axis=1).values.tolist()
 density = stats.gaussian_kde(dist)
 xs = np.linspace(0,max(dist),200)
