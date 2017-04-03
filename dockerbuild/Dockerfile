@@ -15,7 +15,6 @@ RUN pip2 install -U numpy scipy cython matplotlib pandas statsmodels
 
 # clone the most recent version of the pipeline
 RUN git clone https://github.com/aleccrowell/LIMBR.git
-RUN mkdir ./LIMBR/data/
 RUN mkdir ./LIMBR/output/actual/
 RUN cp ./data/*.txt ./LIMBR/data/
 RUN mkdir ./LIMBR/output/simdata/
