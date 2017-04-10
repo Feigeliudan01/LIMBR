@@ -64,17 +64,17 @@ def gen_sim_data(suf):
     simndf.index.names = ['#']
     simndf = pd.DataFrame(scale(simndf.values,axis=1),columns=simndf.columns,index=simndf.index)
 
-    simdf.to_csv('output/simdata/simulated_data_baseline_'+str(m)+'.txt',sep='\t')
-    simndf.to_csv('output/simdata/simulated_data_with_noise_'+str(m)+'.txt',sep='\t')
+    simdf.to_csv('output/simdata/mb_simulated_data_baseline_'+str(m)+'.txt',sep='\t')
+    simndf.to_csv('output/simdata/mb_simulated_data_with_noise_'+str(m)+'.txt',sep='\t')
     simndf.insert(0, 'Peptide', ['1']*len(simndf))
     simndf.index.names = ['Protein']
-    simndf.to_csv('output/simdata/simulated_data_with_noise_for_sva_'+str(m)+'.txt',sep='\t')
+    simndf.to_csv('output/simdata/mb_simulated_data_with_noise_for_sva_'+str(m)+'.txt',sep='\t')
     #k = pd.concat([pd.Series(circ),pd.Series(phases),pd.Series(trend1list),pd.Series(trend2list)],axis=1)
     k = pd.concat([pd.Series(circ),pd.Series(phases),pd.Series(trend1list),pd.Series(trend2list),pd.Series(trend3list)],axis=1)
     k.columns = ['circ','phase','trend1','trend2','trend3']
-    k.to_csv('output/simdata/simulated_data_key_'+str(m)+'.txt',sep='\t')
+    k.to_csv('output/simdata/mb_simulated_data_key_'+str(m)+'.txt',sep='\t')
     trends=pd.DataFrame([basetrend,basetrend2,basetrend3])
-    trends.to_csv('output/simdata/trends_'+str(m)+'.txt',sep='\t')
+    trends.to_csv('output/simdata/mb_trends_'+str(m)+'.txt',sep='\t')
 
 for m in range(1,6):
     gen_sim_data(m)
