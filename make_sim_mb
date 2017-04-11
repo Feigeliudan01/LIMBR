@@ -103,7 +103,7 @@ output/simdata/mb_simulated_data_baseline_%_classes.txt : output/simdata/mb_simu
 output/simdata/mb_simulated_data_with_noise_%_classes.txt : output/simdata/mb_simulated_data_key_%.txt output/simdata/mb_simulated_data_with_noise_%.txt
 	@python3 src/get_classes.py -l $^ $@
 
-output/simdata/%_classifications.txt : output/simdata/%_pvals.txt output/simdata/%_classes.txt
+output/simdata/mb_%_classifications.txt : output/simdata/mb_%_pvals.txt output/simdata/mb_%_classes.txt
 	@paste $^ > $@
 
 output/simdata/mb_ROC_curves_%.pdf: output/simdata/mb_simulated_data_with_noise_%_classifications.txt output/simdata/mb_simulated_data_baseline_%_classifications.txt output/simdata/mb_block_%_classifications.txt output/simdata/mb_circ_lowess_%_classifications.txt output/simdata/mb_circ_lowess_sse_%_classifications.txt
