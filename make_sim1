@@ -28,7 +28,7 @@ FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_basel
 FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_with_noise_$$i\_pvals.txt; done)
 FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_with_noise_$$i\_classes.txt; done)
 FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_with_noise_$$i\_classifications.txt; done)
-FILES += output/simdata/ROC_curves_1.pdf output/simdata/ROC_curves_2.pdf
+FILES += output/simdata/ROC_curves_1.pdf output/simdata/ROC_curves_2.pdf output/simdata/ROC_curves_3.pdf output/simdata/ROC_curves_4.pdf output/simdata/ROC_curves_5.pdf
 
 
 
