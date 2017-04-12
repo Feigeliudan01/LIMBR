@@ -225,7 +225,7 @@ plot_heatmap(simcirc_denoise.values,r'output/figs/simulated_denoise_circ_genes_m
 
 #Figure S1
 acorr = key.copy()
-acorr['cors'] = circ_cor(pd.read_csv('output/simdata/_mbsimulated_data_baseline_1.txt',sep='\t',index_col=0))
+acorr['cors'] = circ_cor(pd.read_csv('output/simdata/mb_simulated_data_baseline_1.txt',sep='\t',index_col=0))
 acorr['Circadian'] = acorr['circ'].apply(lambda x: 'Circ' if x == 1 else 'Non-Circ')
 acorr['included'] = [(i<(np.percentile(acorr['cors'].values,25))) for i in acorr['cors'].values]
 plt.axhline(y=np.percentile(acorr['cors'].values,25),color='black',ls='dashed')
