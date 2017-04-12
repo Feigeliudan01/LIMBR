@@ -1,0 +1,120 @@
+BLINE = $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_simulated_data_baseline_$$i.txt; done)
+BLINE += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_simulated_data_with_noise_$$i.txt; done)
+BLINE += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_simulated_data_with_noise_for_sva_$$i.txt; done)
+FILES += $(BLINE)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_simulated_data_baseline_$$i\__jtkout_GammaP.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_simulated_data_with_noise_$$i\__jtkout_GammaP.txt; done)
+CSVA := output/simdata/mb_denoised_circ_lowess_%.txt
+LSVA := output/simdata/mb_denoised_circ_lowess_sse_%.txt
+BSVA := output/simdata/mb_denoised_block_%.txt
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_denoised_circ_lowess_$$i.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_denoised_circ_lowess_sse_$$i.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_denoised_block_$$i.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_denoised_circ_lowess_$$i\__jtkout_GammaP.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_denoised_circ_lowess_sse_$$i\__jtkout_GammaP.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_denoised_block_$$i\__jtkout_GammaP.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_block_$$i\_pvals.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_block_$$i\_classes.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_circ_lowess_$$i\_pvals.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_circ_lowess_sse_$$i\_pvals.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_circ_lowess_$$i\_classes.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_circ_lowess_sse_$$i\_classes.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_circ_lowess_$$i\_classifications.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_circ_lowess_sse_$$i\_classifications.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_block_$$i\_classifications.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_simulated_data_baseline_$$i\_pvals.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_simulated_data_baseline_$$i\_classes.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_simulated_data_baseline_$$i\_classifications.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_simulated_data_with_noise_$$i\_pvals.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_simulated_data_with_noise_$$i\_classes.txt; done)
+FILES += $(shell for i in 6 7 8 9 10; do echo output/simdata/mb_simulated_data_with_noise_$$i\_classifications.txt; done)
+FILES += output/simdata/mb_ROC_curves_6.pdf output/simdata/mb_ROC_curves_7.pdf output/simdata/mb_ROC_curves_8.pdf output/simdata/mb_ROC_curves_9.pdf output/simdata/mb_ROC_curves_10.pdf
+
+
+
+all: ${FILES}
+
+$(BLINE) :
+	@echo Generating Simulated Data
+	@python3 src/generate_simulated_data_mb.py
+
+
+output/simdata/mb_simulated_data%__jtkout_GammaP.txt: output/simdata/mb_simulated_data%.txt
+	@echo Running eJTK on $<
+	@sed -e 's/_[[:digit:]]//g' $< > temp.txt
+	@mv temp.txt $<
+	@python src/eJTK-CalcP.py -f $< -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
+	@rm output/simdata/mb_*__jtknull1000.txt
+	@rm output/simdata/mb_*__jtkout.txt
+
+$(CSVA) :  output/simdata/mb_simulated_data_with_noise_for_sva_%.txt
+	@echo Circadian Lowess SVA Normalizing $<
+	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -n 12 -p 1000 -a .05 -d c -e p
+
+$(LSVA) :  output/simdata/mb_simulated_data_with_noise_for_sva_%.txt
+	@echo Circadian Lowess SSE SVA Normalizing $<
+	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -n 12 -p 1000 -a .05 -d l -e p
+
+$(BSVA) :  output/simdata/mb_simulated_data_with_noise_for_sva_%.txt
+	@echo Circadian Block SVA Normalizing $<
+	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -n 12 -p 1000 -a .05 -d b -b output/block_design.p -e p
+
+output/simdata/mb_denoised_circ_lowess_%__jtkout_GammaP.txt output/simdata/mb_denoised_block_%__jtkout_GammaP.txt : output/simdata/mb_denoised_circ_lowess_%.txt output/simdata/mb_denoised_block_%.txt
+	@echo Running eJTK on $<
+	@sed -e 's/_[[:digit:]]//g' $< > temp.txt
+	@mv temp.txt $<
+	@sed -e 's/_[[:digit:]]//g' $(word 2, $^) > temp.txt
+	@mv temp.txt $(word 2, $^)
+	@python src/eJTK-CalcP.py -f $< -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
+	@echo Running eJTK on $(word 2, $^)
+	@python src/eJTK-CalcP.py -f $(word 2, $^) -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
+	@rm output/simdata/mb_*__jtknull1000.txt
+	@rm output/simdata/mb_*__jtkout.txt
+
+output/simdata/mb_denoised_circ_lowess_sse_%__jtkout_GammaP.txt: output/simdata/mb_denoised_circ_lowess_sse_%.txt
+	@echo Running eJTK on $<
+	@sed -e 's/_[[:digit:]]//g' $< > temp.txt
+	@mv temp.txt $<
+	@python src/eJTK-CalcP.py -f $< -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
+	@rm output/simdata/mb_*__jtknull1000.txt
+	@rm output/simdata/mb_*__jtkout.txt
+
+output/simdata/mb_%_pvals.txt : output/simdata/mb_%__jtkout_GammaP.txt
+	@tail -q -n +2 $^ |cut -f 19 > $@
+
+output/simdata/mb_%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
+	@tail -q -n +2 $^ |cut -f 19 > $@
+
+output/simdata/%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
+	@tail -q -n +2 $^ |cut -f 19 > $@
+
+output/simdata/mb_block_%_classes.txt : output/simdata/mb_simulated_data_key_%.txt output/simdata/mb_denoised_block_%.txt
+	@python3 src/get_classes.py -l $^ $@
+
+output/simdata/mb_circ_lowess_%_classes.txt : output/simdata/mb_simulated_data_key_%.txt output/simdata/mb_denoised_circ_lowess_%.txt
+	@python3 src/get_classes.py -l $^ $@
+
+output/simdata/mb_circ_lowess_sse_%_classes.txt : output/simdata/mb_simulated_data_key_%.txt output/simdata/mb_denoised_circ_lowess_sse_%.txt
+	@python3 src/get_classes.py -l $^ $@
+
+output/simdata/mb_simulated_data_baseline_%_classes.txt : output/simdata/mb_simulated_data_key_%.txt output/simdata/mb_simulated_data_baseline_%.txt
+	@python3 src/get_classes.py -l $^ $@
+
+output/simdata/mb_simulated_data_with_noise_%_classes.txt : output/simdata/mb_simulated_data_key_%.txt output/simdata/mb_simulated_data_with_noise_%.txt
+	@python3 src/get_classes.py -l $^ $@
+
+output/simdata/mb_%_classifications.txt : output/simdata/mb_%_pvals.txt output/simdata/mb_%_classes.txt
+	@paste $^ > $@
+
+output/simdata/mb_ROC_curves_%.pdf: output/simdata/mb_simulated_data_with_noise_%_classifications.txt output/simdata/mb_simulated_data_baseline_%_classifications.txt output/simdata/mb_block_%_classifications.txt output/simdata/mb_circ_lowess_%_classifications.txt output/simdata/mb_circ_lowess_sse_%_classifications.txt
+	@echo Generating ROC curves
+	@python3 src/analysis/ROC_curves_mb.py -l $^ $@
+
+
+clean:
+	@echo Cleaning up files..
+	@rm output/simdata/mb_*.txt
+
+
+test:
+	@echo $(PVALS)
