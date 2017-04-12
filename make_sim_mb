@@ -108,7 +108,7 @@ output/simdata/mb_%_classifications.txt : output/simdata/mb_%_pvals.txt output/s
 
 output/simdata/mb_ROC_curves_%.pdf: output/simdata/mb_simulated_data_with_noise_%_classifications.txt output/simdata/mb_simulated_data_baseline_%_classifications.txt output/simdata/mb_block_%_classifications.txt output/simdata/mb_circ_lowess_%_classifications.txt output/simdata/mb_circ_lowess_sse_%_classifications.txt
 	@echo Generating ROC curves
-	@python3 src/analysis/ROC_curves.py -l $^ $@
+	@python3 src/analysis/ROC_curves_mb.py -l $^ $@
 
 
 clean:
