@@ -72,7 +72,7 @@ def main(argv):
     plt.axis([0, 1, 0, 1])
     plt.xlabel('1 - Specificity')
     plt.ylabel('Sensitivity')
-    plt.savefig(options.inputfiles[5])
+    #plt.savefig(options.inputfiles[5])
     plt.close()
 
     it = options.inputfiles[0].split('simulated_data_with_noise_')[1]
