@@ -1,0 +1,7 @@
+FILES += output/figs/sim_ROC.pdf output/figs/simulated_denoise_circ_genes.pdf output/figs/simulated_noise_circ_genes.pdf output/figs/simulated_circ_genes.pdf
+
+all: ${FILES}
+
+output/figs/acorr_val_mb.pdf output/figs/sim_ROC_mb.pdf output/figs/simulated_denoise_circ_genes_mb.pdf output/figs/simulated_noise_circ_genes_mb.pdf output/figs/simulated_circ_genes_mb.pdf : src/analysis/gen_figs.py
+	@echo generating figures
+	@python3 src/analysis/gen_figs_mb.py
