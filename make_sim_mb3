@@ -37,8 +37,8 @@ all: ${FILES}
 .PHONY : sims
 
 sims : 
-        @echo Generating Simulated Data
-        @python3 src/generate_simulated_data_mb.py
+	@echo Generating Simulated Data
+	@python3 src/generate_simulated_data_mb.py
 
 $(BLINE) : sims
 
