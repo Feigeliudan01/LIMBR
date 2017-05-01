@@ -97,7 +97,7 @@ output/simdata/mb_block_%_classes.txt : output/simdata/mb_simulated_data_key_%.t
 	@python3 src/get_classes.py -l $^ $@
 
 output/simdata/mb_block_1%_classes.txt : output/simdata/mb_simulated_data_key_1%.txt output/simdata/mb_denoised_block_1%.txt
-        @python3 src/get_classes.py -l $^ $@
+	@python3 src/get_classes.py -l $^ $@
 
 output/simdata/mb_circ_lowess_%_classes.txt : output/simdata/mb_simulated_data_key_%.txt output/simdata/mb_denoised_circ_lowess_%.txt
 	@python3 src/get_classes.py -l $^ $@
