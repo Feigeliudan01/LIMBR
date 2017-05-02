@@ -34,13 +34,10 @@ FILES += output/simdata/mb_ROC_curves_11.pdf output/simdata/mb_ROC_curves_12.pdf
 
 all: ${FILES}
 
-.PHONY : sims
-
-sims : 
+$(BLINE) : 
 	@echo Generating Simulated Data
 	@python3 src/generate_simulated_data_mb.py
 
-$(BLINE) : sims
 
 
 
