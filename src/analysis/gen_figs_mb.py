@@ -81,7 +81,7 @@ def autocorr(x,shift):
 
 def get_tpoints(df):
     tpoints = [i.replace('CT','') for i in df.columns.values]
-    tpoints = [int(i.split('.')[0]) else int(i.split('_')[0]) for i in tpoints if '.' is in i]
+    tpoints = [int(i.split('.')[0]) if '.' in i else int(i.split('_')[0]) for i in tpoints]
     return np.asarray(tpoints)
 
 def circ_cor(df):
