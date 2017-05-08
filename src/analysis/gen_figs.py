@@ -158,7 +158,8 @@ def scale_peps(df):
 
 def plot_cormat_pep(arr,fname,ptitle):
     fig, ax = plt.subplots(nrows=1, ncols=1)
-    z_min, z_max = -np.abs(arr).max(), np.abs(arr).max()
+    #z_min, z_max = -np.abs(arr).max(), np.abs(arr).max()
+    z_min, z_max = arr.min(), arr.max()
     pc = ax.pcolor(arr, cmap='seismic', vmin=z_min, vmax=z_max)
     ax.set_xticks([i+.5 for i in range(0,arr.shape[1],1)])
     ax.set_yticks([i+.5 for i in range(0,arr.shape[1],1)])
@@ -308,7 +309,7 @@ merge_pepts = scale(merge_pepts)
 
 pep_corr = np.corrcoef(merge_pepts.T)[(len(wt_pepts.columns)-2):((len(wt_pepts.columns)-2)+5),0:5]
 
-plot_cormat_pep(pep_corr,'output/figs/peptide_btrend_cormat','Correlation Matrix of Peptide Level Bias Trends')
+plot_cormat_pep(np.abs(pep_corr),'output/figs/peptide_btrend_cormat','Correlation Matrix of Peptide Level Bias Trends')
 
 #Figure 5A
 plot_cormat(scale_df(wt),'output/figs/final_cormat','Correlation Matrix of LIMBR Normalized WT Samples Ordered by Timepoint')
