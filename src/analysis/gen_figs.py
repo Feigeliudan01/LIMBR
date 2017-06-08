@@ -287,7 +287,7 @@ wt_trends['Trend'] = range(1,len(wt_trends)+1)
 wt_trends = pd.melt(wt_trends, id_vars=['Trend'], value_vars=wt_trends.columns.values.tolist()[:-1])
 
 
-wt_bias_f, wt_bias_icc = get_fstats(wt_trends,wt_class,['TMT Set', 'HpH Fractionation','Post-Digest SPE', 'Post-Digest BCA', 'Digest'])
+wt_bias_f, wt_bias_icc = get_fstats(wt_trends,wt_class,['TMT Set', 'Digest'])
 
 gen_biasmap(wt_bias_icc,wt_bias_f,'output/figs/wt_bcor',r'Correlation of Bias Trends with Groupings in Experimental Procedure (WT)')
 
@@ -297,7 +297,7 @@ csp_trends = csp_trends.drop('Unnamed: 0',axis=1)
 csp_trends['Trend'] = range(1,len(csp_trends)+1)
 csp_trends = pd.melt(csp_trends, id_vars=['Trend'], value_vars=csp_trends.columns.values.tolist()[:-1])
 
-csp_bias_f, csp_bias_icc = get_fstats(csp_trends,csp_class,['TMT Set', 'HpH Fractionation','Post-Digest SPE', 'Post-Digest BCA', 'Digest'])
+csp_bias_f, csp_bias_icc = get_fstats(csp_trends,csp_class,['TMT Set', 'Digest'])
 
 gen_biasmap(csp_bias_icc,csp_bias_f,'output/figs/csp_bcor',r'Correlation of Bias Trends with Groupings in Experimental Procedure ($\Delta$CSP-1)')
 
@@ -341,3 +341,8 @@ ax.set_title('Distribution of Z Scores from eJTK of Proteomics Data by Genotype'
 ax.text(0.015, 0.985, "Pearsons r = %f, p = %e"%(r, p_value), transform=ax.transAxes, fontsize=8, verticalalignment='top', bbox=dict(facecolor='white'))
 plt.savefig('prot_hex.pdf')
 plt.close()
+
+#Figure ???
+sns.jointplot('zscore_wt','zscore_csp',data=prot,kind='kde',joint_kws=dict(bw=.1),marginal_kws=dict(bw=.1))
+
+#Figure ???
