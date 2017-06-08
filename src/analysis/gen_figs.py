@@ -331,16 +331,16 @@ phase_hist(defcirc['delta_p'].values,r'Histogram of Phase Lags Between'"\n"r'Exp
 
 
 #Figure ???
-ax = plt.subplot(111)
-hb = ax.hexbin(prot['zscore_wt'].values, prot['zscore_csp'].values, gridsize=48, extent=(-2,4,-2,4))
-ax.set_xlabel(r"WT Z Score", fontsize=12)
-ax.set_ylabel(r'$\Delta$CSP-1 Z Score', fontsize=12)
-cb = fig.colorbar(hb, ax=ax, ticks=np.linspace(0,20,11))
-cb.set_label('count', fontsize=12)
-ax.set_title('Distribution of Z Scores from eJTK of Proteomics Data by Genotype', fontsize=16)
-ax.text(0.015, 0.985, "Pearsons r = %f, p = %e"%(r, p_value), transform=ax.transAxes, fontsize=8, verticalalignment='top', bbox=dict(facecolor='white'))
-plt.savefig('prot_hex.pdf')
-plt.close()
+#ax = plt.subplot(111)
+#hb = ax.hexbin(prot['zscore_wt'].values, prot['zscore_csp'].values, gridsize=48, extent=(-2,4,-2,4))
+#ax.set_xlabel(r"WT Z Score", fontsize=12)
+#ax.set_ylabel(r'$\Delta$CSP-1 Z Score', fontsize=12)
+#cb = fig.colorbar(hb, ax=ax, ticks=np.linspace(0,20,11))
+#cb.set_label('count', fontsize=12)
+#ax.set_title('Distribution of Z Scores from eJTK of Proteomics Data by Genotype', fontsize=16)
+#ax.text(0.015, 0.985, "Pearsons r = %f, p = %e"%(r, p_value), transform=ax.transAxes, fontsize=8, verticalalignment='top', bbox=dict(facecolor='white'))
+#plt.savefig('prot_hex.pdf')
+#plt.close()
 
 #Figure ???
 sns.jointplot('zscore_wt','zscore_csp',data=prot,kind='kde',joint_kws=dict(bw=.1),marginal_kws=dict(bw=.1))
