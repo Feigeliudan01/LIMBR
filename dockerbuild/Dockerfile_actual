@@ -1,5 +1,0 @@
-FROM acrowell/limbr:v6
-MAINTAINER Alec Crowell <alexander.m.crowell.gr@dartmouth.edu>
-
-#make actual data files
-RUN make -f make_actual
