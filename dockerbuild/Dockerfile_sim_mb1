@@ -6,5 +6,3 @@ RUN git pull
 #make actual data files
 RUN make -f make_sim_mb1
 RUN make -f make_sim_mb2
-RUN make -f make_sim_mb3
-RUN make -f make_sim_mb4

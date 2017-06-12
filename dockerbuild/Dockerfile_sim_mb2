@@ -1,7 +1,8 @@
-FROM acrowell/limbr:v9
+FROM acrowell/limbr:v3
 MAINTAINER Alec Crowell <alexander.m.crowell.gr@dartmouth.edu>
 
 RUN git pull
 
 #make actual data files
 RUN make -f make_sim_mb2
+RUN make -f make_sim_mb3
