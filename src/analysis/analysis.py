@@ -16,10 +16,11 @@ circularlib=importr('circular')
 circular=robjects.r('circular')
 corcircular=robjects.r('cor.circular')
 from sklearn.cluster import KMeans
-from sklearn import preprocessing
+from sklearn.preprocessing import scale
 from sklearn.decomposition import PCA
 import scipy.cluster.hierarchy as sch
 from palettable.colorbrewer.diverging import RdBu_4
+from sklearn import manifold
 
 wt = pd.read_csv('wt_lowess_normed__jtkout_GammaP.txt',sep='\t',index_col=0)
 csp = pd.read_csv('csp_lowess_normed__jtkout_GammaP.txt',sep='\t',index_col=0)
@@ -158,8 +159,8 @@ plt.close()
 
 
 
-defcirc = prot[clf.predict_proba(X)[:,0] > .95]
-#defcirc = prot[(prot['GammaP_wt']<.05)&(prot['GammaP_csp']<.05)]
+#defcirc = prot[clf.predict_proba(X)[:,0] > .95]
+defcirc = prot[(prot['GammaP_wt']<.05)&(prot['GammaP_csp']<.05)]
 
 ###########Phase Lag
 
@@ -197,6 +198,9 @@ def phase_hist(phases,ptitle):
 
 phase_hist(defcirc['delta_p'].values,r'Histogram of Phase Lags Between'"\n"r'Expression in WT and $\Delta$CSP-1 Genotypes'"\n"r'For Proteins Circadian in Both Genotypes')
 
+defcirc_unnorm = unnorm[(unnorm['GammaP_wt']<.05)&(unnorm['GammaP_csp']<.05)]
+
+phase_hist(defcirc_unnorm['delta_p'].values,r'Histogram of Phase Lags Between'"\n"r'Expression in WT and $\Delta$CSP-1 Genotypes'"\n"r'For Proteins Circadian in Both Genotypes'"\n"r'With Traditional Normalization')
 #################
 
 
@@ -268,19 +272,22 @@ gen_tsplot(scaled_wt.loc[['NCU08312','NCU04238']],'test')
 def plot_cormat(df,fname,ptitle):
     fig, ax = plt.subplots(nrows=1, ncols=1)
     cors = np.corrcoef(df.values.T)
-    pc = ax.pcolor(cors, cmap='seismic')
+    z_min, z_max = -np.abs(cors).max(), np.abs(cors).max()
+    pc = ax.pcolor(cors, cmap='seismic', vmin=z_min, vmax=z_max)
     for i in range(0,cors.shape[1],3):
         ax.axvline(x=i, linestyle='-', color='black', linewidth=0.7,    zorder=3)
     for i in range(0,cors.shape[0],3):
         ax.axhline(y=i, linestyle='-', color='black', linewidth=0.7,    zorder=3)
+    tpts = [i*2 for i in range(1,(int(cors.shape[1]/3)+1))]
     ax.set_xticks([i+1.5 for i in range(0,cors.shape[1],3)])
-    ax.set_xticklabels([i*2 for i in range(1,(int(cors.shape[1]/3)+1))])
+    ax.set_xticklabels([(i-12)%22 for i in tpts])
     ax.set_yticks([i+1.5 for i in range(0,cors.shape[1],3)])
-    ax.set_yticklabels([i*2 for i in range(1,(int(cors.shape[1]/3)+1))])
+    ax.set_yticklabels([(i-12)%22 for i in tpts])
     ax.set_title(ptitle, fontsize=16)
     fig.subplots_adjust(right=0.85)
     cbar_ax = fig.add_axes([0.87, 0.15, 0.02, 0.7])
-    fig.colorbar(pc, cax=cbar_ax)
+    cb = fig.colorbar(pc, cax=cbar_ax)
+    cb.set_label('Correlation', fontsize=12)
     plt.savefig(fname+'.pdf')
     plt.close()
 
@@ -288,36 +295,108 @@ def plot_cormat(df,fname,ptitle):
 plot_cormat(scaled_wt,'final_cormat','Correlation Matrix of LIMBR Normalized WT Samples Ordered by Timepoint')
 
 wt_qnorm = pd.read_csv('wt_qnorm.txt',sep='\t',index_col=0)
+csp_qnorm = pd.read_csv('csp_qnorm.txt',sep='\t',index_col=0)
 
 plot_cormat(wt_qnorm,'initial_cormat','Correlation Matrix of Traditionally Normalized WT Samples Ordered by Timepoint')
 
 m_x
 
-pca = PCA(n_components=4)
-X_r = pca.fit(scaled_wt.values.T).transform(scaled_wt.values.T)
+pca = PCA(n_components=1)
+Y = pca.fit(X.T).transform(X.T)
 
 plt.scatter(X_r[:,0],X_r[:,1])
 plt.show()
 
+tsne = manifold.TSNE(n_components=1, init='pca', random_state=0)
+Y = tsne.fit_transform(X.T)
 
+mds = manifold.MDS(1, max_iter=100, n_init=10)
+Y = mds.fit_transform(X.T)
 
-
+se = manifold.SpectralEmbedding(n_components=1,n_neighbors=5)
+Y = se.transform(X.T)
+Y = se.fit_transform(np.mean(scale_df(wt_exp).values.reshape(scale_df(wt_exp).values.shape[0],-1, 3), axis=2).T)
+Y2 = se.fit_transform(np.mean(scale_df(wt_qnorm).values.reshape(scale_df(wt_qnorm).values.shape[0],-1, 3), axis=2).T)
 
 def plt_line(arr,ind_1,ind_2):
-    plt.plot([arr[ind_1][2],arr[ind_2][2]],[arr[ind_1][3],arr[ind_2][3]],color='k')
+    plt.plot([arr[ind_1][0],arr[ind_2][0]],[arr[ind_1][1],arr[ind_2][1]],color='k')
+
+X = np.mean(scaled_wt.values.reshape(1023,-1, 3), axis=2)
 
 
-for i in range(int(X_r.shape[0]/3)):
-    plt_line(X_r,(i*3),(i*3+1))
-    plt_line(X_r,(i*3),(i*3+2))
-    plt_line(X_r,(i*3+1),(i*3+2))
+fig, ax = plt.subplots()
+ax.scatter(Y[:,0],Y[:,1])
+tpts = [i*2 for i in range(1,Y.shape[0]+1)]
+cts = [(i-12)%22 for i in tpts]
+for j, txt in enumerate(cts):
+    ax.annotate(txt, (Y[j,0],Y[j,1]))
 
 plt.show()
 
 
+for i in range(int(Y.shape[0]/3)):
+    plt_line(Y,(i*3),(i*3+1))
+    plt_line(Y,(i*3),(i*3+2))
+    plt_line(Y,(i*3+1),(i*3+2))
+
+plt.show()
+
+def scale_polar(l):
+    tl = l - np.min(l)
+    tl = 2*np.pi*tl/22
+    return tl
 
 
+ax = plt.subplot(111, polar=True)
+ax.scatter(scale_polar(cts),[i[0]-np.min(Y) for i in Y])
+plt.show()
 
+ax = plt.subplot(111, polar=True)
+ax.scatter(scale_polar(cts),[i[0]-np.min(Y2) for i in Y2])
+plt.show()
+
+newcts= []
+ymeans = []
+for i in set(cts):
+    newcts.append(i)
+    ymeans.append(np.mean(Y[[i==j for j in cts]]))
+
+def spec_phase_plot(df,ptitle,c,sh,lab):
+    N = 11
+    se = manifold.SpectralEmbedding(n_components=1,n_neighbors=5)
+    Y = se.fit_transform(np.mean(scale_df(df).values.reshape(scale_df(df).values.shape[0],-1, 3), axis=2).T)
+    tpts = [i*2 for i in range(1,Y.shape[0]+1)]
+    cts = [(i-12)%22 for i in tpts]
+    newcts= []
+    ymeans = []
+    for i in set(cts):
+        newcts.append(i%22)
+        ymeans.append(np.mean(Y[[(i%22)==j for j in cts]]))
+    ymeans = ymeans-np.min(ymeans)
+    ymeans = list(ymeans/np.max(ymeans))
+    newcts = list(np.roll(scale_polar(newcts),sh))
+    ax = plt.subplot(111, polar=True)
+    ax.set_theta_offset(0.5*np.pi)
+    ax.set_theta_direction(-1)
+    ax.set_rlabel_position(245)
+    ax.set_xticks(np.pi/180. * np.linspace(0,  360, N, endpoint=False))
+    ax.set_xticklabels([str(i)+' hrs' for i in range(0,2*N+1,2)])
+    ax.plot(newcts+[newcts[0]],ymeans+[ymeans[0]],color=c,label=lab)
+    ax.set_rmax(1.0)
+    plt.title(ptitle, y=1.08, fontsize=16)
+    plt.legend(frameon=True,framealpha=1.0)
+    plt.tight_layout()
+
+
+spec_phase_plot(wt_exp,None,'blue',4,'WT')
+spec_phase_plot(csp_exp,'1D Spectral Embedding vs CT of LIMBR Normalized Expression','red',9,r'$\Delta$CSP-1')
+plt.savefig('post_limbr_spec.pdf')
+plt.close()
+
+spec_phase_plot(wt_qnorm,None,'blue',0,'WT')
+spec_phase_plot(csp_qnorm,'1D Spectral Embedding vs CT of Traditionally Normalized Expression','red',4,r'$\Delta$CSP-1')
+plt.savefig('pre_limbr_spec.pdf')
+plt.close()
 
 
 
@@ -339,6 +418,7 @@ csp_trends = pd.melt(csp_trends, id_vars=['Trend'], value_vars=csp_trends.column
 
 def get_fstats(ts,cs,ctypes):
     results = {}
+    results2 = {}
     for class_val in ctypes:
         groups = []
         for i in list(set(cs[class_val].values)):
@@ -350,28 +430,56 @@ def get_fstats(ts,cs,ctypes):
                 templist.append(list(ts[ts['variable'].isin(groups[i]) & (ts['Trend'] == j)]['value'].values))
             fortest[j] = templist
         tempdict = {}
+        tempicc = {}
         for k, v in fortest.items():
             tempdict[k] = stats.f_oneway(*v)[1]
+            tempicc[k] = icc(v)
         results[class_val] = tempdict
-    return pd.DataFrame.from_dict(results)
-
-
-wt_bias = get_fstats(wt_trends,wt_class,['TMT Set', 'HpH Fractionation','Post-Digest SPE', 'Post-Digest BCA', 'Digest'])
-csp_bias = get_fstats(csp_trends,csp_class,['TMT Set', 'HpH Fractionation','Post-Digest SPE', 'Post-Digest BCA', 'Digest'])
-
-
-def gen_biasmap(df):
-    plt.pcolor(df.values)
-    for y in range(df.values.shape[0]):
-        for x in range(df.values.shape[1]):
-            if df.values[y,x] < .05/df.values.shape[1]:
-                plt.text(x + 0.5, y + 0.5, '*', horizontalalignment='center',verticalalignment='center')
-    plt.show()
-
-gen_biasmap(wt_bias)
+        results2[class_val] = tempicc
+    return pd.DataFrame.from_dict(results), pd.DataFrame.from_dict(results2)
 
 
 
+
+
+def gen_biasmap(df1,df2,fname,ptitle):
+    df1.sort_index(ascending=False,inplace=True)
+    df2.sort_index(ascending=False,inplace=True)
+    fig, ax = plt.subplots(nrows=1, ncols=1)
+    pc = ax.pcolor(df1.values, cmap='viridis')
+    ax.set_xticks([i+.5 for i in range(len(df1.columns.values))])
+    ax.set_xticklabels(df1.columns.values)
+    ax.set_yticks([i+.5 for i in range(len(df1))])
+    ylabs = [i for i in range(1,len(df1)+1)]
+    ylabs.reverse()
+    ax.set_yticklabels(ylabs)
+    ax.xaxis.tick_top()
+    ax.set_ylabel('Bias Trend')
+    ax.set_title(ptitle, fontsize=16, y=1.08)
+    for y in range(df2.values.shape[0]):
+        for x in range(df2.values.shape[1]):
+            if df2.values[y,x] < .001/df2.values.shape[1]:
+                plt.text(x + 0.5, y + 0.5, '*', horizontalalignment='center',verticalalignment='center', fontsize=16)
+    fig.subplots_adjust(right=0.85)
+    cbar_ax = fig.add_axes([0.87, 0.15, 0.02, 0.7])
+    cb = fig.colorbar(pc, cax=cbar_ax)
+    cb.set_label('ICC', fontsize=12)
+    plt.savefig(fname+'.pdf')
+
+gen_biasmap(wt_bias_icc,wt_bias_f,'wt_bcor',r'Correlation of Bias Trends with Groupings in Experimental Procedure (WT)')
+gen_biasmap(csp_bias_icc,csp_bias_f,'csp_bcor',r'Correlation of Bias Trends with Groupings in Experimental Procedure ($\Delta$CSP-1)')
+
+def icc(arr):
+    m = np.mean([np.mean(i) for i in arr])
+    alphas = [np.mean(i) for i in arr]-m
+    es = [list(arr[i]-m-alphas[i]) for i in range(len(arr))]
+    es = [item for sublist in es for item in sublist]
+    return (np.std(alphas)**2)/(np.std(alphas)**2+np.std(es)**2)
+
+wt_bias_f, wt_bias_icc = get_fstats(wt_trends,wt_class,['TMT Set', 'HpH Fractionation','Post-Digest SPE', 'Post-Digest BCA', 'Digest'])
+
+
+csp_bias_f, csp_bias_icc = get_fstats(csp_trends,csp_class,['TMT Set', 'HpH Fractionation','Post-Digest SPE', 'Post-Digest BCA', 'Digest'])
 #plt.colorbar()
 plt.show()
 
@@ -392,6 +500,37 @@ plt.show()
 plt.pcolor(scaled_csp[y_pred==0], cmap='seismic', vmin=z_min, vmax=z_max)
 plt.colorbar()
 plt.show()
+
+
+
+
+
+
+
+
+dist = data.isnull().sum(axis=1).values.tolist()
+density = gaussian_kde(dist)
+xs = np.linspace(0,max(dist),200)
+density.covariance_factor = lambda : .1
+density._compute_covariance()
+values, base = np.histogram(dist, bins=100)
+cumulative = np.cumsum(values)
+
+fig, ax1 = plt.subplots()
+ax1.plot(xs,density(xs),'b')
+ax1.set_xlabel('Number of Missing Values')
+# Make the y-axis label, ticks and tick labels match the line color.
+ax1.set_ylabel('Density of Peptides', color='b')
+ax1.tick_params('y', colors='b')
+
+ax2 = ax1.twinx()
+ax2.plot(base[:-1], cumulative, c='r')
+ax2.set_ylabel('Cumulative Number of Peptides \n at or Below Missingness Level', color='r')
+ax2.tick_params('y', colors='r')
+
+fig.tight_layout()
+plt.savefig('missingness.pdf')
+plt.close()
 
 
 

@@ -1,0 +1,16 @@
+FROM acrowell/limbr:v10
+MAINTAINER Alec Crowell <alexander.m.crowell.gr@dartmouth.edu>
+
+RUN git pull
+RUN rm output/simdata/*.pdf
+RUN rm output/figs/*.pdf
+
+#make actual data file
+RUN make -f make_sim1
+RUN make -f make_sim2
+RUN make -f make_sim3
+RUN make -f make_sim4
+RUN make -f make_sim_mb
+RUN make -f make_figs
+RUN make -f make_figs_mb
+

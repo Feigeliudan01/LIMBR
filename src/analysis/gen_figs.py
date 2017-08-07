@@ -17,6 +17,7 @@ from rpy2.robjects.packages import importr
 circularlib=importr('circular')
 circular=robjects.r('circular')
 corcircular=robjects.r('cor.circular')
+import pickle
 
 def plot_cormat(df,fname,ptitle):
     fig, ax = plt.subplots(nrows=1, ncols=1)
@@ -32,6 +33,27 @@ def plot_cormat(df,fname,ptitle):
     ax.set_xticklabels([(i-12)%22 for i in tpts])
     ax.set_yticks([i+1.5 for i in range(0,cors.shape[1],3)])
     ax.set_yticklabels([(i-12)%22 for i in tpts])
+    ax.set_title(ptitle, fontsize=16)
+    fig.subplots_adjust(right=0.85)
+    cbar_ax = fig.add_axes([0.87, 0.15, 0.02, 0.7])
+    cb = fig.colorbar(pc, cax=cbar_ax)
+    cb.set_label('Correlation', fontsize=12)
+    plt.savefig(fname+'.pdf')
+    plt.close()
+
+def plot_cormat_prep(df,fname,ptitle):
+    fig, ax = plt.subplots(nrows=1, ncols=1)
+    cors = np.corrcoef(df.values.T)
+    z_min, z_max = -np.abs(cors).max(), np.abs(cors).max()
+    pc = ax.pcolor(cors, cmap='seismic', vmin=z_min, vmax=z_max)
+    for i in prep_breaks:
+        ax.axvline(x=i, linestyle='-', color='black', linewidth=0.7,    zorder=3)
+    for i in prep_breaks:
+        ax.axhline(y=i, linestyle='-', color='black', linewidth=0.7,    zorder=3)
+    ax.set_xticks([prep_breaks[i] + prep_diffs[i]/2 for i in range(len(prep_breaks))])
+    ax.set_xticklabels([i+1 for i in range(16)])
+    ax.set_yticks([prep_breaks[i] + prep_diffs[i]/2 for i in range(len(prep_breaks))])
+    ax.set_yticklabels([i+1 for i in range(16)])
     ax.set_title(ptitle, fontsize=16)
     fig.subplots_adjust(right=0.85)
     cbar_ax = fig.add_axes([0.87, 0.15, 0.02, 0.7])
@@ -214,6 +236,22 @@ rna_old = pd.read_csv('output/actual/rna_old_normed.txt',sep='\t',index_col=0)
 
 #Figure 1A
 plot_cormat(scale_df(wt_old),'output/figs/initial_cormat','Correlation Matrix of Traditionally Normalized WT Samples Ordered by Timepoint')
+new_cols = [i.replace('_1','') for i in wt_class[~wt_class['Sample ID'].isin(['CT00_3', 'CT00_2', 'CT00_1'])]['Sample ID'].values]
+new_cols = [i.replace('_2','.1') for i in new_cols]
+new_cols = [i.replace('_3','.2') for i in new_cols]
+#new_cols = [i for i in new_cols if i not in ['CT00.2', 'CT00.1', 'CT00']]
+prep = wt_class[~wt_class['Sample ID'].isin(['CT00_3', 'CT00_2', 'CT00_1'])]['Prep Set'].values
+prep_breaks = []
+curr_class = prep[0]
+for i in range(len(prep)):
+    if prep[i] != curr_class:
+        prep_breaks.append(i)
+    curr_class = prep[i]
+
+prep_diffs = [4] + [prep_breaks[i+1]-prep_breaks[i] for i in range(len(prep_breaks)-1)] +[2]
+prep_breaks = [0] + prep_breaks
+
+plot_cormat_prep(scale_df(wt_old[new_cols]),'output/figs/initial_cormat_prep','Correlation Matrix of Traditionally Normalized WT Samples Ordered by Prep Set')
 
 
 #Figure 1B
@@ -287,7 +325,7 @@ wt_trends['Trend'] = range(1,len(wt_trends)+1)
 wt_trends = pd.melt(wt_trends, id_vars=['Trend'], value_vars=wt_trends.columns.values.tolist()[:-1])
 
 
-wt_bias_f, wt_bias_icc = get_fstats(wt_trends,wt_class,['TMT Set', 'Digest'])
+wt_bias_f, wt_bias_icc = get_fstats(wt_trends,wt_class,['TMT Set', 'Prep Set'])
 
 gen_biasmap(wt_bias_icc,wt_bias_f,'output/figs/wt_bcor',r'Correlation of Bias Trends with Groupings in Experimental Procedure (WT)')
 
@@ -297,7 +335,7 @@ csp_trends = csp_trends.drop('Unnamed: 0',axis=1)
 csp_trends['Trend'] = range(1,len(csp_trends)+1)
 csp_trends = pd.melt(csp_trends, id_vars=['Trend'], value_vars=csp_trends.columns.values.tolist()[:-1])
 
-csp_bias_f, csp_bias_icc = get_fstats(csp_trends,csp_class,['TMT Set', 'Digest'])
+csp_bias_f, csp_bias_icc = get_fstats(csp_trends,csp_class,['TMT Set', 'Prep Set'])
 
 gen_biasmap(csp_bias_icc,csp_bias_f,'output/figs/csp_bcor',r'Correlation of Bias Trends with Groupings in Experimental Procedure ($\Delta$CSP-1)')
 
@@ -313,6 +351,9 @@ plot_cormat_pep(np.abs(pep_corr),'output/figs/peptide_btrend_cormat','Correlatio
 
 #Figure 5A
 plot_cormat(scale_df(wt),'output/figs/final_cormat','Correlation Matrix of LIMBR Normalized WT Samples Ordered by Timepoint')
+
+
+plot_cormat(scale_df(wt[wt.index.isin(prot[prot['GammaP_wt']<.05].index.tolist())]),'output/figs/final_cormat_circ','Correlation Matrix of LIMBR Normalized WT Circadian Proteins Ordered by Timepoint')
 
 #Figure 5B
 prot = pd.merge(wt_p[['GammaP','Phase']], csp_p[['GammaP','Phase']], right_index=True, left_index=True,suffixes=('_wt','_csp'))

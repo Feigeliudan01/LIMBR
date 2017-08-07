@@ -70,8 +70,8 @@ def main(argv):
     plt.axvline(x=0.05,color='black',ls='dashed')
     plt.legend(loc="lower right")
     plt.axis([0, 1, 0, 1])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
+    plt.xlabel('1 - Specificity')
+    plt.ylabel('Sensitivity')
     plt.savefig(options.inputfiles[5])
     plt.close()
 
