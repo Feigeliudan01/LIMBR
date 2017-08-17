@@ -57,7 +57,7 @@ $(LSVA) :  output/simdata/mb_simulated_data_with_noise_for_sva_%.txt
 
 $(BSVA) :  output/simdata/mb_simulated_data_with_noise_for_sva_%.txt
 	@echo Circadian Block SVA Normalizing $<
-	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -n 12 -p 1000 -a .05 -d b -b output/block_design.p -e p
+	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -n 12 -p 1000 -a .05 -d b -b data/block_design.p -e p
 
 output/simdata/mb_denoised_circ_lowess_%__jtkout_GammaP.txt output/simdata/mb_denoised_block_%__jtkout_GammaP.txt : output/simdata/mb_denoised_circ_lowess_%.txt output/simdata/mb_denoised_block_%.txt
 	@echo Running eJTK on $<
