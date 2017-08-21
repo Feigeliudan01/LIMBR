@@ -29,7 +29,7 @@ class imputable:
         self.notdone = True
 
     def deduplicate(self):
-        if self.data[self.data.columns.values[1]][-2] == "T":
+        if self.data[self.data.columns.values[1]][0][-2] == "T":
             self.data[self.data.columns.values[1]] = self.data[self.data.columns.values[1]].apply(lambda x: x.split('T')[0])
             self.data = self.data.groupby(['Peptide','Protein']).mean()
         todrop = []
