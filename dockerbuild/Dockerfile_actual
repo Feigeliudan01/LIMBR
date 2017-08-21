@@ -1,6 +1,7 @@
 FROM acrowell/limbr:latest
 MAINTAINER Alec Crowell <alexander.m.crowell.gr@dartmouth.edu>
 
+RUN apt-get install git-lfs
 RUN git lfs pull
 #RUN curl 'https://github.com/aleccrowell/LIMBR/releases/download/v0.1-alpha/Formatted_input.txt' -o data/Formatted_input.txt
 
