@@ -235,6 +235,9 @@ rna_old = pd.read_csv('output/actual/rna_old_normed.txt',sep='\t',index_col=0)
 
 
 #Figure 1A
+wt_class = pd.read_csv('data/wt_classes.csv')
+csp_class = pd.read_csv('data/csp_classes.csv')
+
 plot_cormat(scale_df(wt_old),'output/figs/initial_cormat','Correlation Matrix of Traditionally Normalized WT Samples Ordered by Timepoint')
 new_cols = [i.replace('_1','') for i in wt_class[~wt_class['Sample ID'].isin(['CT00_3', 'CT00_2', 'CT00_1'])]['Sample ID'].values]
 new_cols = [i.replace('_2','.1') for i in new_cols]
@@ -316,8 +319,6 @@ plt.savefig('output/figs/acorr_val.pdf')
 plt.close()
 
 #Figure 4A
-wt_class = pd.read_csv('data/wt_classes.csv')
-csp_class = pd.read_csv('data/csp_classes.csv')
 
 wt_trends = pd.read_csv('output/actual/wt_lowess_normed_trends.txt',sep='\t')
 wt_trends = wt_trends.drop('Unnamed: 0',axis=1)
