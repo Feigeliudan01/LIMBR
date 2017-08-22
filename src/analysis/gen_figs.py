@@ -386,6 +386,6 @@ phase_hist(defcirc['delta_p'].values,r'Histogram of Phase Lags Between'"\n"r'Exp
 #plt.close()
 
 #Figure ???
-sns.jointplot('zscore_wt','zscore_csp',data=prot,kind='kde',joint_kws=dict(bw=.1),marginal_kws=dict(bw=.1))
+#sns.jointplot('zscore_wt','zscore_csp',data=prot,kind='kde',joint_kws=dict(bw=.1),marginal_kws=dict(bw=.1))
 
 #Figure ???
