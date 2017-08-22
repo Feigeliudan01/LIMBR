@@ -353,15 +353,16 @@ plot_cormat_pep(np.abs(pep_corr),'output/figs/peptide_btrend_cormat','Correlatio
 #Figure 5A
 plot_cormat(scale_df(wt),'output/figs/final_cormat','Correlation Matrix of LIMBR Normalized WT Samples Ordered by Timepoint')
 
-
-plot_cormat(scale_df(wt[wt.index.isin(prot[prot['GammaP_wt']<.05].index.tolist())]),'output/figs/final_cormat_circ','Correlation Matrix of LIMBR Normalized WT Circadian Proteins Ordered by Timepoint')
-
-#Figure 5B
 prot = pd.merge(wt_p[['GammaP','Phase']], csp_p[['GammaP','Phase']], right_index=True, left_index=True,suffixes=('_wt','_csp'))
 prot['zscore_wt'] = stats.norm.ppf(1-prot['GammaP_wt'])
 prot['zscore_csp'] = stats.norm.ppf(1-prot['GammaP_csp'])
 prot['delta_z'] = prot['zscore_wt'] - prot['zscore_csp']
 prot['delta_p'] = prot['Phase_csp'] - prot['Phase_wt']
+
+plot_cormat(scale_df(wt[wt.index.isin(prot[prot['GammaP_wt']<.05].index.tolist())]),'output/figs/final_cormat_circ','Correlation Matrix of LIMBR Normalized WT Circadian Proteins Ordered by Timepoint')
+
+#Figure 5B
+
 defcirc = prot[(prot['GammaP_wt']<.05)&(prot['GammaP_csp']<.05)]
 
 cpw = circular(robjects.FloatVector([j*2*np.pi/22 for j in defcirc['Phase_wt'].values]),units="radians", zero=0, rotation='clock')
