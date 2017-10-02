@@ -288,7 +288,7 @@ class sva:
             if pi_0 > 1:
                 return 'nan'
             sp = np.sort(probs_sig)
-            return sp[int(np.floor((1-pi_0)*len(probs_sig)))]
+            return sp[int(np.floor((1-pi_0)*len(probs_sig))-1)]
 
         pt, _, bt = np.linalg.svd(self.res)
         trends = []
