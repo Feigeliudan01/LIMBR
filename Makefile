@@ -1,7 +1,6 @@
 FILES = make_checkpoints/install
 FILES += make_checkpoints/actual
-FILES += make_checkpoints/simulate1 make_checkpoints/simulate2 make_checkpoints/simulate3 make_checkpoints/simulate4
-FILES += make_checkpoints/simulate_mb1 make_checkpoints/simulate_mb2 make_checkpoints/simulate_mb3 make_checkpoints/simulate_mb4 make_checkpoints/figures make_checkpoints/figures_mb
+FILES += make_checkpoints/simulate make_checkpoints/simulate_mb make_checkpoints/figures make_checkpoints/figures_mb
 
 all: ${FILES}
 
