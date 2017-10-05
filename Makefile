@@ -24,62 +24,26 @@ make_checkpoints/actual : dockerbuild/Dockerfile_actual make_checkpoints/downloa
 	@docker tag acrowell/limbr acrowell/limbr:3
 	@touch $@
 
-make_checkpoints/simulate1 : dockerbuild/Dockerfile_sim1 make_checkpoints/actual
+make_checkpoints/simulate : dockerbuild/Dockerfile_sim make_checkpoints/actual
 	@echo running single bias trend simulations
-	@docker build --force-rm --squash -f dockerbuild/Dockerfile_sim1 -t acrowell/limbr .
+	@docker build --force-rm --squash -f dockerbuild/Dockerfile_sim -t acrowell/limbr .
 	@docker tag acrowell/limbr acrowell/limbr:4
 	@touch $@
 
-make_checkpoints/simulate2 : dockerbuild/Dockerfile_sim2 make_checkpoints/simulate1
-	@echo running single bias trend simulations 2
-	@docker build --force-rm --squash -f dockerbuild/Dockerfile_sim2 -t acrowell/limbr .
+make_checkpoints/simulate_mb : dockerbuild/Dockerfile_sim_mb make_checkpoints/simulate
+	@echo running multiple bias trend simulations
+	@docker build --force-rm --squash -f dockerbuild/Dockerfile_sim_mb -t acrowell/limbr .
 	@docker tag acrowell/limbr acrowell/limbr:5
 	@touch $@
 
-make_checkpoints/simulate3 : dockerbuild/Dockerfile_sim3 make_checkpoints/simulate2
-	@echo running single bias trend simulations 3
-	@docker build --force-rm --squash -f dockerbuild/Dockerfile_sim3 -t acrowell/limbr .
-	@docker tag acrowell/limbr acrowell/limbr:6
-	@touch $@
-
-make_checkpoints/simulate4 : dockerbuild/Dockerfile_sim4 make_checkpoints/simulate3
-	@echo running single bias trend simulations 4
-	@docker build --force-rm --squash -f dockerbuild/Dockerfile_sim4 -t acrowell/limbr .
-	@docker tag acrowell/limbr acrowell/limbr:7
-	@touch $@
-
-make_checkpoints/simulate_mb1 : dockerbuild/Dockerfile_sim_mb1 make_checkpoints/simulate4
-	@echo running multiple bias trend simulations
-	@docker build --force-rm --squash -f dockerbuild/Dockerfile_sim_mb1 -t acrowell/limbr .
-	@docker tag acrowell/limbr acrowell/limbr:8
-	@touch $@
-
-make_checkpoints/simulate_mb2 : dockerbuild/Dockerfile_sim_mb2 make_checkpoints/simulate_mb1
-	@echo running multiple bias trend simulations 2
-	@docker build --force-rm --squash -f dockerbuild/Dockerfile_sim_mb2 -t acrowell/limbr .
-	@docker tag acrowell/limbr acrowell/limbr:9
-	@touch $@
-
-make_checkpoints/simulate_mb3 : dockerbuild/Dockerfile_sim_mb3 make_checkpoints/simulate_mb2
-	@echo running multiple bias trend simulations 3
-	@docker build --force-rm --squash -f dockerbuild/Dockerfile_sim_mb3 -t acrowell/limbr .
-	@docker tag acrowell/limbr acrowell/limbr:10
-	@touch $@
-
-make_checkpoints/simulate_mb4 : dockerbuild/Dockerfile_sim_mb4 make_checkpoints/simulate_mb3
-	@echo running multiple bias trend simulations 4
-	@docker build --force-rm --squash -f dockerbuild/Dockerfile_sim_mb4 -t acrowell/limbr .
-	@docker tag acrowell/limbr acrowell/limbr:11
-	@touch $@
-
-make_checkpoints/figures : dockerbuild/Dockerfile_figs make_checkpoints/simulate_mb4
+make_checkpoints/figures : dockerbuild/Dockerfile_figs make_checkpoints/simulate_mb
 	@echo making figures
 	@docker build --force-rm --squash -f dockerbuild/Dockerfile_figs -t acrowell/limbr .
-	@docker tag acrowell/limbr acrowell/limbr:12
+	@docker tag acrowell/limbr acrowell/limbr:6
 	@touch $@
 
 make_checkpoints/figures_mb : dockerbuild/Dockerfile_figs_mb make_checkpoints/figures
 	@echo making figures mb
 	@docker build --force-rm --squash -f dockerbuild/Dockerfile_figs_mb -t acrowell/limbr .
-	@docker tag acrowell/limbr acrowell/limbr:13
+	@docker tag acrowell/limbr acrowell/limbr:7
 	@touch $@
