@@ -1,34 +1,34 @@
-BLINE = $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_baseline_$$i.txt; done)
-BLINE += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_with_noise_$$i.txt; done)
-BLINE += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_with_noise_for_sva_$$i.txt; done)
+BLINE = $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_baseline_$$i.txt; done)
+BLINE += $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_with_noise_$$i.txt; done)
+BLINE += $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_with_noise_for_sva_$$i.txt; done)
 FILES += $(BLINE)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_baseline_$$i\__jtkout_GammaP.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_with_noise_$$i\__jtkout_GammaP.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_baseline_$$i\__jtkout_GammaP.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_with_noise_$$i\__jtkout_GammaP.txt; done)
 CSVA := output/simdata/denoised_circ_lowess_%.txt
 LSVA := output/simdata/denoised_circ_lowess_sse_%.txt
 BSVA := output/simdata/denoised_block_%.txt
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/denoised_circ_lowess_$$i.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/denoised_circ_lowess_sse_$$i.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/denoised_block_$$i.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/denoised_circ_lowess_$$i\__jtkout_GammaP.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/denoised_circ_lowess_sse_$$i\__jtkout_GammaP.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/denoised_block_$$i\__jtkout_GammaP.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/block_$$i\_pvals.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/block_$$i\_classes.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/circ_lowess_$$i\_pvals.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/circ_lowess_sse_$$i\_pvals.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/circ_lowess_$$i\_classes.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/circ_lowess_sse_$$i\_classes.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/circ_lowess_$$i\_classifications.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/circ_lowess_sse_$$i\_classifications.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/block_$$i\_classifications.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_baseline_$$i\_pvals.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_baseline_$$i\_classes.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_baseline_$$i\_classifications.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_with_noise_$$i\_pvals.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_with_noise_$$i\_classes.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_with_noise_$$i\_classifications.txt; done)
-FILES += output/simdata/ROC_curves_1.pdf output/simdata/ROC_curves_2.pdf
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/denoised_circ_lowess_$$i.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/denoised_circ_lowess_sse_$$i.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/denoised_block_$$i.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/denoised_circ_lowess_$$i\__jtkout_GammaP.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/denoised_circ_lowess_sse_$$i\__jtkout_GammaP.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/denoised_block_$$i\__jtkout_GammaP.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/block_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/block_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/circ_lowess_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/circ_lowess_sse_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/circ_lowess_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/circ_lowess_sse_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/circ_lowess_$$i\_classifications.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/circ_lowess_sse_$$i\_classifications.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/block_$$i\_classifications.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_baseline_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_baseline_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_baseline_$$i\_classifications.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_with_noise_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_with_noise_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5; do echo output/simdata/simulated_data_with_noise_$$i\_classifications.txt; done)
+FILES += output/simdata/ROC_curves_1.pdf output/simdata/ROC_curves_2.pdf output/simdata/ROC_curves_3.pdf output/simdata/ROC_curves_4.pdf output/simdata/ROC_curves_5.pdf
 
 
 
@@ -57,7 +57,7 @@ $(LSVA) :  output/simdata/simulated_data_with_noise_for_sva_%.txt
 
 $(BSVA) :  output/simdata/simulated_data_with_noise_for_sva_%.txt
 	@echo Circadian Block SVA Normalizing $<
-	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -n 12 -p 1000 -a .05 -d b -b output/block_design.p -e p
+	@python3 src/sva_normalize.py -i $< -o $@ -s 25 -n 12 -p 1000 -a .05 -d b -b data/block_design.p -e p
 
 output/simdata/denoised_circ_lowess_%__jtkout_GammaP.txt output/simdata/denoised_block_%__jtkout_GammaP.txt : output/simdata/denoised_circ_lowess_%.txt output/simdata/denoised_block_%.txt
 	@echo Running eJTK on $<
