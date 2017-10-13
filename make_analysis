@@ -39,7 +39,7 @@ FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
 
 all: $(FILES)
 
-output/simdata/denoised_circ_lowess_%__jtkout_GammaP.txt output/simdata/denoised_block_%__jtkout_GammaP.txt :
+output/simdata/denoised_circ_lowess_%__jtkout_GammaP.txt output/simdata/denoised_block_%__jtkout_GammaP.txt : output/simdata/denoised_circ_lowess_%.txt output/simdata/denoised_block_%.txt
 	@echo Running eJTK on $<
 	@sed -e 's/_[[:digit:]]//g' $< > temp.txt
 	@mv temp.txt $<
@@ -59,7 +59,7 @@ output/simdata/denoised_circ_lowess_sse_%__jtkout_GammaP.txt: output/simdata/den
 	@rm output/simdata/*__jtknull1000.txt
 	@rm output/simdata/*__jtkout.txt
 
-output/simdata/mb_denoised_circ_lowess_%__jtkout_GammaP.txt output/simdata/mb_denoised_block_%__jtkout_GammaP.txt :
+output/simdata/mb_denoised_circ_lowess_%__jtkout_GammaP.txt output/simdata/mb_denoised_block_%__jtkout_GammaP.txt : output/simdata/mb_denoised_circ_lowess_%.txt output/simdata/mb_denoised_block_%.txt
 	@echo Running eJTK on $<
 	@sed -e 's/_[[:digit:]]//g' $< > temp.txt
 	@mv temp.txt $<
