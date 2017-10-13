@@ -98,7 +98,6 @@ RUN python3 src/sva_normalize.py -i output/simdata/simulated_data_with_noise_for
 
 
 RUN echo Circadian Block SVA Normalizing
-RUN for i in  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do python3 src/sva_normalize.py -i output/simdata/simulated_data_with_noise_for_sva_$i.txt -o output/simdata/denoised_block_$i.txt -s 25 -n 12 -p 1000 -a .05 -d b -b data/block_design.p -e p; done
 RUN python3 src/sva_normalize.py -i output/simdata/simulated_data_with_noise_for_sva_1.txt -o output/simdata/denoised_block_1.txt -s 25 -n 12 -p 1000 -a .05 -d b -b data/block_design.p -e p
 RUN python3 src/sva_normalize.py -i output/simdata/simulated_data_with_noise_for_sva_2.txt -o output/simdata/denoised_block_2.txt -s 25 -n 12 -p 1000 -a .05 -d b -b data/block_design.p -e p
 RUN python3 src/sva_normalize.py -i output/simdata/simulated_data_with_noise_for_sva_3.txt -o output/simdata/denoised_block_3.txt -s 25 -n 12 -p 1000 -a .05 -d b -b data/block_design.p -e p

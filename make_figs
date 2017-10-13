@@ -1,7 +1,12 @@
+FILES = output/simdata/simdata.csv
 FILES += output/figs/WT_CSP_phasehist.pdf output/figs/peptide_btrend_cormat.pdf output/figs/csp_bcor.pdf output/figs/wt_bcor.pdf output/figs/acorr_val.pdf output/figs/sim_ROC.pdf output/figs/simulated_denoise_circ_genes.pdf output/figs/simulated_noise_circ_genes.pdf output/figs/simulated_circ_genes.pdf output/figs/missingness.pdf output/figs/final_cormat.pdf output/figs/initial_cormat.pdf
 
 all: ${FILES}
 
-output/figs/WT_CSP_phasehist.pdf output/figs/peptide_btrend_cormat.pdf output/figs/csp_bcor.pdf output/figs/wt_bcor.pdf output/figs/acorr_val.pdf output/figs/sim_ROC.pdf output/figs/simulated_denoise_circ_genes.pdf output/figs/simulated_noise_circ_genes.pdf output/figs/simulated_circ_genes.pdf output/figs/missingness.pdf output/figs/final_cormat.pdf output/figs/initial_cormat.pdf : src/analysis/gen_figs.py
+output/simdata/simdata.csv : src/analysis/ROC_curves.py
+	@echo generating ROC Curves
+	@python3 src/analysis/ROC_curves.py
+
+output/figs/WT_CSP_phasehist.pdf output/figs/peptide_btrend_cormat.pdf output/figs/csp_bcor.pdf output/figs/wt_bcor.pdf output/figs/acorr_val.pdf output/figs/sim_ROC.pdf output/figs/simulated_denoise_circ_genes.pdf output/figs/simulated_noise_circ_genes.pdf output/figs/simulated_circ_genes.pdf output/figs/missingness.pdf output/figs/final_cormat.pdf output/figs/initial_cormat.pdf : output/simdata/simdata.csv src/analysis/gen_figs.py
 	@echo generating figures
 	@python3 src/analysis/gen_figs.py
