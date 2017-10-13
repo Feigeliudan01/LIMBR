@@ -37,7 +37,7 @@ make_checkpoints/simulate_mb : dockerbuild/Dockerfile_sim_mb make_checkpoints/si
 
 make_checkpoints/figures : dockerbuild/Dockerfile_figs make_checkpoints/simulate_mb
 	@echo making figures
-	@docker build --force-rm --squash -f dockerbuild/Dockerfile_figs -t acrowell/limbr .
+	@docker build --force-rm --squash --no-cache -f dockerbuild/Dockerfile_figs -t acrowell/limbr .
 	@docker tag acrowell/limbr acrowell/limbr:6
 	@touch $@
 
