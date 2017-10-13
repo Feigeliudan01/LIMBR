@@ -35,14 +35,20 @@ make_checkpoints/simulate_mb : dockerbuild/Dockerfile_sim_mb make_checkpoints/si
 	@docker tag acrowell/limbr acrowell/limbr:5
 	@touch $@
 
-make_checkpoints/figures : dockerbuild/Dockerfile_figs make_checkpoints/simulate_mb
+make_checkpoints/analysis : dockerbuild/Dockerfile_analysis make_checkpoints/simulate_mb
+	@echo running eJTK analysis
+	@docker build --force-rm --squash -f dockerbuild/Dockerfile_analysis -t acrowell/limbr .
+	@docker tag acrowell/limbr acrowell/limbr:6
+	@touch $@
+
+make_checkpoints/figures : dockerbuild/Dockerfile_figs make_checkpoints/analysis
 	@echo making figures
 	@docker build --force-rm --squash --no-cache -f dockerbuild/Dockerfile_figs -t acrowell/limbr .
-	@docker tag acrowell/limbr acrowell/limbr:6
+	@docker tag acrowell/limbr acrowell/limbr:7
 	@touch $@
 
 make_checkpoints/figures_mb : dockerbuild/Dockerfile_figs_mb make_checkpoints/figures
 	@echo making figures mb
 	@docker build --force-rm --squash -f dockerbuild/Dockerfile_figs_mb -t acrowell/limbr .
-	@docker tag acrowell/limbr acrowell/limbr:7
+	@docker tag acrowell/limbr acrowell/limbr:8
 	@touch $@
