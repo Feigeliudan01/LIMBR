@@ -80,7 +80,7 @@ output/simdata/mb_denoised_circ_lowess_sse_%__jtkout_GammaP.txt: output/simdata/
 	@rm output/simdata/*__jtkout.txt
 
 
-output/simdata/%_pvals.txt : output/simdata/%__jtkout_GammaP.txt
+output/simdata/%_pvals.txt : output/simdata/denoised_%__jtkout_GammaP.txt
 	@tail -q -n +2 $^ |cut -f 19 > $@
 
 output/simdata/%_pvals.txt : output/simdata/denoised_%__jtkout_GammaP.txt
@@ -109,7 +109,7 @@ output/simdata/%_classifications.txt : output/simdata/%_pvals.txt output/simdata
 
 
 
-output/simdata/%_pvals.txt : output/simdata/%__jtkout_GammaP.txt
+output/simdata/%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
 	@tail -q -n +2 $^ |cut -f 19 > $@
 
 output/simdata/%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
