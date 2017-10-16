@@ -37,7 +37,7 @@ make_checkpoints/simulate_mb : dockerbuild/Dockerfile_sim_mb make_checkpoints/si
 
 make_checkpoints/analysis : dockerbuild/Dockerfile_analysis make_checkpoints/simulate_mb
 	@echo running eJTK analysis
-	@docker build --force-rm --squash -f dockerbuild/Dockerfile_analysis -t acrowell/limbr .
+	@docker build --force-rm --squash --no-cache -f dockerbuild/Dockerfile_analysis -t acrowell/limbr .
 	@docker tag acrowell/limbr acrowell/limbr:6
 	@touch $@
 

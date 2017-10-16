@@ -5,3 +5,4 @@ RUN git pull
 
 #make actual data files
 RUN make -f make_analysis
+RUN make -f make_analysis2

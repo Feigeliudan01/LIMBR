@@ -1,0 +1,88 @@
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/block_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/block_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/circ_lowess_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/circ_lowess_sse_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/circ_lowess_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/circ_lowess_sse_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/circ_lowess_$$i\_classifications.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/circ_lowess_sse_$$i\_classifications.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/block_$$i\_classifications.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_baseline_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_baseline_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_baseline_$$i\_classifications.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_with_noise_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_with_noise_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_with_noise_$$i\_classifications.txt; done
+
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_block_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_block_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_circ_lowess_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_circ_lowess_sse_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_circ_lowess_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_circ_lowess_sse_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_circ_lowess_$$i\_classifications.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_circ_lowess_sse_$$i\_classifications.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_block_$$i\_classifications.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_simulated_data_baseline_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_simulated_data_baseline_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_simulated_data_baseline_$$i\_classifications.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_simulated_data_with_noise_$$i\_pvals.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_simulated_data_with_noise_$$i\_classes.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_simulated_data_with_noise_$$i\_classifications.txt; done)
+
+all : FILES 
+
+output/simdata/%_pvals.txt : output/simdata/denoised_%__jtkout_GammaP.txt                                    
+        @tail -q -n +2 $^ |cut -f 19 > $@
+
+output/simdata/%_pvals.txt : output/simdata/denoised_%__jtkout_GammaP.txt
+        @tail -q -n +2 $^ |cut -f 19 > $@
+
+output/simdata/%_pvals.txt : output/simdata/denoised_%__jtkout_GammaP.txt
+        @tail -q -n +2 $^ |cut -f 19 > $@
+
+output/simdata/block_%_classes.txt : output/simdata/simulated_data_key_%.txt output/simdata/denoised_block_%.txt
+        @python3 src/get_classes.py -l $^ $@
+
+output/simdata/circ_lowess_%_classes.txt : output/simdata/simulated_data_key_%.txt output/simdata/denoised_circ_lowess_%.txt
+        @python3 src/get_classes.py -l $^ $@
+
+output/simdata/circ_lowess_sse_%_classes.txt : output/simdata/simulated_data_key_%.txt output/simdata/denoised_circ_lowess_sse_%.txt
+        @python3 src/get_classes.py -l $^ $@
+
+output/simdata/simulated_data_baseline_%_classes.txt : output/simdata/simulated_data_key_%.txt output/simdata/simulated_data_baseline_%.txt
+        @python3 src/get_classes.py -l $^ $@
+
+output/simdata/simulated_data_with_noise_%_classes.txt : output/simdata/simulated_data_key_%.txt output/simdata/simulated_data_with_noise_%.txt
+        @python3 src/get_classes.py -l $^ $@
+
+output/simdata/%_classifications.txt : output/simdata/%_pvals.txt output/simdata/%_classes.txt
+        @paste $^ > $@
+
+
+output/simdata/%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
+        @tail -q -n +2 $^ |cut -f 19 > $@
+
+output/simdata/%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
+        @tail -q -n +2 $^ |cut -f 19 > $@
+
+output/simdata/%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
+        @tail -q -n +2 $^ |cut -f 19 > $@
+
+output/simdata/mb_block_%_classes.txt : output/simdata/mb_simulated_data_key_%.txt output/simdata/mb_denoised_block_%.txt
+        @python3 src/get_classes.py -l $^ $@
+
+output/simdata/mb_circ_lowess_%_classes.txt : output/simdata/mb_simulated_data_key_%.txt output/simdata/mb_denoised_circ_lowess_%.txt
+        @python3 src/get_classes.py -l $^ $@
+
+output/simdata/mb_circ_lowess_sse_%_classes.txt : output/simdata/mb_simulated_data_key_%.txt output/simdata/mb_denoised_circ_lowess_sse_%.txt
+        @python3 src/get_classes.py -l $^ $@
+
+output/simdata/mb_simulated_data_baseline_%_classes.txt : output/simdata/mb_simulated_data_key_%.txt output/simdata/mb_simulated_data_baseline_%.txt
+        @python3 src/get_classes.py -l $^ $@
+
+output/simdata/mb_simulated_data_with_noise_%_classes.txt : output/simdata/mb_simulated_data_key_%.txt output/simdata/mb_simulated_data_with_noise_%.txt
+        @python3 src/get_classes.py -l $^ $@
+
+output/simdata/%_classifications.txt : output/simdata/%_pvals.txt output/simdata/%_classes.txt
+        @paste $^ > $@
