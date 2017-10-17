@@ -1,11 +1,12 @@
-FILES = $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/denoised_circ_lowess_$$i\__jtkout_GammaP.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/denoised_circ_lowess_sse_$$i\__jtkout_GammaP.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_denoised_circ_lowess_$$i\__jtkout_GammaP.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_denoised_circ_lowess_sse_$$i\__jtkout_GammaP.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/denoised_block_$$i\__jtkout_GammaP.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_denoised_block_$$i\__jtkout_GammaP.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_baseline_$$i\__jtkout_GammaP.txt; done)
-FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_with_noise_$$i\__jtkout_GammaP.txt; done)
+BLINE = $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/denoised_circ_lowess_$$i\__jtkout_GammaP.txt; done)
+BLINE += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/denoised_circ_lowess_sse_$$i\__jtkout_GammaP.txt; done)
+BLINE += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_denoised_circ_lowess_$$i\__jtkout_GammaP.txt; done)
+BLINE += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_denoised_circ_lowess_sse_$$i\__jtkout_GammaP.txt; done)
+BLINE += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/denoised_block_$$i\__jtkout_GammaP.txt; done)
+BLINE += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_denoised_block_$$i\__jtkout_GammaP.txt; done)
+BLINE += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_baseline_$$i\__jtkout_GammaP.txt; done)
+BLINE += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/simulated_data_with_noise_$$i\__jtkout_GammaP.txt; done)
+FILES = $(BLINE)
 FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/block_$$i\_pvals.txt; done)
 FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/block_$$i\_classes.txt; done)
 FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/circ_lowess_$$i\_pvals.txt; done)
@@ -39,6 +40,9 @@ FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
 FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo output/simdata/mb_simulated_data_with_noise_$$i\_classifications.txt; done)
 
 all : ${FILES} 
+
+$(BLINE) : 
+	@echo setting up baseline files
 
 output/simdata/%_pvals.txt : output/simdata/%__jtkout_GammaP.txt                                    
 	@tail -q -n +2 $^ |cut -f 19 > $@
