@@ -40,13 +40,13 @@ FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
 
 all : ${FILES} 
 
-output/simdata/%_pvals.txt : output/simdata/denoised_%__jtkout_GammaP.txt                                    
+output/simdata/%_pvals.txt : output/simdata/%__jtkout_GammaP.txt                                    
 	@tail -q -n +2 $^ |cut -f 19 > $@
 
-output/simdata/%_pvals.txt : output/simdata/denoised_%__jtkout_GammaP.txt
+output/simdata/%_pvals.txt : output/simdata/%__jtkout_GammaP.txt
 	@tail -q -n +2 $^ |cut -f 19 > $@
 
-output/simdata/%_pvals.txt : output/simdata/denoised_%__jtkout_GammaP.txt
+output/simdata/%_pvals.txt : output/simdata/%__jtkout_GammaP.txt
 	@tail -q -n +2 $^ |cut -f 19 > $@
 
 output/simdata/block_%_classes.txt : output/simdata/simulated_data_key_%.txt output/simdata/denoised_block_%.txt
@@ -68,13 +68,13 @@ output/simdata/%_classifications.txt : output/simdata/%_pvals.txt output/simdata
 	@paste $^ > $@
 
 
-output/simdata/%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
+output/simdata/%_pvals.txt : output/simdata/mb_%__jtkout_GammaP.txt
 	@tail -q -n +2 $^ |cut -f 19 > $@
 
-output/simdata/%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
+output/simdata/%_pvals.txt : output/simdata/mb_%__jtkout_GammaP.txt
 	@tail -q -n +2 $^ |cut -f 19 > $@
 
-output/simdata/%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
+output/simdata/%_pvals.txt : output/simdata/mb_%__jtkout_GammaP.txt
 	@tail -q -n +2 $^ |cut -f 19 > $@
 
 output/simdata/mb_block_%_classes.txt : output/simdata/mb_simulated_data_key_%.txt output/simdata/mb_denoised_block_%.txt
