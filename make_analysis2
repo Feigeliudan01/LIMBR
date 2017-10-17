@@ -92,13 +92,13 @@ output/simdata/%_pvals.txt : output/simdata/mb_%__jtkout_GammaP.txt
 output/simdata/%_pvals.txt : output/simdata/mb_%__jtkout_GammaP.txt
 	@tail -q -n +2 $^ |cut -f 19 > $@
 
-output/simdata/%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
+output/simdata/mb_%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
 	@tail -q -n +2 $^ |cut -f 19 > $@
 
-output/simdata/%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
+output/simdata/mb_%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
 	@tail -q -n +2 $^ |cut -f 19 > $@
 
-output/simdata/%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
+output/simdata/mb_%_pvals.txt : output/simdata/mb_denoised_%__jtkout_GammaP.txt
 	@tail -q -n +2 $^ |cut -f 19 > $@
 
 output/simdata/mb_block_%_classes.txt : output/simdata/mb_simulated_data_key_%.txt output/simdata/mb_denoised_block_%.txt
