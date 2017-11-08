@@ -213,6 +213,14 @@ plt.ylim(0,1)
 plt.savefig('output/figs/sim_ROC_mb.pdf')
 plt.close()
 
+#Figure 2B
+simres0 = pd.read_csv('output/simdata/simdata_mb.csv')
+melted_simres = pd.melt(simres0, id_vars=['Iteration'], value_vars=['Base_auc', 'Noise_auc','Circ_auc'])
+ax = sns.boxplot(x='variable',y='value',data=melted_simres)
+ax = sns.swarmplot(x='variable',y='value',data=melted_simres)
+plt.savefig('output/figs/sim_ROC_auc_mb.pdf')
+plt.close()
+
 #Figure 2C
 key = pd.read_csv('output/simdata/mb_simulated_data_key_1.txt',sep='\t',index_col=0)
 simcirc_base = pd.read_csv('output/simdata/mb_simulated_data_baseline_1.txt',sep='\t',index_col=0)[key['circ']==1]
