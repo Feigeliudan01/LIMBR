@@ -1,6 +1,6 @@
 FILES = make_checkpoints/install
 FILES += make_checkpoints/actual
-FILES += make_checkpoints/simulate make_checkpoints/simulate_mb make_checkpoints/figures make_checkpoints/figures_mb
+FILES += make_checkpoints/simulate make_checkpoints/simulate_mb make_checkpoints/figures make_checkpoints/figures_mb make_checkpoints/export
 
 all: ${FILES}
 
@@ -51,4 +51,12 @@ make_checkpoints/figures_mb : dockerbuild/Dockerfile_figs_mb make_checkpoints/fi
 	@echo making figures mb
 	@docker build --force-rm --squash -f dockerbuild/Dockerfile_figs_mb -t acrowell/limbr .
 	@docker tag acrowell/limbr acrowell/limbr:8
+	@touch $@
+
+make_checkpoints/export : make_checkpoints/figures_mb
+	@echo exporting results
+	@docker run --name save acrowell/limbr:latest
+	@docker cp save:LIMBR/output results
+	@docker stop save
+	@docker rm save
 	@touch $@
