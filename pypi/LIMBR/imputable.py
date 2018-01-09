@@ -23,12 +23,20 @@ from sklearn import preprocessing
 class imputable:
 
     def __init__(self, filename, missingness):
+        """
+        takes input data and missingness threshold and initializes imputable object
+        """
         self.data = pd.read_csv(filename,sep='\t')
         self.miss = float(missingness)
         self.pats = {}
         self.notdone = True
 
     def deduplicate(self):
+        """
+        removes duplicate peptides
+
+        groups rows by peptide, if a peptide appears in more than one row it is removed
+        """
         if self.data[self.data.columns.values[1]][0][-2] == "T":
             self.data[self.data.columns.values[1]] = self.data[self.data.columns.values[1]].apply(lambda x: x.split('T')[0])
             self.data = self.data.groupby(['Peptide','Protein']).mean()
@@ -39,13 +47,27 @@ class imputable:
         self.data = self.data.drop(todrop)
 
     def drop_missing(self):
+        """removes rows which are missing more data than the user specified missingness threshold"""
         self.miss = np.rint(len(self.data.columns)*self.miss)
         self.data = self.data[self.data.isnull().sum(axis=1)<=self.miss]
 
     def impute(self,outname):
+        """
+        imputes missing data with KNN
 
+	takes deduplicated data with missing values removed and an output file name
+
+        outputs the imputed data to the given filename
+        """
         def match_pat(l,i):
-            #make vector of missing/non-missing
+            """
+            finds all missingness patterns present in the dataset
+
+            takes a row of data and its index
+
+            if that row has a new missingness pattern, that pattern is added to the list
+            whether the missingness pattern is new or not, the index of that row is assigned to the appropriate missingness pattern
+            """
             l = "".join(np.isnan(l).astype(int).astype(str))
             if l not in self.pats.keys():
                 self.pats[l] = [i]
@@ -53,10 +75,23 @@ class imputable:
                 self.pats[l].append(i)
 
         def get_patterns(arr):
+            """
+            calls match_pat on all rows of data
+            """
             for ind, val in enumerate(arr):
                 match_pat(val,ind)
 
         def sub_imputer(inds,pattern,origarr,comparr):
+            """
+            single imputation process for a missingness pattern.
+
+            drops columns missing in a given missingness pattern. Then finds nearest neighbors.  Iterates over rows matching missingness pattern, getting indexes of nearest neighbors, averaging nearest neighbrs and replacing 
+missing values with corresponding averages.
+
+            takes indexes of rows in missingness pattern, missingness pattern, the original array of data and the array of rows with no missing values
+
+            returns the matrix of rows matching the missingness pattern with the missing values imputed
+            """
             #drop missing columns given missingness pattern
             newarr = comparr[:,~np.array(list(pattern)).astype(bool)]
             #fit nearest neighbors
@@ -79,13 +114,15 @@ class imputable:
             return outa
 
         def imputer(origarr, comparr):
+            """
+            calls sub_imputer on each missingness pattern and outputs the results to a dict 
+            """
             outdict = {}
             for k in tqdm(self.pats.keys()):
                 temparr = sub_imputer(self.pats[k],k, origarr,comparr)
                 for ind, v in enumerate(temparr):
                     outdict[self.pats[k][ind]] = v
             return outdict
-
 
         datavals = self.data.values
         comparr = datavals[~np.isnan(datavals).any(axis=1)]
