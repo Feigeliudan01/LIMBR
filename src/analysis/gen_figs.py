@@ -18,6 +18,7 @@ circularlib=importr('circular')
 circular=robjects.r('circular')
 corcircular=robjects.r('cor.circular')
 import pickle
+from limbr import imputable
 
 def plot_cormat(df,fname,ptitle):
     fig, ax = plt.subplots(nrows=1, ncols=1)
@@ -372,6 +373,23 @@ circorr = corcircular(cpw,cpc,test='TRUE')
 
 phase_hist(defcirc['delta_p'].values,r'Histogram of Phase Lags Between'"\n"r'Expression in WT and $\Delta$CSP-1 Genotypes'"\n"r'For Proteins Circadian in Both Genotypes')
 
+
+#Figure 1d
+to_impute = imputable("data/Formatted_input.txt",.3)
+to_impute.deduplicate()
+miss = []
+blocks = []
+for i in range(1,20):
+    miss.append(len((to_impute.data[to_impute.data.columns[0:(i*10)]]).dropna()))
+    blocks.append(i)
+
+fig, ax1 = plt.subplots()
+ax1.plot(blocks,miss, color='b')[0]
+ax1.set_ylabel('Number of peptides without any missing values', color='k')
+ax1.set_xlabel('Number of MS runs', color='k')
+ax1.set_xticks(range(1,20))
+plt.savefig('output/figs/missingness_vs_experiments.pdf')
+plt.close()
 
 #Figure ???
 #ax = plt.subplot(111)
