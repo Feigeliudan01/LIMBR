@@ -52,6 +52,7 @@ class imputable:
         self.data = pd.read_csv(filename,sep='\t')
         self.miss = float(missingness)
         self.pats = {}
+        self.notdone = True
 
     def deduplicate(self):
         """
@@ -177,9 +178,16 @@ missing values with corresponding averages.
             return outdict
 
         datavals = self.data.values
+        #generate array of complete cases
         comparr = datavals[~np.isnan(datavals).any(axis=1)]
+
+        #find missingness patterns
         get_patterns(datavals)
+
+        #impute
         out = imputer(datavals, comparr)
+
+        #reform dataframe with imputed values from outdict
         meld = pd.DataFrame.from_dict(out,orient='index')
         meld.index = meld.index.astype(float)
         meld.sort_index(inplace=True)
