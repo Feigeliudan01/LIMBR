@@ -1,0 +1,8 @@
+FILES = $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo results/simdata/mb_simdata_eigenMS_$$i.txt; done)
+FILES += $(shell for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do echo results/simdata/mb_simdata_eigenMS_$$i\__jtkout_GammaP.txt; done)
+
+all: ${FILES}
+
+results/simdata/mb_simdata_eigenMS_%__jtkout_GammaP.txt: results/simdata/mb_simdata_eigenMS_%.txt
+	@echo Running eJTK on $<
+	@python src/eJTK-CalcP.py -f $< -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt

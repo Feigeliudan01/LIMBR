@@ -1,3 +1,0 @@
-id=$(docker create acrowell/limbr:v4)
-docker cp $id:./LIMBR/output - > docker_out.tar
-docker rm -v $id

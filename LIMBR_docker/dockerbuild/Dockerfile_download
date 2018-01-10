@@ -1,0 +1,14 @@
+FROM acrowell/limbr:latest
+MAINTAINER Alec Crowell <alexander.m.crowell.gr@dartmouth.edu>
+
+# clone the most recent version of the pipeline
+RUN git lfs clone https://github.com/aleccrowell/LIMBR.git
+WORKDIR /LIMBR
+RUN mkdir ./output/
+RUN mkdir ./output/actual/
+RUN mkdir ./output/simdata/
+RUN mkdir ./output/figs/
+WORKDIR /LIMBR/src/bin/
+RUN python3 setup.py build_ext --inplace
+RUN python setup.py build_ext --inplace
+WORKDIR /LIMBR/
