@@ -542,7 +542,7 @@ right singular vector most correlated with the initially estimated batch effect.
 
     def normalize(self,outname):
         """
-        Creates diagnostic files, normalizes data based on calculated batch effects and outputs final processed dataset.
+        Creates diagnostic files, normalizes data based on calculated batch effects, groups peptides by protein and outputs final processed dataset.
 
         Diagnostic files containing estimated batch effects, explained variance ratios, results of permutation testing and estimated magnitudes of each batch effect on each peptide are generated.  The signal produced by 
 significant batch effects is then estimated and removed from the dataset.  These final results are then written to an output file.
@@ -557,6 +557,7 @@ significant batch effects is then estimated and removed from the dataset.  These
         svd_norm : dataframe
             Normalized dataframe with significant batch effects removed.
         """
+
         pd.DataFrame(self.ts,columns=self.data.columns).to_csv(outname.split('.txt')[0]+'_trends.txt',sep='\t')
         pd.DataFrame(self.sigs).to_csv(outname.split('.txt')[0]+'_perms.txt',sep='\t')
         pd.DataFrame(self.tks).to_csv(outname.split('.txt')[0]+'_tks.txt',sep='\t')
