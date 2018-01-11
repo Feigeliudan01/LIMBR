@@ -20,11 +20,11 @@ data and the known correlation structure of the data set to model these batch ef
 Features
 --------
 
--KNN based imputation of missing data.
+*KNN based imputation of missing data.
 
--SVD based modelling and removal of batch effects.
+*SVD based modelling and removal of batch effects.
 
--Built for circadian and non-circadian time series as well as block designs
+*Built for circadian and non-circadian time series as well as block designs
 
 ------------
 Code Example
