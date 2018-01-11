@@ -26,13 +26,15 @@ Features
 
 * Built for circadian and non-circadian time series as well as block designs
 
-------------
-Code Example
-------------
+-------------
+Example Usage
+-------------
 
 ------------
 Installation
 ------------
+
+pip install limbr
 
 -----------
 How to Use?
@@ -42,7 +44,9 @@ How to Use?
 TODO
 ----
 
-Switch to long format files for greater interoperability and more easily specified file format.
+* Switch to long format files for greater interoperability and more easily specified file format.
+
+* Add unit tests to docstrings where possible.
 
 -------
 Credits
