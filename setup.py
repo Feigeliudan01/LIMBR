@@ -12,4 +12,4 @@ setup(name='LIMBR',
       license='BSD-3',
       keywords=['SVA','SVD','mass-spec','bioinformatics'],
       install_requires=['numpy','pandas','scipy','sklearn','statsmodels','tqdm','multiprocess'],
-      zip_safe=False,long_description=open('README.txt').read())
+      zip_safe=False,long_description=open('README.md').read())
