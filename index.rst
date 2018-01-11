@@ -9,6 +9,7 @@ Welcome to LIMBR's documentation!
 .. toctree::
    :maxdepth: 6
 
+   readme.rst
    source/modules
 
 Indices and tables
