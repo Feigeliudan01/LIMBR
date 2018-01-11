@@ -36,6 +36,12 @@ Installation
 
 pip install limbr
 
+-------------
+API Reference
+-------------
+
+http://limbr.readthedocs.io/en/latest/
+
 -----------
 How to Use?
 -----------
