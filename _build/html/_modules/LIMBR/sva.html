@@ -1,0 +1,721 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>LIMBR.sva &#8212; LIMBR v0.2.6-alpha documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     'v0.2.6-alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for LIMBR.sva</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">stats</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="k">import</span> <span class="n">svd</span><span class="p">,</span> <span class="n">lstsq</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="k">import</span> <span class="n">PCA</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">linregress</span><span class="p">,</span> <span class="n">f_oneway</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">statsmodels.nonparametric.smoothers_lowess</span> <span class="k">import</span> <span class="n">lowess</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="k">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">scale</span>
+<span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="k">import</span> <span class="n">NearestNeighbors</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">ctypes</span> <span class="k">import</span> <span class="n">c_int</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">multiprocess</span> <span class="k">import</span> <span class="n">Pool</span><span class="p">,</span> <span class="n">current_process</span><span class="p">,</span> <span class="n">Manager</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="k">import</span> <span class="n">preprocessing</span>
+
+<div class="viewcode-block" id="sva"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.sva.sva">[docs]</a><span class="k">class</span> <span class="nc">sva</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs sva based identification and remmoval of batch effects.</span>
+
+
+<span class="sd">    This class takes a dataset without missing values (raw RNAseq or Proteomics from class imputable).  It performs pool normalization for proteomics datasets and quantile normalization and scaling for all datasets.  The data is then subsetted based on correlation to a primary variable of interest determined by the experimental design.  This subsetted data is used to calculate a residual matrix from which initial estimates of batch effects are produced by SVD.  Significance of these batch effects are estimated by permutation of the residual matrix.  Batch effects deemed significant are regressed against the original dataset and final batch effects are calculated from those rows most correlated with the effect.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        Path to the input dataset.</span>
+<span class="sd">    design : str</span>
+<span class="sd">        Experimental design, one of: &#39;c&#39;, &#39;l&#39;, &#39;b&#39;.  &#39;c&#39; indicates a circadian timecourse. &#39;l&#39; indicates a general timecourse (lowess fit used).  &#39;b&#39; indicates a block design.</span>
+<span class="sd">    data_type : str</span>
+<span class="sd">        Type of dataset, one of &#39;p&#39; or &#39;r&#39;.  &#39;p&#39; indicates proteomic with two index columns specifying peptide and protein.  &#39;r&#39; indicates RNAseq with one index column indicating gene.</span>
+<span class="sd">    blocks : str</span>
+<span class="sd">        Path to file containing block design in the case of design = &#39;b&#39;.  This should be a pickled list of which block each sample corresponds with.</span>
+<span class="sd">    pool : str</span>
+<span class="sd">        Path to file containing pooled control design for experiment in the case of data_type = &#39;p&#39;.  This should be a pickled dictionary with the keys being column headers corresponding to each sample and the values being the corresponding pooled control number.</span>
+
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    raw_data : dataframe</span>
+<span class="sd">        This is where the input data is stored.</span>
+<span class="sd">    data_type : str</span>
+<span class="sd">        This is where the data type (&#39;p&#39; or &#39;r&#39;) is stored.</span>
+<span class="sd">    designtype : str</span>
+<span class="sd">        This is where the design type of the experiment (&#39;c&#39;,&#39;l&#39; or &#39;b&#39;) is stored.</span>
+<span class="sd">    block_design : list</span>
+<span class="sd">        This is where the block assignments for each sample are stored if designtype = &#39;b&#39;.</span>
+<span class="sd">    norm_map : dict</span>
+<span class="sd">        This is where the assignment of pooled controls to samples are stored if data_type = &#39;p&#39;.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span><span class="n">design</span><span class="p">,</span><span class="n">data_type</span><span class="p">,</span><span class="n">blocks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">pool</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Imports data and initializes an sva object.</span>
+
+
+<span class="sd">        Takes a file from one of two data types protein (&#39;p&#39;) which has two index columns or rna (&#39;r&#39;) which has only one.  Opens a pickled file matching pooled controls to corresponding samples if data_type = &#39;p&#39; and opens a picked file matching samples to blocks if designtype = &#39;b&#39;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">4574</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">data_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_type</span> <span class="o">==</span> <span class="s1">&#39;p&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;Peptide&#39;</span><span class="p">,</span><span class="s1">&#39;Protein&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_type</span> <span class="o">==</span> <span class="s1">&#39;r&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">designtype</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">design</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">designtype</span> <span class="o">==</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">block_design</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span> <span class="nb">open</span><span class="p">(</span> <span class="n">blocks</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="k">if</span> <span class="n">pool</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm_map</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span> <span class="nb">open</span><span class="p">(</span> <span class="n">pool</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">pool</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm_map</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notdone</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="sva.pool_normalize"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.sva.sva.pool_normalize">[docs]</a>    <span class="k">def</span> <span class="nf">pool_normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Preprocessing normalization.</span>
+
+
+<span class="sd">        Performs pool normalization on an sva object using the raw_data and norm_map if pooled controls were used. Quantile normalization of each column and scaling of each row are then performed.</span>
+
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        scaler : sklearn.preprocessing.StandardScaler()</span>
+<span class="sd">            A fitted scaler from the sklearn preprocessing module.</span>
+<span class="sd">        data_pnorm : dataframe</span>
+<span class="sd">            Pool normalized data.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">pool_norm</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">dmap</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Pool normalizes samples in a proteomics experiment.</span>
+
+
+<span class="sd">            Peptide abundances of each sample are divided by corresponding pooled control abundances.</span>
+
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            df : dataframe</span>
+<span class="sd">                The dataframe to be pool normalized.</span>
+<span class="sd">            dmap : dict</span>
+<span class="sd">                The dictionary connecting each sample to its corresponding pooled control.</span>
+
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            newdf : dataframe</span>
+<span class="sd">                Dataframe with samples pool normalized and pooled control columns dropped.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+
+            <span class="n">newdf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+                <span class="n">newdf</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;pool_&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">%02d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">dmap</span><span class="p">[</span><span class="n">column</span><span class="p">]],</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+            <span class="n">nonpool</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">newdf</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="s1">&#39;pool&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">i</span><span class="p">]</span>
+            <span class="n">newdf</span> <span class="o">=</span> <span class="n">newdf</span><span class="p">[</span><span class="n">nonpool</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">newdf</span>
+
+        <span class="k">def</span> <span class="nf">qnorm</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Quantile normalizes data by columns.</span>
+
+
+<span class="sd">            A reference distribution is generated as the mean across rows of the dataset with all columns sorted by abundance.  Each column is then quantile normalized to this target distribution.</span>
+
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            df : dataframe</span>
+<span class="sd">                The dataframe to be quantile normalized</span>
+
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            newdf : dataframe</span>
+<span class="sd">                The quantile normalized dataframe.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+
+            <span class="n">ref</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ref</span>
+            <span class="n">newdf</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">newdf</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_type</span> <span class="o">==</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">norm_map</span> <span class="o">==</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">qnorm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span> <span class="o">=</span> <span class="n">preprocessing</span><span class="o">.</span><span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_pnorm</span> <span class="o">=</span> <span class="n">pool_norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">norm_map</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_pnorm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_pnorm</span><span class="o">.</span><span class="n">replace</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_pnorm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_pnorm</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_pnorm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_pnorm</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_pnorm</span> <span class="o">=</span> <span class="n">qnorm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_pnorm</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span> <span class="o">=</span> <span class="n">preprocessing</span><span class="o">.</span><span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_pnorm</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_pnorm</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_pnorm</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_pnorm</span><span class="o">.</span><span class="n">index</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="sva.get_tpoints"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.sva.sva.get_tpoints">[docs]</a>    <span class="k">def</span> <span class="nf">get_tpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extracts timepoints from header of data.</span>
+
+
+<span class="sd">        Splits strings in header based on required syntax and generates timepoints.</span>
+
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tpoints : array</span>
+<span class="sd">            array of timepoints at which samples were collected.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">tpoints</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;CT&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
+        <span class="n">tpoints</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tpoints</span><span class="p">]</span>
+        <span class="c1">#deprecated splitting for alternative header syntax</span>
+        <span class="c1">#tpoints = [int(i.split(&#39;.&#39;)[0]) for i in tpoints]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tpoints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tpoints</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="sva.prim_cor"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.sva.sva.prim_cor">[docs]</a>    <span class="k">def</span> <span class="nf">prim_cor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        calculates correlation for each row against the primary variable of interest.</span>
+
+
+<span class="sd">        The primary variable of interest is defined based on the designtype.  For circadian (&#39;c&#39;) this is the difference between the autocorrelation at the expected period and one half that period.  For general timecourse (&#39;l&#39;) this is the goodness of fit of a lowess model.  For a block design (&#39;b&#39;) this is the ANOVA f statistic.</span>
+
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cors : array</span>
+<span class="sd">            Array of correlations with primary variable of interest.  The calculation of this variable is determined by the designtype as specified above and the procedure described in the corresponding function.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">circ_cor</span><span class="p">():</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Calculates rough estimate of circadianness based on autocorrelation differences.</span>
+
+
+<span class="sd">            Given a period (fixed here at 12 samples) the autocorrelation is calculated at 12 and 6 samples shift and the difference indicates the degree of circadian signal.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">def</span> <span class="nf">autocorr</span><span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="n">shift</span><span class="p">):</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                calculates autocorrelation of a series at a given shift</span>
+
+
+<span class="sd">                Parameters</span>
+<span class="sd">                ----------</span>
+<span class="sd">                l : list</span>
+<span class="sd">                    Averaged abundance values for the given row.</span>
+<span class="sd">                shift : int</span>
+<span class="sd">                    the shift at which to calculate the autocorrelation.</span>
+
+
+<span class="sd">                Returns</span>
+<span class="sd">                -------</span>
+<span class="sd">                acor : float</span>
+<span class="sd">                    calculated autocorrelation</span>
+
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="n">acor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">shift</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">acor</span>
+
+            <span class="n">per</span> <span class="o">=</span> <span class="mi">12</span>
+            <span class="n">cors</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
+                <span class="n">ave</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="c1">#might eventually need to account for case where all replicates of a timepoint are missing (in this case the experiment is probably irreparably broken anyway though)</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tpoints</span><span class="p">):</span>
+                    <span class="n">ave</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tpoints</span><span class="p">)</span> <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">k</span><span class="p">])</span><span class="o">*</span><span class="mi">1000000</span><span class="p">))</span>
+                <span class="n">cors</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">autocorr</span><span class="p">(</span><span class="n">ave</span><span class="p">,</span><span class="n">per</span><span class="p">)</span> <span class="o">-</span> <span class="n">autocorr</span><span class="p">(</span><span class="n">ave</span><span class="p">,(</span><span class="n">per</span><span class="o">//</span><span class="mi">2</span><span class="p">))))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cors</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">l_cor</span><span class="p">():</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Calculates how well a row of data fits expectations for a timecourse.</span>
+
+
+<span class="sd">            In a timecourse, rows least affected by batch effects should be those with the best fit from a lowess model.  Goodness of fit in this case is defined as the sum of squared errors for the lowess fit.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">cors</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
+                <span class="n">ys</span> <span class="o">=</span> <span class="n">lowess</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tpoints</span><span class="p">,</span> <span class="n">it</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">cors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="nb">sum</span><span class="p">((</span><span class="n">row</span> <span class="o">-</span> <span class="n">ys</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cors</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">block_cor</span><span class="p">():</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Calculates how well a row of data fits expectations for a block study design.</span>
+
+
+<span class="sd">            In a blocked study, rows least affected by batch effects should be those for which within group variation is much smaller than between group variation.  In this case the ANOVA f statistic is used as a relative measure of within and between group variability.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">cors</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
+                <span class="n">blist</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_design</span><span class="p">):</span>
+                    <span class="n">blist</span><span class="o">.</span><span class="n">append</span><span class="p">(([</span><span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_design</span><span class="p">)</span> <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">k</span><span class="p">]))</span>
+                <span class="n">cors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_oneway</span><span class="p">(</span><span class="o">*</span><span class="n">blist</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cors</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">designtype</span> <span class="o">==</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span>
+            <span class="n">circ_cor</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">designtype</span> <span class="o">==</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span>
+            <span class="n">block_cor</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">designtype</span> <span class="o">==</span> <span class="s1">&#39;l&#39;</span><span class="p">:</span>
+            <span class="n">l_cor</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="sva.reduce"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.sva.sva.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">percsub</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reduces the data based on the correlation to primary variable of interest calculated in prim_cor.</span>
+
+
+<span class="sd">        Rows most correlated with the variable of interest up to the specified percentage are dropped from the dataset.</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        percsub : float</span>
+<span class="sd">            Percentage of data to remove during reduction.</span>
+
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_reduced : dataframe</span>
+<span class="sd">            Reduced dataset.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">percsub</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">percsub</span><span class="p">)</span>
+        <span class="n">uncor</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="o">&lt;</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cors</span><span class="p">,</span><span class="n">percsub</span><span class="p">)))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cors</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_reduced</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">uncor</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="sva.get_res"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.sva.sva.get_res">[docs]</a>    <span class="k">def</span> <span class="nf">get_res</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">in_arr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates model residuals from which to learn batch effects.</span>
+
+
+<span class="sd">        For time course based designs, this is done with a lowess model.  For block designs, this is done with the block means.</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        in_arr : arr</span>
+<span class="sd">            Input array of data from which to calculate residuals.</span>
+
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        res_mat : arr</span>
+<span class="sd">            Residual matrix.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">get_l_res</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;calculates residuals from a lowess model for timecourse designs&quot;&quot;&quot;</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">:</span>
+                <span class="n">ys</span> <span class="o">=</span> <span class="n">lowess</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tpoints</span><span class="p">,</span> <span class="n">it</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span> <span class="o">-</span> <span class="n">ys</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">get_b_res</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;calculates residuals from the block mean for block based designs&quot;&quot;&quot;</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_design</span><span class="p">):</span>
+                <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_design</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">v</span><span class="p">]</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">arr</span><span class="p">[:,</span><span class="n">indices</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">ma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">arr</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_design</span><span class="p">)),</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;get block residuals 2&#39;</span><span class="p">,</span> <span class="n">leave</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                <span class="n">ma</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">m</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">block_design</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span><span class="n">ma</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">designtype</span> <span class="o">==</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span>
+            <span class="n">res_mat</span> <span class="o">=</span> <span class="n">get_l_res</span><span class="p">(</span><span class="n">in_arr</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">designtype</span> <span class="o">==</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span>
+            <span class="n">res_mat</span> <span class="o">=</span> <span class="n">get_b_res</span><span class="p">(</span><span class="n">in_arr</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">designtype</span> <span class="o">==</span> <span class="s1">&#39;l&#39;</span><span class="p">:</span>
+            <span class="n">res_mat</span> <span class="o">=</span> <span class="n">get_l_res</span><span class="p">(</span><span class="n">in_arr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">res_mat</span></div>
+
+    <span class="c1">#defined seperately for reuse in perm_test</span>
+<div class="viewcode-block" id="sva.set_res"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.sva.sva.set_res">[docs]</a>    <span class="k">def</span> <span class="nf">set_res</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calls get_res()</span>
+
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        res : arr</span>
+<span class="sd">            This is where the residual matrix is stored.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_res</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_reduced</span><span class="o">.</span><span class="n">values</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="sva.get_tks"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.sva.sva.get_tks">[docs]</a>    <span class="k">def</span> <span class="nf">get_tks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">arr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;calculates the fraction of variance for each row of the residual matrix explained by each principle component with PCA&quot;&quot;&quot;</span>
+        <span class="n">pca</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">svd_solver</span><span class="o">=</span><span class="s1">&#39;randomized&#39;</span><span class="p">,</span><span class="n">random_state</span><span class="o">=</span><span class="mi">4574</span><span class="p">)</span>
+        <span class="n">pca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pca</span><span class="o">.</span><span class="n">explained_variance_ratio_</span></div>
+
+    <span class="c1">#defined seperately for reuse in perm_test</span>
+<div class="viewcode-block" id="sva.set_tks"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.sva.sva.set_tks">[docs]</a>    <span class="k">def</span> <span class="nf">set_tks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calls get_tks().</span>
+
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tks : list</span>
+<span class="sd">            This is where the tks (explained variance ratios) are stored.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">res</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="sva.perm_test"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.sva.sva.perm_test">[docs]</a>    <span class="k">def</span> <span class="nf">perm_test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">nperm</span><span class="p">,</span><span class="n">npr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs permutation testing on residual matrix SVD.</span>
+
+
+<span class="sd">        The rows of the residual matrix are first permuted.  Then  get_tks is called to calculate explained variance ratios and these tks are compared to the values from the actual residual matrix.  A running total is kept for the number of times the explained variance from the permuted matrix exceeds that from the original matrix. And significance is estimated by dividing these totals by the number of permutations.  This permutation testing is multiprocessed to decrease calculation times.</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nperm : int</span>
+<span class="sd">            Number of permutations to be tested.</span>
+<span class="sd">        npr : int</span>
+<span class="sd">            Number of processors to be used.</span>
+
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sigs : array</span>
+<span class="sd">            Estimated significances for each batch effect.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">mgr</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">mgr</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="k">def</span> <span class="nf">single_it</span><span class="p">(</span><span class="n">rseed</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Single iteration of permutation testing.</span>
+
+
+<span class="sd">            Permutes residual matrix, calculates new tks for permuted matrix and compares to original tks.</span>
+
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            rseed : int</span>
+<span class="sd">                Random seed.</span>
+
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            out : arr</span>
+<span class="sd">                Counts of number of times permuted explained variance ratio exceeded explained variance ratio from actual residual matrix.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+
+            <span class="n">rstate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">rseed</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">rstar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tks</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rstar</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">rstate</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">rstar</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span>
+            <span class="n">resstar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_res</span><span class="p">(</span><span class="n">rstar</span><span class="p">)</span>
+            <span class="n">tkstar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tks</span><span class="p">(</span><span class="n">resstar</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tks</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">tkstar</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tks</span><span class="p">[</span><span class="n">m</span><span class="p">]:</span>
+                    <span class="n">out</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">out</span>
+
+        <span class="n">l</span> <span class="o">=</span> <span class="n">mgr</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">npr</span><span class="p">))</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+            <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">nperm</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;permuting&#39;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">imap_it</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap_unordered</span><span class="p">(</span><span class="n">single_it</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">nperm</span><span class="p">)))</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">imap_it</span><span class="p">:</span>
+                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">with</span> <span class="n">l</span><span class="p">:</span>
+                    <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">pbar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">output</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">nperm</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">40</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="sva.eig_reg"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.sva.sva.eig_reg">[docs]</a>    <span class="k">def</span> <span class="nf">eig_reg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">alpha</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Regresses eigentrends (batch effects) against the reduced dataset calculating p values for each row being associated with that trend.</span>
+
+
+<span class="sd">        Batch effects are estimated with SVD and only those passing the significance threshold for permutation testing are retained.  These trends are then regressed against each row of the reduced data to estimate a p value for that row&#39;s association with that trend.</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        alpha : float</span>
+<span class="sd">            Significance threshold for permutation testing, expressed as a decimal.</span>
+
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ps : arr</span>
+<span class="sd">            P values for association between rows and estimated batch effects.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">alpha</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="n">U</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">V</span><span class="o">.</span><span class="n">T</span><span class="p">[:,:</span><span class="nb">len</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">takewhile</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigs</span><span class="o">.</span><span class="n">copy</span><span class="p">())])]</span>
+        <span class="n">pvals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">trend</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">copy</span><span class="p">()):</span>
+                <span class="n">temp</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_reduced</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">copy</span><span class="p">():</span>
+                    <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">r_value</span><span class="p">,</span> <span class="n">p_value</span><span class="p">,</span> <span class="n">std_err</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="n">trend</span><span class="p">)</span>
+                    <span class="n">temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p_value</span><span class="p">)</span>
+                <span class="n">pvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ps</span> <span class="o">=</span>  <span class="n">pvals</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No Significant Trends&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="sva.subset_svd"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.sva.sva.subset_svd">[docs]</a>    <span class="k">def</span> <span class="nf">subset_svd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lam</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs SVD on the subset of rows associated with each batch effect.</span>
+
+
+<span class="sd">        The reduced data is first subsetted based on the p values form the regression for each estimated batch effect.  After subsetting the reduced data, SVD is performed on this matrix and the true batch effect is taken as the right singular vector most correlated with the initially estimated batch effect.</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        lam : float</span>
+<span class="sd">            P value cutoff above which distribution is assumed to be uniform.  Used to calculate significance cutoff.</span>
+
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ts : arr</span>
+<span class="sd">            Estimated batch effects (right singular vectors).</span>
+<span class="sd">        pepts : arr</span>
+<span class="sd">            Estimates of effect size for each batch effect on each peptide (left singular vectors).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">est_pi_naught</span><span class="p">(</span><span class="n">probs_naught</span><span class="p">,</span><span class="n">lam</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Estimates background distribution of p values.</span>
+
+
+<span class="sd">            Given cutoff lam, calculates ratio of background p values by comparing actual number of p values above cutoff to expected number above cutoff.</span>
+
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            probs_naught : list</span>
+<span class="sd">                List of p values.</span>
+<span class="sd">            lam : float</span>
+<span class="sd">                Cutoff above which p values assumed to be drawn from null distribution.</span>
+
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            pi_naught : float</span>
+<span class="sd">                Estimated ratio of background p values.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+
+            <span class="n">pi_naught</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">probs_naught</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">lam</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">probs_naught</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">lam</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">pi_naught</span>
+
+        <span class="k">def</span> <span class="nf">est_pi_sig</span><span class="p">(</span><span class="n">probs_sig</span><span class="p">,</span><span class="n">l</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Finds p value pi_sig as cutoff for rows associated with batch effect.</span>
+
+
+<span class="sd">            First estimates ration of background p values.  Then based on this ratio calculates the p value cutoff for rows associated with the batch effect.</span>
+
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            probs_sig : list</span>
+<span class="sd">                List of p values.</span>
+<span class="sd">            l : float</span>
+<span class="sd">                Cutoff to be passed to est_pi_naught() as lam.</span>
+
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            pi_sig : float</span>
+<span class="sd">                Estimated p value cutoff.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+
+            <span class="n">pi_0</span> <span class="o">=</span> <span class="n">est_pi_naught</span><span class="p">(</span><span class="n">probs_sig</span><span class="p">,</span><span class="n">l</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pi_0</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s1">&#39;nan&#39;</span>
+            <span class="n">sp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">probs_sig</span><span class="p">)</span>
+            <span class="n">pi_sig</span> <span class="o">=</span> <span class="n">sp</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">pi_0</span><span class="p">)</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">probs_sig</span><span class="p">))</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+            <span class="k">return</span> <span class="n">pi_sig</span>
+
+        <span class="n">pt</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">bt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
+        <span class="n">trends</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">pep_trends</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ps</span><span class="p">)):</span>
+            <span class="n">sub</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">thresh</span> <span class="o">=</span> <span class="n">est_pi_sig</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span><span class="n">lam</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">thresh</span> <span class="o">==</span> <span class="s1">&#39;nan&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ts</span> <span class="o">=</span> <span class="n">trends</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pepts</span> <span class="o">=</span> <span class="n">pep_trends</span>
+                <span class="k">return</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">entry</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">entry</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">thresh</span><span class="p">:</span>
+                    <span class="n">sub</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_reduced</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">U</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">trend</span> <span class="ow">in</span> <span class="n">V</span><span class="p">:</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">p_value</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">bt</span><span class="p">[</span><span class="n">j</span><span class="p">],</span><span class="n">trend</span><span class="p">)</span>
+                <span class="n">temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p_value</span><span class="p">)</span>
+            <span class="n">trends</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">V</span><span class="o">.</span><span class="n">T</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">temp</span><span class="p">)])</span>
+            <span class="n">pep_trends</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pt</span><span class="p">[:,</span><span class="n">j</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pepts</span> <span class="o">=</span> <span class="n">pep_trends</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ts</span> <span class="o">=</span> <span class="n">trends</span></div>
+
+
+<div class="viewcode-block" id="sva.normalize"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.sva.sva.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">outname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates diagnostic files, normalizes data based on calculated batch effects, groups peptides by protein and outputs final processed dataset.</span>
+
+
+<span class="sd">        Diagnostic files containing estimated batch effects, explained variance ratios, results of permutation testing and estimated magnitudes of each batch effect on each peptide are generated.  The signal produced by significant batch effects is then estimated and removed from the dataset.  These final results are then written to an output file.</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        outname : str</span>
+<span class="sd">            Path to desired output file.</span>
+
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        svd_norm : dataframe</span>
+<span class="sd">            Normalized dataframe with significant batch effects removed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">outname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_trends.txt&#39;</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigs</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">outname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_perms.txt&#39;</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tks</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">outname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_tks.txt&#39;</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pepts</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_reduced</span><span class="o">.</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">outname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_pep_bias.txt&#39;</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">fin_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">svd_norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span> <span class="o">-</span> <span class="n">fin_res</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">svd_norm</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">svd_norm</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_type</span> <span class="o">==</span> <span class="s1">&#39;p&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">svd_norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">svd_norm</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Protein&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">svd_norm</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">svd_norm</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">outname</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Alexander Crowell.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

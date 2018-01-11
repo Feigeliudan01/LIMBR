@@ -7,10 +7,9 @@ Welcome to LIMBR's documentation!
 =================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 6
 
-
+   source/modules
 
 Indices and tables
 ==================

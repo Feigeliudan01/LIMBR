@@ -1,0 +1,303 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>LIMBR.imputable &#8212; LIMBR v0.2.6-alpha documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     'v0.2.6-alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for LIMBR.imputable</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">stats</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="k">import</span> <span class="n">svd</span><span class="p">,</span> <span class="n">lstsq</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="k">import</span> <span class="n">PCA</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">linregress</span><span class="p">,</span> <span class="n">f_oneway</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">statsmodels.nonparametric.smoothers_lowess</span> <span class="k">import</span> <span class="n">lowess</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="k">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">scale</span>
+<span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="k">import</span> <span class="n">NearestNeighbors</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">ctypes</span> <span class="k">import</span> <span class="n">c_int</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">multiprocess</span> <span class="k">import</span> <span class="n">Pool</span><span class="p">,</span> <span class="n">current_process</span><span class="p">,</span> <span class="n">Manager</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="k">import</span> <span class="n">preprocessing</span>
+
+<div class="viewcode-block" id="imputable"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.imputable.imputable">[docs]</a><span class="k">class</span> <span class="nc">imputable</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Imputes missing data with K Nearest Neighbors based on user specified parameters.</span>
+
+
+<span class="sd">    This class generates an object from raw data and allows for preprocessing, imputation and output of that data.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        This is the path to the file containing the raw data.</span>
+<span class="sd">    missingness : float</span>
+<span class="sd">        This is the maximum allowable percentage of missingness expressed as a decimal.  For example a value of 0.25 would mean that all rows for which more than one in four values are missing will be rejected.</span>
+
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : dataframe</span>
+<span class="sd">        This is where the raw data read from filename is stored.</span>
+<span class="sd">    miss : float</span>
+<span class="sd">        This is where the maximum allowable percentage of missingness expressed as a decimal is stored.</span>
+<span class="sd">    pats : dict</span>
+<span class="sd">        This is where the set of missingness patterns found in the dataset will be stored later, initialized here.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">missingness</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor, takes input data and missingness threshold and initializes imputable object.</span>
+
+<span class="sd">        This is the initialization function for imputation.  It reads the input file of raw data and sets the user specified value for the missingness threshold.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">miss</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">missingness</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pats</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notdone</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="imputable.deduplicate"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.imputable.imputable.deduplicate">[docs]</a>    <span class="k">def</span> <span class="nf">deduplicate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes duplicate peptides.</span>
+
+
+<span class="sd">        Groups rows by peptide, if a peptide appears in more than one row it is removed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;T&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;Peptide&#39;</span><span class="p">,</span><span class="s1">&#39;Protein&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">todrop</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Peptide&#39;</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">todrop</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">todrop</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="imputable.drop_missing"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.imputable.imputable.drop_missing">[docs]</a>    <span class="k">def</span> <span class="nf">drop_missing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Removes rows which are missing more data than the user specified missingness threshold.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">miss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">miss</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">&lt;=</span><span class="bp">self</span><span class="o">.</span><span class="n">miss</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="imputable.impute"><a class="viewcode-back" href="../../source/LIMBR.html#LIMBR.imputable.imputable.impute">[docs]</a>    <span class="k">def</span> <span class="nf">impute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">outname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Imputes missing data with KNN and outputs the results to the specified file.</span>
+
+
+<span class="sd">        First all of the missingness patterns present in the dataset are identified.  Then those patterns are iterated over and for each pattern, missing values are imputed.  Finally the dataset is reformed with the imputed values and output.</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        outname : str</span>
+<span class="sd">            Path to output file.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">match_pat</span><span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            finds all missingness patterns present in the dataset</span>
+
+
+<span class="sd">            For each row, if that row has a new missingness pattern, that pattern is added to the list, then whether the missingness pattern is new or not, the index of that row is assigned to the appropriate missingness pattern.</span>
+
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            l : list</span>
+<span class="sd">                A row of data</span>
+<span class="sd">            i : int</span>
+<span class="sd">                the index of that row in the original dataset</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+
+            <span class="n">l</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">l</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">l</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pats</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pats</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pats</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">get_patterns</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Calls match_pat on all rows of data&quot;&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+                <span class="n">match_pat</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="n">ind</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">sub_imputer</span><span class="p">(</span><span class="n">inds</span><span class="p">,</span><span class="n">pattern</span><span class="p">,</span><span class="n">origarr</span><span class="p">,</span><span class="n">comparr</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            single imputation process for a missingness pattern.</span>
+
+
+<span class="sd">            Drops columns missing in a given missingness pattern. Then finds nearest neighbors.  Iterates over rows matching missingness pattern, getting indexes of nearest neighbors, averaging nearest neighbrs and replacing </span>
+<span class="sd">missing values with corresponding averages.</span>
+
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            inds : list</span>
+<span class="sd">                indexes of rows sharing the missingness pattern.</span>
+<span class="sd">            pattern : str</span>
+<span class="sd">                Binary representation of missingness pattern.</span>
+<span class="sd">            origarr : arr</span>
+<span class="sd">                original array of data with missing values</span>
+<span class="sd">            comparr : arr</span>
+<span class="sd">                Complete array of only rows with no missing values (complete cases).</span>
+
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            outa : arr</span>
+<span class="sd">                Imputed array for missingness pattern.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+
+            <span class="c1">#drop missing columns given missingness pattern</span>
+            <span class="n">newarr</span> <span class="o">=</span> <span class="n">comparr</span><span class="p">[:,</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)]</span>
+            <span class="c1">#fit nearest neighbors</span>
+            <span class="n">nbrs</span> <span class="o">=</span> <span class="n">NearestNeighbors</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">newarr</span><span class="p">)</span>
+            <span class="n">outa</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1">#iterate over rows matching missingness pattern</span>
+            <span class="k">for</span> <span class="n">rowind</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">origarr</span><span class="p">[</span><span class="n">inds</span><span class="p">]):</span>
+                <span class="n">outl</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="c1">#get indexes of given rows nearest neighbors</span>
+                <span class="n">indexes</span> <span class="o">=</span> <span class="n">nbrs</span><span class="o">.</span><span class="n">kneighbors</span><span class="p">([</span><span class="n">origarr</span><span class="p">[</span><span class="n">inds</span><span class="p">[</span><span class="n">rowind</span><span class="p">],</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)]],</span><span class="n">return_distance</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="c1">#get array of nearest neighbors</span>
+                <span class="n">means</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">comparr</span><span class="p">[</span><span class="n">indexes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="c1">#iterate over entries in each row</span>
+                <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+                        <span class="n">outl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">outl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">means</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span>
+                <span class="n">outa</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outl</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">outa</span>
+
+        <span class="k">def</span> <span class="nf">imputer</span><span class="p">(</span><span class="n">origarr</span><span class="p">,</span> <span class="n">comparr</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Calls sub_imputer on each missingness pattern and outputs the results to a dict.</span>
+
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            origarr : arr</span>
+<span class="sd">                Original array with missing values.</span>
+<span class="sd">            comparr : arr</span>
+<span class="sd">                Complete array of only rows with no missing values (complete cases).</span>
+
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            outdict : dict</span>
+<span class="sd">                Dict of imputed data with index in the original dataset as the key and imputed data as the value.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+
+            <span class="n">outdict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pats</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="n">temparr</span> <span class="o">=</span> <span class="n">sub_imputer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pats</span><span class="p">[</span><span class="n">k</span><span class="p">],</span><span class="n">k</span><span class="p">,</span> <span class="n">origarr</span><span class="p">,</span><span class="n">comparr</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">temparr</span><span class="p">):</span>
+                    <span class="n">outdict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pats</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">ind</span><span class="p">]]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">return</span> <span class="n">outdict</span>
+
+        <span class="n">datavals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span>
+        <span class="c1">#generate array of complete cases</span>
+        <span class="n">comparr</span> <span class="o">=</span> <span class="n">datavals</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">datavals</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+
+        <span class="c1">#find missingness patterns</span>
+        <span class="n">get_patterns</span><span class="p">(</span><span class="n">datavals</span><span class="p">)</span>
+
+        <span class="c1">#impute</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">imputer</span><span class="p">(</span><span class="n">datavals</span><span class="p">,</span> <span class="n">comparr</span><span class="p">)</span>
+
+        <span class="c1">#reform dataframe with imputed values from outdict</span>
+        <span class="n">meld</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">out</span><span class="p">,</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+        <span class="n">meld</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">meld</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">meld</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">meld</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">1</span><span class="p">)],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">meld</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span>
+        <span class="n">meld</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">outname</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Alexander Crowell.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

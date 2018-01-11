@@ -1,0 +1,453 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>LIMBR package &#8212; LIMBR v0.2.6-alpha documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'v0.2.6-alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="LIMBR" href="modules.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="limbr-package">
+<h1>LIMBR package<a class="headerlink" href="#limbr-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-LIMBR.imputable">
+<span id="limbr-imputable-module"></span><h2>LIMBR.imputable module<a class="headerlink" href="#module-LIMBR.imputable" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="LIMBR.imputable.imputable">
+<em class="property">class </em><code class="descclassname">LIMBR.imputable.</code><code class="descname">imputable</code><span class="sig-paren">(</span><em>filename</em>, <em>missingness</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/imputable.html#imputable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.imputable.imputable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Imputes missing data with K Nearest Neighbors based on user specified parameters.</p>
+<p>This class generates an object from raw data and allows for preprocessing, imputation and output of that data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – This is the path to the file containing the raw data.</li>
+<li><strong>missingness</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – This is the maximum allowable percentage of missingness expressed as a decimal.  For example a value of 0.25 would mean that all rows for which more than one in four values are missing will be rejected.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> (<em>dataframe</em>) – This is where the raw data read from filename is stored.</li>
+<li><strong>miss</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – This is where the maximum allowable percentage of missingness expressed as a decimal is stored.</li>
+<li><strong>pats</strong> (<a class="reference external" href="https://docs.python.org/2/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) – This is where the set of missingness patterns found in the dataset will be stored later, initialized here.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="LIMBR.imputable.imputable.deduplicate">
+<code class="descname">deduplicate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/imputable.html#imputable.deduplicate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.imputable.imputable.deduplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes duplicate peptides.</p>
+<p>Groups rows by peptide, if a peptide appears in more than one row it is removed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="LIMBR.imputable.imputable.drop_missing">
+<code class="descname">drop_missing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/imputable.html#imputable.drop_missing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.imputable.imputable.drop_missing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes rows which are missing more data than the user specified missingness threshold.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="LIMBR.imputable.imputable.impute">
+<code class="descname">impute</code><span class="sig-paren">(</span><em>outname</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/imputable.html#imputable.impute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.imputable.imputable.impute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imputes missing data with KNN and outputs the results to the specified file.</p>
+<p>First all of the missingness patterns present in the dataset are identified.  Then those patterns are iterated over and for each pattern, missing values are imputed.  Finally the dataset is reformed with the imputed values and output.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outname</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Path to output file.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-LIMBR.old_fashioned">
+<span id="limbr-old-fashioned-module"></span><h2>LIMBR.old_fashioned module<a class="headerlink" href="#module-LIMBR.old_fashioned" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="LIMBR.old_fashioned.old_fashioned">
+<em class="property">class </em><code class="descclassname">LIMBR.old_fashioned.</code><code class="descname">old_fashioned</code><span class="sig-paren">(</span><em>filename</em>, <em>data_type</em>, <em>pool=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/old_fashioned.html#old_fashioned"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.old_fashioned.old_fashioned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Performs a standard normalization procedure without SVD as a baseline.</p>
+<p>This class performs simple quantile normalization and row scaling along with pool normalization for proteomics experiments using the same methods and interface employed in the sva class.  This provides a baseline comparison point for data processed with LIMBR.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Path to the input dataset.</li>
+<li><strong>data_type</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Type of dataset, one of ‘p’ or ‘r’.  ‘p’ indicates proteomic with two index columns specifying peptide and protein.  ‘r’ indicates RNAseq with one index column indicating gene.</li>
+<li><strong>pool</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Path to file containing pooled control design for experiment in the case of data_type = ‘p’.  This should be a pickled dictionary with the keys being column headers corresponding to each sample and the values being the corresponding pooled control number.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>raw_data</strong> (<em>dataframe</em>) – This is where the input data is stored.</li>
+<li><strong>data_type</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – This is where the data type (‘p’ or ‘r’) is stored.</li>
+<li><strong>norm_map</strong> (<a class="reference external" href="https://docs.python.org/2/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) – This is where the assignment of pooled controls to samples are stored if data_type = ‘p’.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="LIMBR.old_fashioned.old_fashioned.normalize">
+<code class="descname">normalize</code><span class="sig-paren">(</span><em>outname</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/old_fashioned.html#old_fashioned.normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.old_fashioned.old_fashioned.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Groups peptides by protein and outputs final processed dataset.</p>
+<p>These final results are then written to an output file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outname</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Path to desired output file.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="LIMBR.old_fashioned.old_fashioned.pool_normalize">
+<code class="descname">pool_normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/old_fashioned.html#old_fashioned.pool_normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.old_fashioned.old_fashioned.pool_normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preprocessing normalization.</p>
+<p>Performs pool normalization on an sva object using the raw_data and norm_map if pooled controls were used. Quantile normalization of each column and scaling of each row are then performed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>scaler</strong> (<em>sklearn.preprocessing.StandardScaler</em><em>(</em><em>)</em>) – A fitted scaler from the sklearn preprocessing module.</li>
+<li><strong>data_pnorm</strong> (<em>dataframe</em>) – Pool normalized data.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-LIMBR.sva">
+<span id="limbr-sva-module"></span><h2>LIMBR.sva module<a class="headerlink" href="#module-LIMBR.sva" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="LIMBR.sva.sva">
+<em class="property">class </em><code class="descclassname">LIMBR.sva.</code><code class="descname">sva</code><span class="sig-paren">(</span><em>filename</em>, <em>design</em>, <em>data_type</em>, <em>blocks=None</em>, <em>pool=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/sva.html#sva"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.sva.sva" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Performs sva based identification and remmoval of batch effects.</p>
+<p>This class takes a dataset without missing values (raw RNAseq or Proteomics from class imputable).  It performs pool normalization for proteomics datasets and quantile normalization and scaling for all datasets.  The data is then subsetted based on correlation to a primary variable of interest determined by the experimental design.  This subsetted data is used to calculate a residual matrix from which initial estimates of batch effects are produced by SVD.  Significance of these batch effects are estimated by permutation of the residual matrix.  Batch effects deemed significant are regressed against the original dataset and final batch effects are calculated from those rows most correlated with the effect.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Path to the input dataset.</li>
+<li><strong>design</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Experimental design, one of: ‘c’, ‘l’, ‘b’.  ‘c’ indicates a circadian timecourse. ‘l’ indicates a general timecourse (lowess fit used).  ‘b’ indicates a block design.</li>
+<li><strong>data_type</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Type of dataset, one of ‘p’ or ‘r’.  ‘p’ indicates proteomic with two index columns specifying peptide and protein.  ‘r’ indicates RNAseq with one index column indicating gene.</li>
+<li><strong>blocks</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Path to file containing block design in the case of design = ‘b’.  This should be a pickled list of which block each sample corresponds with.</li>
+<li><strong>pool</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Path to file containing pooled control design for experiment in the case of data_type = ‘p’.  This should be a pickled dictionary with the keys being column headers corresponding to each sample and the values being the corresponding pooled control number.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>raw_data</strong> (<em>dataframe</em>) – This is where the input data is stored.</li>
+<li><strong>data_type</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – This is where the data type (‘p’ or ‘r’) is stored.</li>
+<li><strong>designtype</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – This is where the design type of the experiment (‘c’,’l’ or ‘b’) is stored.</li>
+<li><strong>block_design</strong> (<em>list</em>) – This is where the block assignments for each sample are stored if designtype = ‘b’.</li>
+<li><strong>norm_map</strong> (<a class="reference external" href="https://docs.python.org/2/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) – This is where the assignment of pooled controls to samples are stored if data_type = ‘p’.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="LIMBR.sva.sva.eig_reg">
+<code class="descname">eig_reg</code><span class="sig-paren">(</span><em>alpha</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/sva.html#sva.eig_reg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.sva.sva.eig_reg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Regresses eigentrends (batch effects) against the reduced dataset calculating p values for each row being associated with that trend.</p>
+<p>Batch effects are estimated with SVD and only those passing the significance threshold for permutation testing are retained.  These trends are then regressed against each row of the reduced data to estimate a p value for that row’s association with that trend.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Significance threshold for permutation testing, expressed as a decimal.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><strong>ps</strong> (<em>arr</em>) – P values for association between rows and estimated batch effects.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="LIMBR.sva.sva.get_res">
+<code class="descname">get_res</code><span class="sig-paren">(</span><em>in_arr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/sva.html#sva.get_res"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.sva.sva.get_res" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates model residuals from which to learn batch effects.</p>
+<p>For time course based designs, this is done with a lowess model.  For block designs, this is done with the block means.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>in_arr</strong> (<em>arr</em>) – Input array of data from which to calculate residuals.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>res_mat</strong> – Residual matrix.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">arr</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="LIMBR.sva.sva.get_tks">
+<code class="descname">get_tks</code><span class="sig-paren">(</span><em>arr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/sva.html#sva.get_tks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.sva.sva.get_tks" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the fraction of variance for each row of the residual matrix explained by each principle component with PCA</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="LIMBR.sva.sva.get_tpoints">
+<code class="descname">get_tpoints</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/sva.html#sva.get_tpoints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.sva.sva.get_tpoints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts timepoints from header of data.</p>
+<p>Splits strings in header based on required syntax and generates timepoints.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>tpoints</strong> (<a class="reference external" href="https://docs.python.org/2/library/array.html#module-array" title="(in Python v2.7)"><em>array</em></a>) – array of timepoints at which samples were collected.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="LIMBR.sva.sva.normalize">
+<code class="descname">normalize</code><span class="sig-paren">(</span><em>outname</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/sva.html#sva.normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.sva.sva.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates diagnostic files, normalizes data based on calculated batch effects, groups peptides by protein and outputs final processed dataset.</p>
+<p>Diagnostic files containing estimated batch effects, explained variance ratios, results of permutation testing and estimated magnitudes of each batch effect on each peptide are generated.  The signal produced by significant batch effects is then estimated and removed from the dataset.  These final results are then written to an output file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outname</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Path to desired output file.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><strong>svd_norm</strong> (<em>dataframe</em>) – Normalized dataframe with significant batch effects removed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="LIMBR.sva.sva.perm_test">
+<code class="descname">perm_test</code><span class="sig-paren">(</span><em>nperm</em>, <em>npr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/sva.html#sva.perm_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.sva.sva.perm_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs permutation testing on residual matrix SVD.</p>
+<p>The rows of the residual matrix are first permuted.  Then  get_tks is called to calculate explained variance ratios and these tks are compared to the values from the actual residual matrix.  A running total is kept for the number of times the explained variance from the permuted matrix exceeds that from the original matrix. And significance is estimated by dividing these totals by the number of permutations.  This permutation testing is multiprocessed to decrease calculation times.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>nperm</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Number of permutations to be tested.</li>
+<li><strong>npr</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Number of processors to be used.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><p class="first last"><strong>sigs</strong> (<a class="reference external" href="https://docs.python.org/2/library/array.html#module-array" title="(in Python v2.7)"><em>array</em></a>) – Estimated significances for each batch effect.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="LIMBR.sva.sva.pool_normalize">
+<code class="descname">pool_normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/sva.html#sva.pool_normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.sva.sva.pool_normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preprocessing normalization.</p>
+<p>Performs pool normalization on an sva object using the raw_data and norm_map if pooled controls were used. Quantile normalization of each column and scaling of each row are then performed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>scaler</strong> (<em>sklearn.preprocessing.StandardScaler</em><em>(</em><em>)</em>) – A fitted scaler from the sklearn preprocessing module.</li>
+<li><strong>data_pnorm</strong> (<em>dataframe</em>) – Pool normalized data.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="LIMBR.sva.sva.prim_cor">
+<code class="descname">prim_cor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/sva.html#sva.prim_cor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.sva.sva.prim_cor" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates correlation for each row against the primary variable of interest.</p>
+<p>The primary variable of interest is defined based on the designtype.  For circadian (‘c’) this is the difference between the autocorrelation at the expected period and one half that period.  For general timecourse (‘l’) this is the goodness of fit of a lowess model.  For a block design (‘b’) this is the ANOVA f statistic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>cors</strong> (<a class="reference external" href="https://docs.python.org/2/library/array.html#module-array" title="(in Python v2.7)"><em>array</em></a>) – Array of correlations with primary variable of interest.  The calculation of this variable is determined by the designtype as specified above and the procedure described in the corresponding function.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="LIMBR.sva.sva.reduce">
+<code class="descname">reduce</code><span class="sig-paren">(</span><em>percsub</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/sva.html#sva.reduce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.sva.sva.reduce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reduces the data based on the correlation to primary variable of interest calculated in prim_cor.</p>
+<p>Rows most correlated with the variable of interest up to the specified percentage are dropped from the dataset.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>percsub</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Percentage of data to remove during reduction.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><strong>data_reduced</strong> (<em>dataframe</em>) – Reduced dataset.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="LIMBR.sva.sva.set_res">
+<code class="descname">set_res</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/sva.html#sva.set_res"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.sva.sva.set_res" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls get_res()</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>res</strong> (<em>arr</em>) – This is where the residual matrix is stored.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="LIMBR.sva.sva.set_tks">
+<code class="descname">set_tks</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/sva.html#sva.set_tks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.sva.sva.set_tks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls get_tks().</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>tks</strong> (<em>list</em>) – This is where the tks (explained variance ratios) are stored.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="LIMBR.sva.sva.subset_svd">
+<code class="descname">subset_svd</code><span class="sig-paren">(</span><em>lam</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/LIMBR/sva.html#sva.subset_svd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LIMBR.sva.sva.subset_svd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs SVD on the subset of rows associated with each batch effect.</p>
+<p>The reduced data is first subsetted based on the p values form the regression for each estimated batch effect.  After subsetting the reduced data, SVD is performed on this matrix and the true batch effect is taken as the right singular vector most correlated with the initially estimated batch effect.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>lam</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – P value cutoff above which distribution is assumed to be uniform.  Used to calculate significance cutoff.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ts</strong> (<em>arr</em>) – Estimated batch effects (right singular vectors).</li>
+<li><strong>pepts</strong> (<em>arr</em>) – Estimates of effect size for each batch effect on each peptide (left singular vectors).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-LIMBR">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-LIMBR" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">LIMBR</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">LIMBR</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Alexander Crowell.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/source/LIMBR.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

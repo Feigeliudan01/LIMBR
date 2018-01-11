@@ -24,8 +24,10 @@ class old_fashioned:
     """
     Performs a standard normalization procedure without SVD as a baseline.
 
-    This class performs simple quantile normalization and row scaling along with pool normalization for proteomics experiments using the same methods and interface employed in the sva class.  This provides a baseline comparison 
-point for data processed with LIMBR.
+
+    This class performs simple quantile normalization and row scaling along with pool normalization for proteomics experiments using the same methods and interface employed in the sva class.  This provides a baseline comparison point for data processed with LIMBR.
+
+
     Parameters
     ----------
     filename : str
@@ -33,8 +35,8 @@ point for data processed with LIMBR.
     data_type : str
         Type of dataset, one of 'p' or 'r'.  'p' indicates proteomic with two index columns specifying peptide and protein.  'r' indicates RNAseq with one index column indicating gene.
     pool : str
-        Path to file containing pooled control design for experiment in the case of data_type = 'p'.  This should be a pickled dictionary with the keys being column headers corresponding to each sample and the values being the 
-corresponding pooled control number.
+        Path to file containing pooled control design for experiment in the case of data_type = 'p'.  This should be a pickled dictionary with the keys being column headers corresponding to each sample and the values being the corresponding pooled control number.
+
 
     Attributes
     ----------
@@ -44,13 +46,16 @@ corresponding pooled control number.
         This is where the data type ('p' or 'r') is stored.
     norm_map : dict
         This is where the assignment of pooled controls to samples are stored if data_type = 'p'.
+
     """
 
     def __init__(self, filename,data_type,pool=None):
         """
         Imports data and initializes an old_fashioned object.
 
+
         Takes a file from one of two data types protein ('p') which has two index columns or rna ('r') which has only one.  Opens a pickled file matching pooled controls to corresponding samples if data_type = 'p'.
+
         """
 
         np.random.seed(4574)
@@ -67,7 +72,9 @@ corresponding pooled control number.
         """
         Preprocessing normalization.
 
+
         Performs pool normalization on an sva object using the raw_data and norm_map if pooled controls were used. Quantile normalization of each column and scaling of each row are then performed.
+
 
         Attributes
         ----------
@@ -75,13 +82,16 @@ corresponding pooled control number.
             A fitted scaler from the sklearn preprocessing module.
         data_pnorm : dataframe
             Pool normalized data.
+
         """
 
         def pool_norm(df,dmap):
             """
             Pool normalizes samples in a proteomics experiment.
 
+
             Peptide abundances of each sample are divided by corresponding pooled control abundances.
+
 
             Parameters
             ----------
@@ -90,10 +100,12 @@ corresponding pooled control number.
             dmap : dict
                 The dictionary connecting each sample to its corresponding pooled control.
 
+
             Returns
             -------
             newdf : dataframe
                 Dataframe with samples pool normalized and pooled control columns dropped.
+
             """
 
             newdf = pd.DataFrame(index=df.index)
@@ -107,17 +119,21 @@ corresponding pooled control number.
             """
             Quantile normalizes data by columns.
 
+
             A reference distribution is generated as the mean across rows of the dataset with all columns sorted by abundance.  Each column is then quantile normalized to this target distribution.
+
 
             Parameters
             ----------
             df : dataframe
                 The dataframe to be quantile normalized
 
+
             Returns
             -------
             newdf : dataframe
                 The quantile normalized dataframe.
+
             """
 
             ref = pd.concat([df[col].sort_values().reset_index(drop=True) for col in df], axis=1, ignore_index=True).mean(axis=1).values
@@ -142,12 +158,15 @@ corresponding pooled control number.
         """
         Groups peptides by protein and outputs final processed dataset.
 
+
         These final results are then written to an output file.
+
 
         Parameters
         ----------
         outname : str
             Path to desired output file.
+
         """
 
         #self.old_norm = self.scaler.inverse_transform(self.data.values.T).T

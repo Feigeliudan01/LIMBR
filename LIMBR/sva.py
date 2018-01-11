@@ -24,7 +24,9 @@ class sva:
     """
     Performs sva based identification and remmoval of batch effects.
 
+
     This class takes a dataset without missing values (raw RNAseq or Proteomics from class imputable).  It performs pool normalization for proteomics datasets and quantile normalization and scaling for all datasets.  The data is then subsetted based on correlation to a primary variable of interest determined by the experimental design.  This subsetted data is used to calculate a residual matrix from which initial estimates of batch effects are produced by SVD.  Significance of these batch effects are estimated by permutation of the residual matrix.  Batch effects deemed significant are regressed against the original dataset and final batch effects are calculated from those rows most correlated with the effect.
+
 
     Parameters
     ----------
@@ -37,8 +39,8 @@ class sva:
     blocks : str
         Path to file containing block design in the case of design = 'b'.  This should be a pickled list of which block each sample corresponds with.
     pool : str
-        Path to file containing pooled control design for experiment in the case of data_type = 'p'.  This should be a pickled dictionary with the keys being column headers corresponding to each sample and the values being the 
-corresponding pooled control number.
+        Path to file containing pooled control design for experiment in the case of data_type = 'p'.  This should be a pickled dictionary with the keys being column headers corresponding to each sample and the values being the corresponding pooled control number.
+
 
     Attributes
     ----------
@@ -52,14 +54,16 @@ corresponding pooled control number.
         This is where the block assignments for each sample are stored if designtype = 'b'.
     norm_map : dict
         This is where the assignment of pooled controls to samples are stored if data_type = 'p'.
+
     """
 
     def __init__(self, filename,design,data_type,blocks=None,pool=None):
         """
         Imports data and initializes an sva object.
 
-        Takes a file from one of two data types protein ('p') which has two index columns or rna ('r') which has only one.  Opens a pickled file matching pooled controls to corresponding samples if data_type = 'p' and opens a 
-picked file matching samples to blocks if designtype = 'b'.
+
+        Takes a file from one of two data types protein ('p') which has two index columns or rna ('r') which has only one.  Opens a pickled file matching pooled controls to corresponding samples if data_type = 'p' and opens a picked file matching samples to blocks if designtype = 'b'.
+
         """
 
         np.random.seed(4574)
@@ -81,7 +85,9 @@ picked file matching samples to blocks if designtype = 'b'.
         """
         Preprocessing normalization.
 
+
         Performs pool normalization on an sva object using the raw_data and norm_map if pooled controls were used. Quantile normalization of each column and scaling of each row are then performed.
+
 
         Attributes
         ----------
@@ -89,13 +95,16 @@ picked file matching samples to blocks if designtype = 'b'.
             A fitted scaler from the sklearn preprocessing module.
         data_pnorm : dataframe
             Pool normalized data.
+
         """
 
         def pool_norm(df,dmap):
             """
             Pool normalizes samples in a proteomics experiment.
 
+
             Peptide abundances of each sample are divided by corresponding pooled control abundances.
+
 
             Parameters
             ----------
@@ -104,10 +113,12 @@ picked file matching samples to blocks if designtype = 'b'.
             dmap : dict
                 The dictionary connecting each sample to its corresponding pooled control.
 
+
             Returns
             -------
             newdf : dataframe
                 Dataframe with samples pool normalized and pooled control columns dropped.
+
             """
 
             newdf = pd.DataFrame(index=df.index)
@@ -121,17 +132,21 @@ picked file matching samples to blocks if designtype = 'b'.
             """
             Quantile normalizes data by columns.
 
+
             A reference distribution is generated as the mean across rows of the dataset with all columns sorted by abundance.  Each column is then quantile normalized to this target distribution.
+
 
             Parameters
             ----------
             df : dataframe
                 The dataframe to be quantile normalized
 
+
             Returns
             -------
             newdf : dataframe
                 The quantile normalized dataframe.
+
             """
 
             ref = pd.concat([df[col].sort_values().reset_index(drop=True) for col in df], axis=1, ignore_index=True).mean(axis=1).values
@@ -159,12 +174,15 @@ picked file matching samples to blocks if designtype = 'b'.
         """
         Extracts timepoints from header of data.
 
+
         Splits strings in header based on required syntax and generates timepoints.
+
 
         Attributes
         ----------
         tpoints : array
             array of timepoints at which samples were collected.
+
         """
 
         tpoints = [i.replace('CT','') for i in self.data.columns.values]
@@ -177,23 +195,28 @@ picked file matching samples to blocks if designtype = 'b'.
         """
         calculates correlation for each row against the primary variable of interest.
 
-        The primary variable of interest is defined based on the designtype.  For circadian ('c') this is the difference between the autocorrelation at the expected period and one half that period.  For general timecourse ('l') 
-this is the goodness of fit of a lowess model.  For a block design ('b') this is the ANOVA f statistic.
+
+        The primary variable of interest is defined based on the designtype.  For circadian ('c') this is the difference between the autocorrelation at the expected period and one half that period.  For general timecourse ('l') this is the goodness of fit of a lowess model.  For a block design ('b') this is the ANOVA f statistic.
+
 
         Attributes
         ----------
         cors : array
             Array of correlations with primary variable of interest.  The calculation of this variable is determined by the designtype as specified above and the procedure described in the corresponding function.
+
         """
         def circ_cor():
             """
             Calculates rough estimate of circadianness based on autocorrelation differences.
 
+
             Given a period (fixed here at 12 samples) the autocorrelation is calculated at 12 and 6 samples shift and the difference indicates the degree of circadian signal.
+
             """
             def autocorr(l,shift):
                 """
                 calculates autocorrelation of a series at a given shift
+
 
                 Parameters
                 ----------
@@ -202,10 +225,12 @@ this is the goodness of fit of a lowess model.  For a block design ('b') this is
                 shift : int
                     the shift at which to calculate the autocorrelation.
 
+
                 Returns
                 -------
                 acor : float
                     calculated autocorrelation
+
                 """
                 acor = np.dot(l, np.roll(l, shift)) / np.dot(l, l)
                 return acor
@@ -224,7 +249,9 @@ this is the goodness of fit of a lowess model.  For a block design ('b') this is
             """
             Calculates how well a row of data fits expectations for a timecourse.
 
+
             In a timecourse, rows least affected by batch effects should be those with the best fit from a lowess model.  Goodness of fit in this case is defined as the sum of squared errors for the lowess fit.
+
             """
             cors = []
             for row in tqdm(self.data.values):
@@ -236,8 +263,9 @@ this is the goodness of fit of a lowess model.  For a block design ('b') this is
             """
             Calculates how well a row of data fits expectations for a block study design.
 
-            In a blocked study, rows least affected by batch effects should be those for which within group variation is much smaller than between group variation.  In this case the ANOVA f statistic is used as a relative measure 
-of within and between group variability.
+
+            In a blocked study, rows least affected by batch effects should be those for which within group variation is much smaller than between group variation.  In this case the ANOVA f statistic is used as a relative measure of within and between group variability.
+
             """
             cors = []
             for row in tqdm(self.data.values):
@@ -259,17 +287,21 @@ of within and between group variability.
         """
         Reduces the data based on the correlation to primary variable of interest calculated in prim_cor.
 
+
         Rows most correlated with the variable of interest up to the specified percentage are dropped from the dataset.
+
 
         Parameters
         ----------
         percsub : float
             Percentage of data to remove during reduction.
 
+
         Attributes
         ----------
         data_reduced : dataframe
             Reduced dataset.
+
         """
         percsub = float(percsub)
         uncor = [(i<(np.percentile(self.cors,percsub))) for i in self.cors]
@@ -280,17 +312,21 @@ of within and between group variability.
         """
         Calculates model residuals from which to learn batch effects.
 
+
         For time course based designs, this is done with a lowess model.  For block designs, this is done with the block means.
+
 
         Parameters
         ----------
         in_arr : arr
             Input array of data from which to calculate residuals.
 
+
         Returns
         -------
         res_mat : arr
             Residual matrix.
+
         """
         def get_l_res(arr):
             """calculates residuals from a lowess model for timecourse designs"""
@@ -324,11 +360,14 @@ of within and between group variability.
         """
         Calls get_res()
 
+
         Attributes
         ----------
         res : arr
             This is where the residual matrix is stored.
+
         """
+
         self.res = self.get_res(self.data_reduced.values)
 
     def get_tks(self,arr):
@@ -342,20 +381,23 @@ of within and between group variability.
         """
         Calls get_tks().
 
+
         Attributes
         ----------
         tks : list
             This is where the tks (explained variance ratios) are stored.
+
         """
+
         self.tks = self.get_tks(self.res)
 
     def perm_test(self,nperm,npr):
         """
         Performs permutation testing on residual matrix SVD.
 
-        The rows of the residual matrix are first permuted.  Then  get_tks is called to calculate explained variance ratios and these tks are compared to the values from the actual residual matrix.  A running total is kept for the 
-number of times the explained variance from the permuted matrix exceeds that from the original matrix. And significance is estimated by dividing these totals by the number of permutations.  This permutation testing is 
-multiprocessed to decrease calculation times.
+
+        The rows of the residual matrix are first permuted.  Then  get_tks is called to calculate explained variance ratios and these tks are compared to the values from the actual residual matrix.  A running total is kept for the number of times the explained variance from the permuted matrix exceeds that from the original matrix. And significance is estimated by dividing these totals by the number of permutations.  This permutation testing is multiprocessed to decrease calculation times.
+
 
         Parameters
         ----------
@@ -364,10 +406,12 @@ multiprocessed to decrease calculation times.
         npr : int
             Number of processors to be used.
 
+
         Attributes
         ----------
         sigs : array
             Estimated significances for each batch effect.
+
         """
 
         mgr = Manager()
@@ -376,17 +420,21 @@ multiprocessed to decrease calculation times.
             """
             Single iteration of permutation testing.
 
+
             Permutes residual matrix, calculates new tks for permuted matrix and compares to original tks.
+
 
             Parameters
             ----------
             rseed : int
                 Random seed.
 
+
             Returns
             -------
             out : arr
                 Counts of number of times permuted explained variance ratio exceeded explained variance ratio from actual residual matrix.
+
             """
 
             rstate = np.random.RandomState(rseed*100)
@@ -419,18 +467,21 @@ multiprocessed to decrease calculation times.
         """
         Regresses eigentrends (batch effects) against the reduced dataset calculating p values for each row being associated with that trend.
 
-        Batch effects are estimated with SVD and only those passing the significance threshold for permutation testing are retained.  These trends are then regressed against each row of the reduced data to estimate a p value for 
-that row's association with that trend.
+
+        Batch effects are estimated with SVD and only those passing the significance threshold for permutation testing are retained.  These trends are then regressed against each row of the reduced data to estimate a p value for that row's association with that trend.
+
 
         Parameters
         ----------
         alpha : float
             Significance threshold for permutation testing, expressed as a decimal.
 
+
         Attributes
         ----------
         ps : arr
             P values for association between rows and estimated batch effects.
+
         """
 
         alpha = float(alpha)
@@ -452,13 +503,15 @@ that row's association with that trend.
         """
         Performs SVD on the subset of rows associated with each batch effect.
 
-        The reduced data is first subsetted based on the p values form the regression for each estimated batch effect.  After subsetting the reduced data, SVD is performed on this matrix and the true batch effect is taken as the 
-right singular vector most correlated with the initially estimated batch effect.
+
+        The reduced data is first subsetted based on the p values form the regression for each estimated batch effect.  After subsetting the reduced data, SVD is performed on this matrix and the true batch effect is taken as the right singular vector most correlated with the initially estimated batch effect.
+
 
         Parameters
         ----------
         lam : float
             P value cutoff above which distribution is assumed to be uniform.  Used to calculate significance cutoff.
+
 
         Attributes
         ----------
@@ -466,13 +519,16 @@ right singular vector most correlated with the initially estimated batch effect.
             Estimated batch effects (right singular vectors).
         pepts : arr
             Estimates of effect size for each batch effect on each peptide (left singular vectors).
+
         """
 
         def est_pi_naught(probs_naught,lam):
             """
             Estimates background distribution of p values.
 
+
             Given cutoff lam, calculates ratio of background p values by comparing actual number of p values above cutoff to expected number above cutoff.
+
 
             Parameters
             ----------
@@ -481,10 +537,12 @@ right singular vector most correlated with the initially estimated batch effect.
             lam : float
                 Cutoff above which p values assumed to be drawn from null distribution.
 
+
             Returns
             -------
             pi_naught : float
                 Estimated ratio of background p values.
+
             """
 
             pi_naught = len([i for i in probs_naught if i > lam])/(len(probs_naught)*(1-lam))
@@ -494,7 +552,9 @@ right singular vector most correlated with the initially estimated batch effect.
             """
             Finds p value pi_sig as cutoff for rows associated with batch effect.
 
+
             First estimates ration of background p values.  Then based on this ratio calculates the p value cutoff for rows associated with the batch effect.
+
 
             Parameters
             ----------
@@ -503,10 +563,12 @@ right singular vector most correlated with the initially estimated batch effect.
             l : float
                 Cutoff to be passed to est_pi_naught() as lam.
 
+
             Returns
             -------
             pi_sig : float
                 Estimated p value cutoff.
+
             """
 
             pi_0 = est_pi_naught(probs_sig,l)
@@ -544,18 +606,21 @@ right singular vector most correlated with the initially estimated batch effect.
         """
         Creates diagnostic files, normalizes data based on calculated batch effects, groups peptides by protein and outputs final processed dataset.
 
-        Diagnostic files containing estimated batch effects, explained variance ratios, results of permutation testing and estimated magnitudes of each batch effect on each peptide are generated.  The signal produced by 
-significant batch effects is then estimated and removed from the dataset.  These final results are then written to an output file.
+
+        Diagnostic files containing estimated batch effects, explained variance ratios, results of permutation testing and estimated magnitudes of each batch effect on each peptide are generated.  The signal produced by significant batch effects is then estimated and removed from the dataset.  These final results are then written to an output file.
+
 
         Parameters
         ----------
         outname : str
             Path to desired output file.
 
+
         Attributes
         ----------
         svd_norm : dataframe
             Normalized dataframe with significant batch effects removed.
+
         """
 
         pd.DataFrame(self.ts,columns=self.data.columns).to_csv(outname.split('.txt')[0]+'_trends.txt',sep='\t')
