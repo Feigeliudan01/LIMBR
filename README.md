@@ -64,4 +64,4 @@ The sva based methods build on work for micro-array datasets by Jeffrey Leek, wi
 License
 -------
 
-Copyright 2017 Alexander M. Crowell BSD-3
+© 2017 Alexander M. Crowell: BSD-3
