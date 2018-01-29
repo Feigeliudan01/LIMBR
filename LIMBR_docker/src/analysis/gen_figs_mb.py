@@ -17,6 +17,7 @@ from rpy2.robjects.packages import importr
 circularlib=importr('circular')
 circular=robjects.r('circular')
 corcircular=robjects.r('cor.circular')
+from sklearn import metrics
 
 def plot_cormat(df,fname,ptitle):
     fig, ax = plt.subplots(nrows=1, ncols=1)
@@ -240,4 +241,72 @@ plt.axhline(y=np.percentile(acorr['cors'].values,25),color='black',ls='dashed')
 sns.swarmplot(x='circ', y='cors', hue='included', data = acorr)
 plt.ylabel(r'$\Delta$ Autocorrelation')
 plt.savefig('output/figs/acorr_val_mb.pdf')
+plt.close()
+
+
+#Fig 3 B and C
+def get_point(fname_jtk, fname_key):
+    jtk = pd.read_csv(fname_jtk,sep='\t', index_col=0)
+    key = pd.read_csv(fname_key,sep='\t', index_col=0)
+    merged = pd.merge(jtk, key,left_index=True,right_index=True)
+    return ((1-len(merged[(merged['GammaP']>.05)&(merged['circ']==0)])/len(merged[merged['circ']==0]))),(len(merged[(merged['GammaP']<.05)&(merged['circ']==1)])/len(merged[merged['circ']==1]))
+
+def get_auc(fname_jtk, fname_key):
+    jtk = pd.read_csv(fname_jtk,sep='\t', index_col=0)
+    key = pd.read_csv(fname_key,sep='\t', index_col=0)
+    merged = pd.merge(jtk, key,left_index=True,right_index=True)
+    scoresn = np.asarray([1-i for i in merged['GammaP'].values.astype(float)])
+    yn = merged['circ'].values.astype(int)
+    fprn, tprn, thresholdsn = metrics.roc_curve(yn, scoresn)
+    return metrics.auc(fprn, tprn)
+
+baseline = []
+noise = []
+eigenms = []
+limbr = []
+
+for i in range(1,20):
+    baseline.append(get_point('results/simdata/simulated_data_baseline_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+    noise.append(get_point('results/simdata/simulated_data_with_noise_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+    eigenms.append(get_point('results/simdata/mb_simdata_eigenMS_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+    limbr.append(get_point('results/simdata/mb_denoised_circ_lowess_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+
+plt.scatter(*zip(*baseline),color='b',marker='x', label='Baseline ROC curve')
+
+plt.scatter(*zip(*noise),color='r',marker='x', label='Noise ROC curve')
+
+plt.scatter(*zip(*eigenms),color='y',marker='x', label='EigenMS ROC curve')
+
+
+plt.scatter(*zip(*limbr),color='g',marker='x', label='LIMBR ROC curve')
+
+
+plt.axvline(x=0.05,color='black',ls='dashed')
+plt.legend(loc="lower right")
+plt.axis([0, 1, 0, 1])
+plt.xlabel('1 - Specificity')
+plt.ylabel('Sensitivity')
+plt.savefig('results/figs/sim_ROC_mb.pdf')
+plt.close()
+
+baseline_auc = []
+noise_auc = []
+eigenms_auc = []
+limbr_auc = []
+
+for i in range(1,20):
+    baseline_auc.append(get_auc('results/simdata/simulated_data_baseline_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+    noise_auc.append(get_auc('results/simdata/simulated_data_with_noise_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+    eigenms_auc.append(get_auc('results/simdata/mb_simdata_eigenMS_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+    limbr_auc.append(get_auc('results/simdata/mb_denoised_circ_lowess_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+
+auc = pd.DataFrame({'baseline' : baseline_auc, 'noise' : noise_auc, 'eigenms' : eigenms_auc, 'LIMBR' : limbr_auc})
+
+auc = pd.melt(auc)
+
+auc.columns = ['Processing','Area Under the Curve']
+
+sns.boxplot(x="Processing", y="Area Under the Curve", data=auc, order=['baseline','noise','eigenms','LIMBR'], palette=['b','r','y','g'])
+
+plt.savefig('results/figs/sim_AUC_mb.pdf')
 plt.close()

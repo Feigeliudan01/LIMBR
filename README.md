@@ -54,6 +54,8 @@ TODO
 
 * Add unit tests to docstrings where possible.
 
+* Review ensuring maximum Vectorization
+
 -------
 Credits
 -------
