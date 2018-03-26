@@ -28,5 +28,5 @@ RUN apt-get install git-lfs
 RUN git lfs install
 RUN pip2 install --upgrade pip
 RUN pip3 install --upgrade pip
-RUN pip3 install -U pandas scipy sklearn numpy statsmodels cython matplotlib tqdm multiprocess seaborn astroML rpy2 jinja2
-RUN pip2 install -U numpy scipy cython matplotlib pandas statsmodels
+RUN pip3 install -U pandas scipy sklearn numpy statsmodels cython matplotlib tqdm multiprocess seaborn astroML rpy2 jinja2 LIMBR
+RUN pip2 install -U numpy scipy cython matplotlib pandas statsmodels LIMBR

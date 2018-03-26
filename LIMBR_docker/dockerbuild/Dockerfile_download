@@ -3,7 +3,10 @@ MAINTAINER Alec Crowell <alexander.m.crowell.gr@dartmouth.edu>
 
 # clone the most recent version of the pipeline
 RUN git lfs clone https://github.com/aleccrowell/LIMBR.git
-WORKDIR /LIMBR
+RUN mv LIMBR temp
+RUN mv temp/LIMBR_docker LIMBR
+RUN rm -rf temp
+WORKDIR /LIMBR/
 RUN mkdir ./output/
 RUN mkdir ./output/actual/
 RUN mkdir ./output/simdata/
