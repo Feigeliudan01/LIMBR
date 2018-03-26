@@ -7,13 +7,13 @@ all: ${FILES}
 make_checkpoints/install : dockerbuild/Dockerfile_install
 	@echo installing base image and downloading data
 	@docker pull ubuntu
-	@docker build --force-rm --squash -f dockerbuild/Dockerfile_install -t acrowell/limbr .
+	@docker build -f dockerbuild/Dockerfile_install -t acrowell/limbr .
 	@docker tag acrowell/limbr acrowell/limbr:1
 	@touch $@
 
 make_checkpoints/download : dockerbuild/Dockerfile_download make_checkpoints/install
 	@echo downloading data
-	@docker build --force-rm --squash -f dockerbuild/Dockerfile_download -t acrowell/limbr .
+	@docker build --build-arg expire_after=$(git log -1 --format=%cd) -f dockerbuild/Dockerfile_download -t acrowell/limbr .
 	@docker tag acrowell/limbr acrowell/limbr:2
 	@touch $@
 
