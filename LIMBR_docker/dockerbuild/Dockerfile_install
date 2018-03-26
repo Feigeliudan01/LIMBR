@@ -1,8 +1,9 @@
 FROM ubuntu:latest
-MAINTAINER Alec Crowell <alexander.m.crowell.gr@dartmouth.edu>
+MAINTAINER Alec Crowell <alexander.m.crowell@gmail.com>
 
 # Install all the software needed to run the pipeline
-RUN export LANG=C.UTF-8
+ENV DEBIAN_FRONTEND noninteractive
+ENV LANG C.UTF-8
 RUN apt-get -qq update
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
 RUN apt-get -y build-dep r-base
@@ -29,5 +30,5 @@ RUN apt-get install git-lfs
 RUN git lfs install
 RUN pip2 install --upgrade pip
 RUN pip3 install --upgrade pip
-RUN pip3 install -U pandas scipy sklearn numpy statsmodels cython matplotlib tqdm multiprocess seaborn astroML rpy2 jinja2 LIMBR
-RUN pip2 install -U numpy scipy cython matplotlib pandas statsmodels LIMBR
+RUN pip3 install -U numpy cython matplotlib seaborn astroML rpy2 jinja2 limbr
+RUN pip2 install -U numpy cython matplotlib limbr

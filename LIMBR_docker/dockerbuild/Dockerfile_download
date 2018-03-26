@@ -1,7 +1,8 @@
 FROM acrowell/limbr:latest
-MAINTAINER Alec Crowell <alexander.m.crowell.gr@dartmouth.edu>
+MAINTAINER Alec Crowell <alexander.m.crowell@gmail.com>
 
 # clone the most recent version of the pipeline
+ARG expire_after=never
 RUN git lfs clone https://github.com/aleccrowell/LIMBR.git
 RUN mv LIMBR temp
 RUN mv temp/LIMBR_docker LIMBR

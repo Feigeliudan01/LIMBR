@@ -1,4 +1,4 @@
-from LIMBR import sva
+from LIMBR.sva import sva
 import sys
 import getopt
 
