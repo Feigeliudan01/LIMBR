@@ -16,3 +16,7 @@ WORKDIR /LIMBR/src/bin/
 RUN python3 setup.py build_ext --inplace
 RUN python setup.py build_ext --inplace
 WORKDIR /LIMBR/
+COPY ./data/Formatted_input.txt /LIMBR/data/Formatted_input.txt
+COPY ./data/Jen_rnaseq_formatted_raw_counts.txt /LIMBR/data/Jen_rnaseq_formatted_raw_counts.txt
+COPY ./data/wt_classes.csv /LIMBR/data/wt_classes.csv
+COPY ./data/csp_classes.csv /LIMBR/data/csp_classes.csv
