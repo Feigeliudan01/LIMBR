@@ -1,4 +1,4 @@
-from limbr import old_fashioned
+from LIMBR.old_fashioned import old_fashioned
 import sys
 import getopt
 
