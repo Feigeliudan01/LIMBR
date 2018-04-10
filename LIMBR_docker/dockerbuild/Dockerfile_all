@@ -245,5 +245,7 @@ WORKDIR /
 RUN su - -c "R -e \"install.packages('circular', repos = 'http://cran.rstudio.com/')\""
 WORKDIR /LIMBR/
 RUN pip3 install -U rpy2
-RUN apt-get update && apt-get install -y dvipng texlive-full
-RUN python3 src/analysis/gen_figs_mb.py 
+COPY ./src/Karpeivitch_comparison.r /LIMBR/src/Karpeivitch_comparison.r
+COPY ./src/analysis/gen_figs.py /LIMBR/src/analysis/gen_figs.py
+RUN Rscript src/Karpeivitch_comparison.r
+RUN python3 src/analysis/gen_figs.py 
