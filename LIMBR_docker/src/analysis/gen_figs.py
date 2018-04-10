@@ -7,7 +7,7 @@ from  matplotlib import colors, ticker, cm
 from astroML.utils import convert_2D_cov
 from astroML.plotting.tools import draw_ellipse
 from astroML.plotting import setup_text_plots
-setup_text_plots(fontsize=8, usetex=True)
+setup_text_plots(fontsize=8, usetex=False)
 from scipy import stats
 from sklearn.cluster import KMeans
 import scipy.cluster.hierarchy as sch
@@ -285,7 +285,7 @@ plt.savefig('output/figs/missingness.pdf')
 plt.close()
 
 #Figure 2A
-simres = pd.read_csv('output/simdata/simdata.csv',index_col=0)
+simres = pd.read_csv('output/simdata/simdata_mb.csv',index_col=0)
 plt.scatter(simres['Base_FPR'].values,simres['Base_TPR'].values,marker='x', label='Baseline classification without noise',color='g')
 plt.scatter(simres['Circ_FPR'].values,simres['Circ_TPR'].values,marker='x', label='Circadian denoised classification',color='b')
 plt.scatter(simres['Noise_FPR'].values,simres['Noise_TPR'].values,marker='x', label='Classification with noise',color='r')
@@ -295,28 +295,103 @@ plt.xlabel('1 - Specificity')
 plt.ylabel('Sensitivity')
 plt.xlim(0,1)
 plt.ylim(0,1)
-plt.savefig('output/figs/sim_ROC.pdf')
+plt.savefig('output/figs/sim_ROC_mb.pdf')
+plt.close()
+
+#Figure 2B
+simres0 = pd.read_csv('output/simdata/simdata_mb.csv')
+melted_simres = pd.melt(simres0, id_vars=['Iteration'], value_vars=[r'Base_auc', r'Noise_auc',r'Circ_auc'])
+ax = sns.boxplot(x='variable',y='value',data=melted_simres)
+ax = sns.swarmplot(x='variable',y='value',data=melted_simres)
+plt.savefig('output/figs/sim_ROC_auc_mb.pdf')
 plt.close()
 
 #Figure 2C
-key = pd.read_csv('output/simdata/simulated_data_key_1.txt',sep='\t',index_col=0)
-simcirc_base = pd.read_csv('output/simdata/simulated_data_baseline_1.txt',sep='\t',index_col=0)[key['circ']==1]
-simcirc_noise = pd.read_csv('output/simdata/simulated_data_with_noise_1.txt',sep='\t',index_col=0)[key['circ']==1]
-simcirc_denoise = pd.read_csv('output/simdata/denoised_circ_lowess_1.txt',sep='\t',index_col=0)[key['circ']==1]
+key = pd.read_csv('output/simdata/mb_simulated_data_key_1.txt',sep='\t',index_col=0)
+simcirc_base = pd.read_csv('output/simdata/mb_simulated_data_baseline_1.txt',sep='\t',index_col=0)[key['circ']==1]
+simcirc_noise = pd.read_csv('output/simdata/mb_simulated_data_with_noise_1.txt',sep='\t',index_col=0)[key['circ']==1]
+simcirc_denoise = pd.read_csv('output/simdata/mb_denoised_circ_lowess_1.txt',sep='\t',index_col=0)[key['circ']==1]
 
-plot_heatmap(simcirc_base.values,r'output/figs/simulated_circ_genes','Expression as a Function of Timepoint in Simulated Circadian Genes')
-plot_heatmap(simcirc_noise.values,r'output/figs/simulated_noise_circ_genes','Expression as a Function of Timepoint in Simulated Circadian Genes with Noise')
-plot_heatmap(simcirc_denoise.values,r'output/figs/simulated_denoise_circ_genes','Expression as a Function of Timepoint in Denoised Simulated Circadian Genes')
+plot_heatmap(simcirc_base.values,r'output/figs/simulated_circ_genes_mb','Expression as a Function of Timepoint in Simulated Circadian Genes')
+plot_heatmap(simcirc_noise.values,r'output/figs/simulated_noise_circ_genes_mb','Expression as a Function of Timepoint in Simulated Circadian Genes with Noise')
+plot_heatmap(simcirc_denoise.values,r'output/figs/simulated_denoise_circ_genes_mb','Expression as a Function of Timepoint in Denoised Simulated Circadian Genes')
 
 #Figure S1
 acorr = key.copy()
-acorr['cors'] = circ_cor(pd.read_csv('output/simdata/simulated_data_baseline_1.txt',sep='\t',index_col=0))
+acorr['cors'] = circ_cor(pd.read_csv('output/simdata/mb_simulated_data_baseline_1.txt',sep='\t',index_col=0))
 acorr['Circadian'] = acorr['circ'].apply(lambda x: 'Circ' if x == 1 else 'Non-Circ')
 acorr['included'] = [(i<(np.percentile(acorr['cors'].values,25))) for i in acorr['cors'].values]
 plt.axhline(y=np.percentile(acorr['cors'].values,25),color='black',ls='dashed')
 sns.swarmplot(x='circ', y='cors', hue='included', data = acorr)
 plt.ylabel(r'$\Delta$ Autocorrelation')
-plt.savefig('output/figs/acorr_val.pdf')
+plt.savefig('output/figs/acorr_val_mb.pdf')
+plt.close()
+
+#Fig 3 B and C
+def get_point(fname_jtk, fname_key):
+    jtk = pd.read_csv(fname_jtk,sep='\t', index_col=0)
+    key = pd.read_csv(fname_key,sep='\t', index_col=0)
+    merged = pd.merge(jtk, key,left_index=True,right_index=True)
+    return ((1-len(merged[(merged['GammaP']>.05)&(merged['circ']==0)])/len(merged[merged['circ']==0]))),(len(merged[(merged['GammaP']<.05)&(merged['circ']==1)])/len(merged[merged['circ']==1]))
+
+def get_auc(fname_jtk, fname_key):
+    jtk = pd.read_csv(fname_jtk,sep='\t', index_col=0)
+    key = pd.read_csv(fname_key,sep='\t', index_col=0)
+    merged = pd.merge(jtk, key,left_index=True,right_index=True)
+    scoresn = np.asarray([1-i for i in merged['GammaP'].values.astype(float)])
+    yn = merged['circ'].values.astype(int)
+    fprn, tprn, thresholdsn = metrics.roc_curve(yn, scoresn)
+    return metrics.auc(fprn, tprn)
+
+baseline = []
+noise = []
+eigenms = []
+limbr = []
+
+for i in range(1,20):
+    baseline.append(get_point('results/simdata/simulated_data_baseline_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+    noise.append(get_point('results/simdata/simulated_data_with_noise_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+    eigenms.append(get_point('results/simdata/mb_simdata_eigenMS_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+    limbr.append(get_point('results/simdata/mb_denoised_circ_lowess_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+
+plt.scatter(*zip(*baseline),color='b',marker='x', label='Baseline ROC curve')
+
+plt.scatter(*zip(*noise),color='r',marker='x', label='Noise ROC curve')
+
+plt.scatter(*zip(*eigenms),color='y',marker='x', label='EigenMS ROC curve')
+
+
+plt.scatter(*zip(*limbr),color='g',marker='x', label='LIMBR ROC curve')
+
+
+plt.axvline(x=0.05,color='black',ls='dashed')
+plt.legend(loc="lower right")
+plt.axis([0, 1, 0, 1])
+plt.xlabel('1 - Specificity')
+plt.ylabel('Sensitivity')
+plt.savefig('results/figs/sim_ROC_mb.pdf')
+plt.close()
+
+baseline_auc = []
+noise_auc = []
+eigenms_auc = []
+limbr_auc = []
+
+for i in range(1,20):
+    baseline_auc.append(get_auc('results/simdata/simulated_data_baseline_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+    noise_auc.append(get_auc('results/simdata/simulated_data_with_noise_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+    eigenms_auc.append(get_auc('results/simdata/mb_simdata_eigenMS_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+    limbr_auc.append(get_auc('results/simdata/mb_denoised_circ_lowess_'+str(i)+'__jtkout_GammaP.txt','results/simdata/simulated_data_key_'+str(i)+'.txt'))
+
+auc = pd.DataFrame({'baseline' : baseline_auc, 'noise' : noise_auc, 'eigenms' : eigenms_auc, 'LIMBR' : limbr_auc})
+
+auc = pd.melt(auc)
+
+auc.columns = ['Processing','Area Under the Curve']
+
+sns.boxplot(x="Processing", y="Area Under the Curve", data=auc, order=['baseline','noise','eigenms','LIMBR'], palette=['b','r','y','g'])
+
+plt.savefig('results/figs/sim_AUC_mb.pdf')
 plt.close()
 
 #Figure 4A
