@@ -7,7 +7,7 @@ from  matplotlib import colors, ticker, cm
 from astroML.utils import convert_2D_cov
 from astroML.plotting.tools import draw_ellipse
 from astroML.plotting import setup_text_plots
-setup_text_plots(fontsize=8, usetex=True)
+setup_text_plots(fontsize=8, usetex=False)
 from scipy import stats
 from sklearn.cluster import KMeans
 import scipy.cluster.hierarchy as sch
@@ -216,7 +216,7 @@ plt.close()
 
 #Figure 2B
 simres0 = pd.read_csv('output/simdata/simdata_mb.csv')
-melted_simres = pd.melt(simres0, id_vars=['Iteration'], value_vars=['Base_auc', 'Noise_auc','Circ_auc'])
+melted_simres = pd.melt(simres0, id_vars=['Iteration'], value_vars=[r'Base_auc', r'Noise_auc',r'Circ_auc'])
 ax = sns.boxplot(x='variable',y='value',data=melted_simres)
 ax = sns.swarmplot(x='variable',y='value',data=melted_simres)
 plt.savefig('output/figs/sim_ROC_auc_mb.pdf')

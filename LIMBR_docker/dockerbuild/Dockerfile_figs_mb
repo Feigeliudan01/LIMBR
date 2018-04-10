@@ -1,6 +1,0 @@
-FROM acrowell/limbr:latest
-MAINTAINER Alec Crowell <alexander.m.crowell.gr@dartmouth.edu>
-
-#make actual data files
-RUN git pull
-RUN make -f make_figs_mb
