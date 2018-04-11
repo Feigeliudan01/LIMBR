@@ -30,7 +30,7 @@ Features
 Example Usage
 -------------
 
-```
+```python
 from LIMBR import simulations, imputation, batch_fx
 
 simulation = simulations.simulate()
