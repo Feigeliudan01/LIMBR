@@ -99,7 +99,7 @@ class simulate:
         #simulate data
         self.sim = []
         phases = []
-        for i in circ:
+        for i in self.circ:
             if i == 1:
                 temp=[]
                 p = np.random.binomial(1, self.phase_prop)
@@ -168,12 +168,12 @@ class simulate:
 
         pd.DataFrame(self.circ,columns=['Circadian'],index=self.simndf.index).to_csv(out_name+'_true_classes.txt',sep='\t')
 
-    def read_ejtk():
+    #def read_ejtk():
 
 
 
-    def read_true_classes():
+    #def read_true_classes():
 
 
-    def generate_roc_curve():
+    #def generate_roc_curve():
 
