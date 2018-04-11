@@ -160,12 +160,6 @@ to_sva.subset_svd(lam=lambda)
 to_sva.normalize('LIMBR_processed.txt')
 ```
 
-### Time Series Analyses
-
-### Blocked Analyses
-
-
-
 ----
 TODO
 ----
