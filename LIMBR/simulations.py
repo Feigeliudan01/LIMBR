@@ -93,7 +93,7 @@ class simulate:
                 self.cols.append('CT'+str(self.tpoint_space*i)+'_'+str(j+1))
 
         #randomly determine which rows are circadian
-        circ = np.random.binomial(1, self.pcirc, self.nrows)
+        self.circ = np.random.binomial(1, self.pcirc, self.nrows)
         #generate a base waveform
         base = np.arange(0,(4*np.pi),(4*np.pi/self.tpoints))
         #simulate data
@@ -165,3 +165,15 @@ class simulate:
         self.simdf.insert(0, 'Peptide', peps)
         self.simdf.set_index('Peptide',inplace=True)
         self.simdf.to_csv(out_name+'_baseline.txt',sep='\t')
+
+        pd.DataFrame(self.circ,columns=['Circadian'],index=self.simndf.index).to_csv(out_name+'_true_classes.txt',sep='\t')
+
+    def read_ejtk():
+
+
+
+    def read_true_classes():
+
+
+    def generate_roc_curve():
+

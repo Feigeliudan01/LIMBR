@@ -12,7 +12,7 @@ Motivation
 Decreasing costs and increasing ambition are resulting in larger Mass-spec (MS) experiments.  MS experiments have a few limitations which are exacerbated by this increasing scale, namely batch effects and missing data.  Many 
 downstream statistical analyses require complete cases for analysis, however, MS produces some missing data at random meaning that as the number of experiments increase the number of peptides rejected due to missing data actually 
 *increases*.  This is obviously not good, but fortunately there is a solution!  If the missing data for observations missing only a small number of data points are imputed this issue can be overcome and that's the first thing that 
-LIMBR does.  The second issue with large scaler MS experiments is batch effects.  As the number of samples increases, the number of batches necessary for sample processing also increases.  Batch effects from sample processing are 
+LIMBR does.  The second issue with larger scale MS experiments is batch effects.  As the number of samples increases, the number of batches necessary for sample processing also increases.  Batch effects from sample processing are 
 known to have a large effect on MS data and increasing the number of batches means more batch effects and a higher proportion of observations affected by at least one batch effect.  Here LIMBR capitolizes on the larger amount of 
 data and the known correlation structure of the data set to model these batch effects so that they can be removed.
 
@@ -29,6 +29,68 @@ Features
 -------------
 Example Usage
 -------------
+
+```
+from LIMBR import simulations, imputation, batch_fx
+
+simulation = simulations.simulate()
+simulation.generate_pool_map()
+simulation.write_output()
+
+#Read Data
+to_impute = imputable.imputable('simulated_data_with_noise.txt',0.3)
+#Remove Duplicate Peptides
+to_impute.deduplicate()
+#Drop Rows Over Missing Value Threshold
+to_impute.drop_missing()
+#Impute and Write Output
+to_impute.impute('imputed.txt')
+
+#set SVA parameters
+#raw data
+data_path = 'imputed.txt'
+#circadian experimental design
+exp_design = 'c'
+#Proteomic data type
+exp_type = 'p'
+#Sample blocks (Used in non timecourse designs)
+blocks = None
+#Pool Normalization map
+pool_map = 'pool_map.p'
+#percentage data reduction
+psub = 25
+#number of permutations
+nperm = 10
+#number of processors
+num_proc = 1
+#alpha (significance level)
+a= 0.05
+#lambda (subset threshold)
+l = 0.5
+
+#import data
+to_sva = sva.sva(data_path,exp_design,exp_type,blocks,pool_map)
+#normalize for pooled controls
+to_sva.pool_normalize()
+#calculate timepoints from header
+to_sva.get_tpoints()
+#calculate correlation with primary trend of interest
+to_sva.prim_cor()
+#reduce data based on primary trend correlation
+to_sva.reduce(psub)
+#calculate residuals
+to_sva.set_res()
+#calculate tks
+to_sva.set_tks()
+#perform permutation testing
+to_sva.perm_test(nperm,num_proc)
+#perform eigen trend regression
+to_sva.eig_reg(a)
+#perform subset svd
+to_sva.subset_svd(l)
+#write_output
+to_sva.normalize('LIMBR_processed.txt')
+```
 
 ------------
 Installation
