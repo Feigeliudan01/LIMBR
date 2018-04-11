@@ -440,7 +440,7 @@ class sva:
                     out[m] += 1
             return out
 
-        if npr > 1:
+        if int(npr) > 1:
             l = mgr.Lock()
             with Pool(int(npr)) as pool:
                 pbar = tqdm(total=int(nperm), desc='permuting', position=0, smoothing=0)
