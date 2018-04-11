@@ -12,7 +12,7 @@
 # iterate through entries in row and replace indexes where isnan is true with value from average
 # broadcast row to final copy of array (x[0] = np.arange(10))
 #return final copy
-from LIMBR.imputable import imputable
+from LIMBR.imputation import imputable
 #import multiprocessing, logging
 import os
 import sys

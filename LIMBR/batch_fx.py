@@ -22,7 +22,7 @@ from sklearn import preprocessing
 
 class sva:
     """
-    Performs sva based identification and remmoval of batch effects.
+    Performs sva based identification and removal of batch effects.
 
 
     This class takes a dataset without missing values (raw RNAseq or Proteomics from class imputable).  It performs pool normalization for proteomics datasets and quantile normalization and scaling for all datasets.  The data is then subsetted based on correlation to a primary variable of interest determined by the experimental design.  This subsetted data is used to calculate a residual matrix from which initial estimates of batch effects are produced by SVD.  Significance of these batch effects are estimated by permutation of the residual matrix.  Batch effects deemed significant are regressed against the original dataset and final batch effects are calculated from those rows most correlated with the effect.
@@ -123,7 +123,8 @@ class sva:
 
             newdf = pd.DataFrame(index=df.index)
             for column in df.columns.values:
-                newdf[column] = df[column].div(df['pool_'+'%02d' % dmap[column]],axis='index')
+                if 'pool' not in column:
+                    newdf[column] = df[column].div(df['pool_'+'%02d' % dmap[column]],axis='index')
             nonpool = [i for i in newdf.columns if 'pool' not in i]
             newdf = newdf[nonpool]
             return newdf
@@ -395,17 +396,14 @@ class sva:
         """
         Performs permutation testing on residual matrix SVD.
 
-
         The rows of the residual matrix are first permuted.  Then  get_tks is called to calculate explained variance ratios and these tks are compared to the values from the actual residual matrix.  A running total is kept for the number of times the explained variance from the permuted matrix exceeds that from the original matrix. And significance is estimated by dividing these totals by the number of permutations.  This permutation testing is multiprocessed to decrease calculation times.
-
-
+        
         Parameters
         ----------
         nperm : int
             Number of permutations to be tested.
         npr : int
             Number of processors to be used.
-
 
         Attributes
         ----------
@@ -419,22 +417,15 @@ class sva:
         def single_it(rseed):
             """
             Single iteration of permutation testing.
-
-
             Permutes residual matrix, calculates new tks for permuted matrix and compares to original tks.
-
-
             Parameters
             ----------
             rseed : int
                 Random seed.
-
-
             Returns
             -------
             out : arr
                 Counts of number of times permuted explained variance ratio exceeded explained variance ratio from actual residual matrix.
-
             """
 
             rstate = np.random.RandomState(rseed*100)
@@ -449,19 +440,26 @@ class sva:
                     out[m] += 1
             return out
 
-        l = mgr.Lock()
-        with Pool(int(npr)) as pool:
+        if npr > 1:
+            l = mgr.Lock()
+            with Pool(int(npr)) as pool:
+                pbar = tqdm(total=int(nperm), desc='permuting', position=0, smoothing=0)
+                imap_it = pool.imap_unordered(single_it, range(int(nperm)))
+                for x in imap_it:
+                    pbar.update(1)
+                    with l:
+                        output.append(x)
+            pbar.close()
+            pool.close()
+            pool.join()
+            self.sigs = np.sum(np.asarray(output), axis=0)/float(nperm)
+            time.sleep(40)
+        else:
             pbar = tqdm(total=int(nperm), desc='permuting', position=0, smoothing=0)
-            imap_it = pool.imap_unordered(single_it, range(int(nperm)))
-            for x in imap_it:
+            for x in map(single_it, range(int(nperm))):
                 pbar.update(1)
-                with l:
-                    output.append(x)
-        pbar.close()
-        pool.close()
-        pool.join()
-        self.sigs = np.sum(np.asarray(output), axis=0)/float(nperm)
-        time.sleep(40)
+                output.append(x)
+            self.sigs = np.sum(np.asarray(output), axis=0)/float(nperm)
 
     def eig_reg(self,alpha):
         """
@@ -627,7 +625,7 @@ class sva:
         pd.DataFrame(self.sigs).to_csv(outname.split('.txt')[0]+'_perms.txt',sep='\t')
         pd.DataFrame(self.tks).to_csv(outname.split('.txt')[0]+'_tks.txt',sep='\t')
         pd.DataFrame(np.asarray(self.pepts).T,index=self.data_reduced.index).to_csv(outname.split('.txt')[0]+'_pep_bias.txt',sep='\t')
-        fin_res = np.dot(np.linalg.lstsq(np.asarray(self.ts).T,self.data.values.T)[0].T,np.asarray(self.ts))
+        fin_res = np.dot(np.linalg.lstsq(np.asarray(self.ts).T,self.data.values.T,rcond=None)[0].T,np.asarray(self.ts))
         self.svd_norm = self.scaler.inverse_transform((self.data.values - fin_res).T).T
         self.svd_norm = pd.DataFrame(self.svd_norm,index=self.data.index,columns=self.data.columns)
         if self.data_type == 'p':

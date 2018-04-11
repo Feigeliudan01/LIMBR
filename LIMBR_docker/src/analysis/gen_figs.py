@@ -18,7 +18,7 @@ circularlib=importr('circular')
 circular=robjects.r('circular')
 corcircular=robjects.r('cor.circular')
 import pickle
-from limbr import imputable
+from LIMBR import imputable
 
 def plot_cormat(df,fname,ptitle):
     fig, ax = plt.subplots(nrows=1, ncols=1)

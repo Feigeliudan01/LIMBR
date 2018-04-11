@@ -1,0 +1,5 @@
+./data/Formatted_input.txt filter=lfs diff=lfs merge=lfs -text
+./data/Jen_rnaseq_formatted_raw_counts.txt filter=lfs diff=lfs merge=lfs -text
+./data/block_design.p filter=lfs diff=lfs merge=lfs -text
+./data/csp_classes.csv filter=lfs diff=lfs merge=lfs -text
+./data/wt_classes.csv filter=lfs diff=lfs merge=lfs -text

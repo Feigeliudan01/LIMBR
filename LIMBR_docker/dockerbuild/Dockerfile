@@ -248,4 +248,11 @@ RUN pip3 install -U rpy2
 COPY ./src/Karpeivitch_comparison.r /LIMBR/src/Karpeivitch_comparison.r
 COPY ./src/analysis/gen_figs.py /LIMBR/src/analysis/gen_figs.py
 RUN Rscript src/Karpeivitch_comparison.r
+RUN for i in  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do sed -e 's/_[[:digit:]]//g' output/simdata/mb_simdata_eigenMS_$i.txt > temp_eigenMS_$i.txt; done
+RUN for i in  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do mv temp_eigenMS_$i.txt output/simdata/mb_denoised_eigenMS_$i.txt; done
+RUN for i in  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do python src/eJTK-CalcP.py -f output/simdata/mb_denoised_eigenMS_$i.txt -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt; done
+RUN for i in  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do tail -q -n +2 output/simdata/mb_denoised_eigenMS_${i}__jtkout_GammaP.txt |cut -f 20 > output/simdata/mb_denoised_eigenMS_${i}_pvals.txt; done
+RUN for i in  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do python3 src/get_classes.py -l output/simdata/mb_simulated_data_key_${i}.txt output/simdata/mb_denoised_eigenMS_${i}.txt output/simdata/mb_denoised_eigenMS_${i}_classes.txt; done
+RUN for i in  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do paste output/simdata/mb_denoised_eigenMS_${i}_pvals.txt output/simdata/mb_denoised_eigenMS_${i}_classes.txt > output/simdata/mb_denoised_eigenMS_${i}_classifications.txt; done
+COPY ./src/analysis/gen_figs.py /LIMBR/src/analysis/gen_figs.py
 RUN python3 src/analysis/gen_figs.py 

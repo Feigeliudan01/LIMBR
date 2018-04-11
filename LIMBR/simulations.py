@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import pickle
+import random
+import string
 from sklearn.preprocessing import scale
 
 class simulate:
@@ -62,7 +64,7 @@ class simulate:
 
     """
 
-    def __init__(self,tpoints=24,nrows=1000, nreps=3, tpoint_space=2, pcirc=.5, phase_prop=.5, phase_noise=.25, amp_noise=1, n_batch_effects=5, pbatch=.4, effect_size=2, p_miss=.25):
+    def __init__(self,tpoints=24,nrows=1000, nreps=3, tpoint_space=2, pcirc=.5, phase_prop=.5, phase_noise=.25, amp_noise=1, n_batch_effects=5, pbatch=.4, effect_size=2, p_miss=.05):
         """
         Simulates circadian data and saves as a properly formatted example .csv file.
 
@@ -135,7 +137,7 @@ class simulate:
         pool_map = {}
         for i in self.cols:
             pool_map[i] = 1
-        pickle.dump(pool_map, open( out_name+'.p' "wb" ) )
+        pickle.dump(pool_map, open(out_name+'.p', "wb") )
 
 
     def write_output(self, out_name='simulated_data'):
@@ -149,13 +151,17 @@ class simulate:
 
         self.out_name = str(out_name)
         
-        self.simndf = pd.DataFrame(self.sim_miss,columns=self.cols)
-        self.simndf.insert(0, 'Peptide', ['1']*len(self.simndf))
-        self.simndf.index.names = ['Protein']
-        self.simndf.insert(len(self.cols), 'pool_1', ['1']*len(self.simndf))
+        self.simndf = pd.DataFrame(self.sim_miss,columns=self.cols).fillna('NULL')
+        peps = [''.join(random.choices(string.ascii_uppercase, k=12)) for i in range(len(self.simndf))]
+        prots = [''.join(random.choices(string.ascii_uppercase, k=12)) for i in range(len(self.simndf))]
+        self.simndf.insert(0, 'Protein', prots)
+        self.simndf.insert(0, 'Peptide', peps)
+        self.simndf.set_index('Peptide',inplace=True)
+        self.simndf.insert((len(self.cols)+1), 'pool_01', ['1']*len(self.simndf))
         self.simndf.to_csv(out_name+'_with_noise.txt',sep='\t')
 
         self.simdf = pd.DataFrame(np.asarray(self.sim),columns=self.cols)
-        self.simdf.insert(0, 'Peptide', ['1']*len(self.simdf))
-        self.simdf.index.names = ['Protein']
+        self.simdf.insert(0, 'Protein', prots)
+        self.simdf.insert(0, 'Peptide', peps)
+        self.simdf.set_index('Peptide',inplace=True)
         self.simdf.to_csv(out_name+'_baseline.txt',sep='\t')

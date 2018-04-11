@@ -66,9 +66,10 @@ class imputable:
         Groups rows by peptide, if a peptide appears in more than one row it is removed.
 
         """
-        if self.data[self.data.columns.values[1]][0][-2] == "T":
+        if (self.data[self.data.columns.values[1]][0][-2] == "T") & (self.data[self.data.columns.values[1]][0][-1].isdigit()):
             self.data[self.data.columns.values[1]] = self.data[self.data.columns.values[1]].apply(lambda x: x.split('T')[0])
-            self.data = self.data.groupby(['Peptide','Protein']).mean()
+        
+        self.data = self.data.groupby(['Peptide','Protein']).mean()
         todrop = []
         for name, group in tqdm(self.data.groupby(level='Peptide')):
             if len(group) > 1:
