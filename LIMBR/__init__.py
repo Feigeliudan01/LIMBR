@@ -1,4 +1,4 @@
-from LIMBR import imputataion
+from LIMBR import imputation
 from LIMBR import batch_fx
 from LIMBR import old_fashioned
 from LIMBR import simulations
