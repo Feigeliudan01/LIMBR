@@ -116,7 +116,49 @@ to_sva.perm_test(nperm=N)
 to_sva.output_default(output)
 ```
 
+And that's it, your data is ready for downstream analysis!
+
 ### More Control
+
+If you need more control, you can skip the helper functions shown above and run LIMBR step by step, supplying alternatives to the default parameters where desired.
+
+* input = PATH TO YOUR INPUT FILE (output of imputation)
+* exp_des = EXPERIMENTAL DESIGN ('c' = circadian time course, 't' = non-circadian time course, 'b' = blocked)
+* dat = DATA TYPE ('p' = proteomic, 'r' = rnaseq)
+* pool_map = PATH TO POOL MAP FILE
+* preduce = PERCENTAGE BY WHICH TO REDUCE DATA (25 = 25%)
+* N = NUMBER OF PERMUTATIONS
+* n_proc = NUMBER OF PROCESSORS (for permutation testing, incompatible with MAC - leave set to 1)
+* sig = SIGNIFICANCE CUTOFF FOR BATCH EFFECTS
+* lambda = BACKGROUND CUTOFF (for estimation of association between peptides and batch effects)
+* output = PATH TO DESIRED OUTPUT FILE
+
+```
+from LIMBR import batch_fx
+
+#import data
+to_sva = batch_fx.sva(filename=input,design=exp_des,data_type=dat,pool=pool_map)
+#normalize for pooled controls
+to_sva.pool_normalize()
+#calculate timepoints from header
+to_sva.get_tpoints()
+#calculate correlation with primary trend of interest
+to_sva.prim_cor()
+#reduce data based on primary trend correlation
+to_sva.reduce(perc_red=preduce)
+#calculate residuals
+to_sva.set_res()
+#calculate tks
+to_sva.set_tks()
+#perform permutation testing
+to_sva.perm_test(nperm=100,npr=n_proc)
+#perform eigen trend regression
+to_sva.eig_reg(alpha=sig)
+#perform subset svd
+to_sva.subset_svd(lam=lambda)
+#write_output
+to_sva.normalize('LIMBR_processed.txt')
+```
 
 ### Time Series Analyses
 
