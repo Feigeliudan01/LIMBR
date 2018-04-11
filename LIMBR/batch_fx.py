@@ -284,7 +284,7 @@ class sva:
             l_cor()
 
 
-    def reduce(self,percsub):
+    def reduce(self,perc_red=25):
         """
         Reduces the data based on the correlation to primary variable of interest calculated in prim_cor.
 
@@ -294,7 +294,7 @@ class sva:
 
         Parameters
         ----------
-        percsub : float
+        perc_red : float
             Percentage of data to remove during reduction.
 
 
@@ -304,8 +304,8 @@ class sva:
             Reduced dataset.
 
         """
-        percsub = float(percsub)
-        uncor = [(i<(np.percentile(self.cors,percsub))) for i in self.cors]
+        perc_red = float(perc_red)
+        uncor = [(i<(np.percentile(self.cors,perc_red))) for i in self.cors]
         self.data_reduced = self.data[uncor]
 
 
@@ -461,7 +461,7 @@ class sva:
                 output.append(x)
             self.sigs = np.sum(np.asarray(output), axis=0)/float(nperm)
 
-    def eig_reg(self,alpha):
+    def eig_reg(self,alpha=0.05):
         """
         Regresses eigentrends (batch effects) against the reduced dataset calculating p values for each row being associated with that trend.
 
@@ -497,7 +497,7 @@ class sva:
         else:
             print('No Significant Trends')
 
-    def subset_svd(self,lam):
+    def subset_svd(self,lam=0.5):
         """
         Performs SVD on the subset of rows associated with each batch effect.
 
@@ -632,3 +632,16 @@ class sva:
             self.svd_norm = self.svd_norm.groupby(level='Protein').mean()
         self.svd_norm.index.names = ['#']
         self.svd_norm.to_csv(outname,sep='\t')
+
+    def preprocess_default(self):
+        self.pool_normalize()
+        self.get_tpoints()
+        self.prim_cor()
+        self.reduce()
+        self.set_res()
+        self.set_tks()
+
+    def output_default(self,out_file):
+        self.eig_reg()
+        self.subset_svd()
+        self.normalize(out_file)
