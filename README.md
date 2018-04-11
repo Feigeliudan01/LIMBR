@@ -39,12 +39,8 @@ simulation.write_output()
 
 #Read Raw Data
 to_impute = imputation.imputable('simulated_data_with_noise.txt',0.3)
-#Remove Duplicate Peptides
-to_impute.deduplicate()
-#Drop Rows Over Missing Value Threshold
-to_impute.drop_missing()
 #Impute and Write Output
-to_impute.impute('imputed.txt')
+to_impute.impute_data('imputed.txt')
 
 #Read Imputed Data ('c' indicates circadian experimental design, 'p' indicates proteomic data type)
 to_sva = batch_fx.sva(filename='imputed.txt',design='c',data_type='p',pool='pool_map.p')

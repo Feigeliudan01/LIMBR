@@ -217,3 +217,9 @@ missing values with corresponding averages.
         meld.set_index([self.data.index.get_level_values(0),self.data.index.get_level_values(1)], inplace=True)
         meld.columns = self.data.columns
         meld.to_csv(outname,sep='\t')
+
+    def impute_data(self,out_file):
+        self.deduplicate()
+        self.drop_missing()
+        self.impute(out_file)
+
