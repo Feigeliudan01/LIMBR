@@ -22,7 +22,7 @@ Features
 
 * KNN based imputation of missing data.
 
-* SVD based modelling and removal of batch effects.
+* SVA based modelling and removal of batch effects.
 
 * Built for circadian and non-circadian time series as well as block designs
 
@@ -44,7 +44,6 @@ to_impute.impute_data('imputed.txt')
 
 #Read Imputed Data ('c' indicates circadian experimental design, 'p' indicates proteomic data type)
 to_sva = batch_fx.sva(filename='imputed.txt',design='c',data_type='p',pool='pool_map.p')
-
 #preprocess data
 to_sva.preprocess_default()
 #perform permutation testing
