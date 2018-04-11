@@ -49,27 +49,12 @@ to_impute.impute('imputed.txt')
 #Read Imputed Data ('c' indicates circadian experimental design, 'p' indicates proteomic data type)
 to_sva = batch_fx.sva(filename='imputed.txt',design='c',data_type='p',pool='pool_map.p')
 
+#preprocess data
 to_sva.preprocess_default()
-#normalize for pooled controls
-to_sva.pool_normalize()
-#calculate timepoints from header
-to_sva.get_tpoints()
-#calculate correlation with primary trend of interest
-to_sva.prim_cor()
-#reduce data based on primary trend correlation
-to_sva.reduce()
-#calculate residuals
-to_sva.set_res()
-#calculate tks
-to_sva.set_tks()
 #perform permutation testing
 to_sva.perm_test(nperm=100)
-#perform eigen trend regression
-to_sva.eig_reg()
-#perform subset svd
-to_sva.subset_svd()
 #write_output
-to_sva.normalize('LIMBR_processed.txt')
+to_sva.output_default('LIMBR_processed.txt')
 ```
 
 ------------
