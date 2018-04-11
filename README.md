@@ -42,7 +42,7 @@ to_impute = imputation.imputable('simulated_data_with_noise.txt',0.3)
 #Impute and Write Output
 to_impute.impute_data('imputed.txt')
 
-#Read Imputed Data ('c' indicates circadian experimental design, 'p' indicates proteomic data type)
+#Read Imputed Data
 to_sva = batch_fx.sva(filename='imputed.txt',design='c',data_type='p',pool='pool_map.p')
 #preprocess data
 to_sva.preprocess_default()
@@ -75,7 +75,7 @@ Before using LIMBR you need to specify a few key features of your experiment.  I
 
 Once your data is properly formatted and you've generated the experimental design files you need, things get much easier.
 
-###Imputing
+### Imputing
 
 Imputing data requires only 3 pieces of information: the path to your raw data file, the percentage of missing data beyond which you don't want to impute and the path to your desired output file.  Obviously you don't want to guess values for peptides which you almost never observed, but where to draw the line?  Generally imputing when <30% of values are missing is reasonable for large datasets, but you probably don't want to impute at least all peptides for which <10% of values are missing as this is a _very_ conservative threshold and not imputing at all introduces its own biases.
 
@@ -83,7 +83,7 @@ Imputing data requires only 3 pieces of information: the path to your raw data f
 from LIMBR import imputation
 
 input = PATH TO YOUR INPUT FILE
-threshold = IMPUTATION THRESHOLD (0.3 = 30%)
+threshold = MAXIMUM IMPUTATION LEVEL (0.3 = 30%)
 output = PATH TO YOUR DESIRED OUTPUT FILE
 
 #Read Raw Data
@@ -91,6 +91,36 @@ to_impute = imputation.imputable(input,threshold)
 #Impute and Write Output
 to_impute.impute_data(output)
 ```
+
+### Removing Batch Effects
+
+Removing batch effects requires a little more information than imputing, but not much.  You need to specify the path to your input file (which should be the output of imputation), the design of your experiment, whether it uses proteomic or rnaseq data, and if proteomic which pools map to which experiments.  The possible experimental designs are circadian time course ('c'), non-circadian timecourse ('t') or blocked ('b').  You will also need to specify the number of permutations used to estimate the significance of bias trends.  More permutations are better, but there are diminishing returns in addition to the increased time required.  In simulated datasets, LIMBR performs very well with even 100 permutations, however 10,000 permutations can be performed on even very large datasets in around 2 hours.
+
+```python
+from LIMBR import batch_fx
+
+input = PATH TO YOUR INPUT FILE (output of imputation)
+exp_des = EXPERIMENTAL DESIGN ('c' = circadian time course, 't' = non-circadian time course, 'b' = blocked)
+dat = DATA TYPE ('p' = proteomic, 'r' = rnaseq)
+pool_map = PATH TO POOL MAP FILE 
+N = NUMBER OF PERMUTATIONS
+output = PATH TO DESIRED OUTPUT FILE
+
+#Read Imputed Data ('c' indicates circadian experimental design, 'p' indicates proteomic data type)
+to_sva = batch_fx.sva(filename=input,design=exp_des,data_type=dat,pool=pool_map)
+#preprocess data
+to_sva.preprocess_default()
+#perform permutation testing
+to_sva.perm_test(nperm=N)
+#write_output
+to_sva.output_default(output)
+```
+
+### More Control
+
+### Time Series Analyses
+
+### Blocked Analyses
 
 
 
