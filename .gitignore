@@ -1,6 +1,6 @@
 plots/
 output/*
-
+LIMBR_docker/output/*
 
 # Compiled source #
 ###################

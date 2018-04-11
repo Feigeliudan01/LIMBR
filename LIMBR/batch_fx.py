@@ -392,7 +392,7 @@ class sva:
 
         self.tks = self.get_tks(self.res)
 
-    def perm_test(self,nperm,npr):
+    def perm_test(self,nperm,npr=1):
         """
         Performs permutation testing on residual matrix SVD.
 
