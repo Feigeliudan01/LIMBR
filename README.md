@@ -206,11 +206,11 @@ analysis.generate_roc_curve()
 
 You should get a ROC curve that looks something like this:
 
-![ImageRelative](LIMBR/images/ROC_1000.pdf "ROC_1000")
+![ImageRelative](/LIMBR/images/ROC_1000.pdf "ROC_1000")
 
 LIMBR should clearly outperform the traditional method, but not quite reach the level of the baseline.  It's important to remember that LIMBR works better with larger datasets from which to learn.  If we repeat the above example with all the same parameters but increase the number of rows of data to 10,000, we get ROC curves which look like this:
 
-![ImageRelative](LIMBR/images/ROC_10000.pdf "ROC_10000")
+![ImageRelative](/LIMBR/images/ROC_10000.pdf "ROC_10000")
 
 While this example takes longer to run, the performance is clearly superior. 10,000 rows is still relatively small for biological data, so it's reasonable to expect higher performance and longer run times in practice than what you see in the examples.
 
