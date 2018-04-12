@@ -4,6 +4,8 @@ import pickle
 import random
 import string
 from sklearn.preprocessing import scale
+from sklearn.metrics import roc_curve
+import matplotlib.pyplot as plt
 
 class simulate:
     """
@@ -64,7 +66,7 @@ class simulate:
 
     """
 
-    def __init__(self,tpoints=24,nrows=1000, nreps=3, tpoint_space=2, pcirc=.5, phase_prop=.5, phase_noise=.25, amp_noise=1, n_batch_effects=5, pbatch=.4, effect_size=2, p_miss=.05):
+    def __init__(self,tpoints=24,nrows=1000, nreps=3, tpoint_space=2, pcirc=.5, phase_prop=.5, phase_noise=.25, amp_noise=.75, n_batch_effects=3, pbatch=.5, effect_size=2, p_miss=.2,lam_miss=5):
         """
         Simulates circadian data and saves as a properly formatted example .csv file.
 
@@ -121,7 +123,20 @@ class simulate:
             for j in range(self.n_batch_effects):
                 temp += bts[j]*batch_effects[j]
             self.simnoise.append(temp)
-        m = np.random.binomial(1, self.p_miss, self.tpoints*self.nreps*self.nrows)
+        #p_miss is prob a row is missing any data, generate list of length rows using binomial, then for entries in this list
+        #generate lists of length columns with number of missing values drawn from poisson and append these lists to the mask
+        #sample from poisson to get num_miss make list of num_miss 1s plus num_cols - num_miss 0s then shuffle with np.shuffle
+        miss_rows = np.random.binomial(1, self.p_miss, self.nrows)
+        m = []
+        for i in miss_rows:
+            if i == 1:
+                num_miss = np.random.poisson(lam_miss) + 1
+                mini_mask = np.asarray(num_miss*[1] + (self.tpoints*self.nreps-num_miss)*[0])
+                np.random.shuffle(mini_mask)
+            else:
+                mini_mask = self.tpoints*self.nreps*[0]
+            m.append(mini_mask)
+
         self.sim_miss = np.ma.masked_array(np.asarray(self.simnoise), mask=m).filled(np.nan)
 
 
@@ -163,17 +178,41 @@ class simulate:
         self.simdf = pd.DataFrame(np.asarray(self.sim),columns=self.cols)
         self.simdf.insert(0, 'Protein', prots)
         self.simdf.insert(0, 'Peptide', peps)
-        self.simdf.set_index('Peptide',inplace=True)
+        self.simdf.set_index('Protein',inplace=True)
+        self.simdf.groupby(level='Protein').mean()
+        self.simdf.index.names = ['#']
         self.simdf.to_csv(out_name+'_baseline.txt',sep='\t')
 
-        pd.DataFrame(self.circ,columns=['Circadian'],index=self.simndf.index).to_csv(out_name+'_true_classes.txt',sep='\t')
-
-    #def read_ejtk():
+        pd.DataFrame(self.circ,columns=['Circadian'],index=self.simndf['Protein']).to_csv(out_name+'_true_classes.txt',sep='\t')
 
 
 
-    #def read_true_classes():
+class analyze:
+    def __init__(self,filename_classes):
+        self.true_classes = pd.read_csv(filename_classes,sep='\t')
+        self.tags = {}
+        self.merged = []
+        self.i = 0
 
+    def add_data(self,filename_ejtk,tag):
+        self.tags[tag] = self.i
+        ejtk = pd.read_csv(filename_ejtk,sep='\t')
+        self.merged.append(pd.merge(self.true_classes[['Protein','Circadian']], ejtk[['ID','GammaBH']], left_on='Protein', right_on='ID',how='left'))
+        self.merged[self.i].set_index('Protein',inplace=True)
+        self.merged[self.i].drop('ID',axis=1,inplace=True)
+        self.merged[self.i].fillna(1.0,inplace=True)
+        self.i += 1
 
-    #def generate_roc_curve():
+    def generate_roc_curve(self):
+        for j in self.tags.keys():
+            fpr, tpr, thresholds = roc_curve(self.merged[self.tags[j]]['Circadian'].values, (1-self.merged[self.tags[j]]['GammaBH'].values), pos_label=1)
+            plt.plot(fpr,tpr,label=j)
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('Receiver Operating Characteristic Comparison')
+        plt.legend(loc="lower right")
+        plt.savefig('ROC.pdf')
+            
 
