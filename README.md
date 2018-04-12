@@ -79,15 +79,15 @@ Once your data is properly formatted and you've generated the experimental desig
 
 Imputing data requires only 3 pieces of information: the path to your raw data file, the percentage of missing data beyond which you don't want to impute and the path to your desired output file.  Obviously you don't want to guess values for peptides which you almost never observed, but where to draw the line?  Generally imputing when <30% of values are missing is reasonable for large datasets.  You probably want to impute at least all peptides for which <10% of values are missing as this is a _very_ conservative threshold and not imputing at all introduces its own biases.
 
-* input = PATH TO YOUR INPUT FILE
-* threshold = MAXIMUM IMPUTATION LEVEL (0.3 = 30%)
+* filename = PATH TO YOUR INPUT FILE
+* missingness = MAXIMUM IMPUTATION LEVEL (0.3 = 30%)
 * output = PATH TO YOUR DESIRED OUTPUT FILE
 
 ```python
 from LIMBR import imputation
 
 #Read Raw Data
-to_impute = imputation.imputable(input,threshold)
+to_impute = imputation.imputable(filename,missingness)
 #Impute and Write Output
 to_impute.impute_data(output)
 ```
@@ -96,22 +96,22 @@ to_impute.impute_data(output)
 
 Removing batch effects requires a little more information than imputing, but not much.  You need to specify the path to your input file (which should be the output of imputation), the design of your experiment, whether it uses proteomic or rnaseq data, and if proteomic which pools map to which experiments.  The possible experimental designs are circadian time course ('c'), non-circadian timecourse ('t') or blocked ('b').  You will also need to specify the number of permutations used to estimate the significance of bias trends.  More permutations are better, but there are diminishing returns in addition to the increased time required.  In simulated datasets, LIMBR performs very well with even 100 permutations, however 10,000 permutations can be performed on even very large datasets in around 2 hours.
 
-* input = PATH TO YOUR INPUT FILE (output of imputation)
-* exp_des = EXPERIMENTAL DESIGN ('c' = circadian time course, 't' = non-circadian time course, 'b' = blocked)
-* dat = DATA TYPE ('p' = proteomic, 'r' = rnaseq)
-* pool_map = PATH TO POOL MAP FILE 
-* N = NUMBER OF PERMUTATIONS
+* filename = PATH TO YOUR INPUT FILE (output of imputation)
+* design = EXPERIMENTAL DESIGN ('c' = circadian time course, 't' = non-circadian time course, 'b' = blocked)
+* data_type = DATA TYPE ('p' = proteomic, 'r' = rnaseq)
+* pool = PATH TO POOL MAP FILE 
+* nperm = NUMBER OF PERMUTATIONS
 * output = PATH TO DESIRED OUTPUT FILE
 
 ```python
 from LIMBR import batch_fx
 
 #Read Imputed Data ('c' indicates circadian experimental design, 'p' indicates proteomic data type)
-to_sva = batch_fx.sva(filename=input,design=exp_des,data_type=dat,pool=pool_map)
+to_sva = batch_fx.sva(filename,design,data_type,pool)
 #preprocess data
 to_sva.preprocess_default()
 #perform permutation testing
-to_sva.perm_test(nperm=N)
+to_sva.perm_test(nperm)
 #write_output
 to_sva.output_default(output)
 ```
@@ -122,22 +122,22 @@ And that's it, your data is ready for downstream analysis!
 
 If you need more control, you can skip the helper functions shown above and run LIMBR step by step, supplying alternatives to the default parameters where desired.
 
-* input = PATH TO YOUR INPUT FILE (output of imputation)
-* exp_des = EXPERIMENTAL DESIGN ('c' = circadian time course, 't' = non-circadian time course, 'b' = blocked)
-* dat = DATA TYPE ('p' = proteomic, 'r' = rnaseq)
-* pool_map = PATH TO POOL MAP FILE
-* preduce = PERCENTAGE BY WHICH TO REDUCE DATA (25 = 25%)
-* N = NUMBER OF PERMUTATIONS
-* n_proc = NUMBER OF PROCESSORS (for permutation testing, incompatible with MAC - leave set to 1)
-* sig = SIGNIFICANCE CUTOFF FOR BATCH EFFECTS
-* lambda = BACKGROUND CUTOFF (for estimation of association between peptides and batch effects)
+* filename = PATH TO YOUR INPUT FILE (output of imputation)
+* design = EXPERIMENTAL DESIGN ('c' = circadian time course, 't' = non-circadian time course, 'b' = blocked)
+* data_type = DATA TYPE ('p' = proteomic, 'r' = rnaseq)
+* pool = PATH TO POOL MAP FILE
+* perc_red = PERCENTAGE BY WHICH TO REDUCE DATA (25 = 25%)
+* nperm = NUMBER OF PERMUTATIONS
+* npr = NUMBER OF PROCESSORS (for permutation testing, incompatible with MAC - leave set to 1)
+* alpha = SIGNIFICANCE CUTOFF FOR BATCH EFFECTS
+* lam = BACKGROUND CUTOFF (for estimation of association between peptides and batch effects)
 * output = PATH TO DESIRED OUTPUT FILE
 
 ```
 from LIMBR import batch_fx
 
 #import data
-to_sva = batch_fx.sva(filename=input,design=exp_des,data_type=dat,pool=pool_map)
+to_sva = batch_fx.sva(filename,design,data_type,pool)
 #normalize for pooled controls
 to_sva.pool_normalize()
 #calculate timepoints from header
@@ -145,19 +145,19 @@ to_sva.get_tpoints()
 #calculate correlation with primary trend of interest
 to_sva.prim_cor()
 #reduce data based on primary trend correlation
-to_sva.reduce(perc_red=preduce)
+to_sva.reduce(perc_red)
 #calculate residuals
 to_sva.set_res()
 #calculate tks
 to_sva.set_tks()
 #perform permutation testing
-to_sva.perm_test(nperm=100,npr=n_proc)
+to_sva.perm_test(nperm,npr)
 #perform eigen trend regression
-to_sva.eig_reg(alpha=sig)
+to_sva.eig_reg(alpha)
 #perform subset svd
-to_sva.subset_svd(lam=lambda)
+to_sva.subset_svd(lam)
 #write_output
-to_sva.normalize('LIMBR_processed.txt')
+to_sva.normalize(output)
 ```
 
 ### Performance
@@ -192,7 +192,7 @@ python2 src/eJTK-CalcP.py -f old_processed.txt -w src/ref_files/waveform_cosine.
 python2 src/eJTK-CalcP.py -f simulated_data_baseline.txt -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
 ```
 
-The first part simply removes the unique replicate identifiers from the headers of our files to comply with eJTKs formatting conventions and the second part runs eJTK.  This should result in several output files including `LIMBR_processed__jtkout_GammaP.txt` and `old_processed__jtkout_GammaP.txt`.  Once this classification step is complete, LIMBR can help you analyze your results. Back in python you can run:
+The first part simply removes the unique replicate identifiers from the headers of our files to comply with eJTKs formatting conventions and the second part runs eJTK.  This should result in several output files including `LIMBR_processed__jtkout_GammaP.txt` and `old_processed__jtkout_GammaP.txt`.  The 'true_classes' file used here should have been generated when you ran the simulation module.  Once this classification step is complete, LIMBR can help you analyze your results. Back in python you can run:
 
 ```python
 from LIMBR import simulations
@@ -216,6 +216,25 @@ While this example takes longer to run, the performance is clearly superior. 10,
 
 ### Further Exploration
 
+If you'd like to further explore LIMBR, there are several additional parameters that can be tweaked in generating simulated datasets.
+
+* points = NUMBER OF TIMEPOINTS
+* nrows = NUMBER OF ROWS OF DATA
+* nreps = NUMBER OF REPLICATES
+* tpoint_space = AMOUNT OF TIME BETWEEN TIMEPOINTS
+* pcirc = PROBABILITY OF A PEPTIDE BEING CIRCADIAN
+* phase_prop = PROPORTION OF PEPTIDES IN EACH PHASE GROUP (two phases of expression)
+* phase_noise = AMOUNT OF VARIABILITY IN PHASE WITHIN PHASE GROUPS
+* amp_noise = AMOUNT OF BIOLOGICAL VARIABILITY IN EXPRESSION
+* n_batch_effects = NUMBER OF BATCH EFFECTS
+* pbatch = PROBABILITY OF A PEPTIDE BEING EFFECTED BY EACH BATCH EFFECT
+* effect_size = AVERAGE MAGNITUDE OF BATCH EFFECTS
+* p_miss = PROBABILITY OF A PEPTIDE MISSING ANY DATA
+* lam_miss = POISSON LAMBDA FOR HOW MANY OBSERVATIONS MISSING IF ANY
+
+```
+simulation = simulations.simulate(tpoints, nrows, nreps, tpoint_space, pcirc, phase_prop, phase_noise, amp_noise, n_batch_effects, pbatch, effect_size, p_miss, lam_miss)
+```
 
 
 ----
@@ -226,7 +245,9 @@ TODO
 
 * Add unit tests to docstrings where possible.
 
-* Review ensuring maximum Vectorization
+* Review ensuring maximum Vectorization/CUDA implementation.
+
+* Improve eJTK integration.
 
 -------
 Credits
