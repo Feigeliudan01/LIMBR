@@ -18,7 +18,7 @@ circularlib=importr('circular')
 circular=robjects.r('circular')
 corcircular=robjects.r('cor.circular')
 import pickle
-from LIMBR import imputable
+from LIMBR import imputation
 
 def plot_cormat(df,fname,ptitle):
     fig, ax = plt.subplots(nrows=1, ncols=1)
@@ -349,10 +349,10 @@ eigenms = []
 limbr = []
 
 for i in range(1,20):
-    baseline.append(get_point('output/simdata/simulated_data_baseline_'+str(i)+'__jtkout_GammaP.txt','output/simdata/simulated_data_key_'+str(i)+'.txt'))
-    noise.append(get_point('output/simdata/simulated_data_with_noise_'+str(i)+'__jtkout_GammaP.txt','output/simdata/simulated_data_key_'+str(i)+'.txt'))
-    eigenms.append(get_point('output/simdata/mb_simdata_eigenMS_'+str(i)+'__jtkout_GammaP.txt','output/simdata/simulated_data_key_'+str(i)+'.txt'))
-    limbr.append(get_point('output/simdata/mb_denoised_circ_lowess_'+str(i)+'__jtkout_GammaP.txt','output/simdata/simulated_data_key_'+str(i)+'.txt'))
+    baseline.append(get_point('output/simdata/mb_simulated_data_baseline_'+str(i)+'__jtkout_GammaP.txt','output/simdata/mb_simulated_data_key_'+str(i)+'.txt'))
+    noise.append(get_point('output/simdata/simulated_data_with_noise_'+str(i)+'__jtkout_GammaP.txt','output/simdata/mb_simulated_data_key_'+str(i)+'.txt'))
+    eigenms.append(get_point('output/simdata/mb_simdata_eigenMS_'+str(i)+'__jtkout_GammaP.txt','output/simdata/mb_simulated_data_key_'+str(i)+'.txt'))
+    limbr.append(get_point('output/simdata/mb_denoised_circ_lowess_'+str(i)+'__jtkout_GammaP.txt','output/simdata/mb_simulated_data_key_'+str(i)+'.txt'))
 
 plt.scatter(*zip(*baseline),color='b',marker='x', label='Baseline ROC curve')
 
@@ -378,10 +378,10 @@ eigenms_auc = []
 limbr_auc = []
 
 for i in range(1,20):
-    baseline_auc.append(get_auc('output/simdata/simulated_data_baseline_'+str(i)+'__jtkout_GammaP.txt','output/simdata/simulated_data_key_'+str(i)+'.txt'))
-    noise_auc.append(get_auc('output/simdata/simulated_data_with_noise_'+str(i)+'__jtkout_GammaP.txt','output/simdata/simulated_data_key_'+str(i)+'.txt'))
-    eigenms_auc.append(get_auc('output/simdata/mb_simdata_eigenMS_'+str(i)+'__jtkout_GammaP.txt','output/simdata/simulated_data_key_'+str(i)+'.txt'))
-    limbr_auc.append(get_auc('output/simdata/mb_denoised_circ_lowess_'+str(i)+'__jtkout_GammaP.txt','output/simdata/simulated_data_key_'+str(i)+'.txt'))
+    baseline_auc.append(get_auc('output/simdata/mb_simulated_data_baseline_'+str(i)+'__jtkout_GammaP.txt','output/simdata/mb_simulated_data_key_'+str(i)+'.txt'))
+    noise_auc.append(get_auc('output/simdata/simulated_data_with_noise_'+str(i)+'__jtkout_GammaP.txt','output/simdata/mb_simulated_data_key_'+str(i)+'.txt'))
+    eigenms_auc.append(get_auc('output/simdata/mb_simdata_eigenMS_'+str(i)+'__jtkout_GammaP.txt','output/simdata/mb_simulated_data_key_'+str(i)+'.txt'))
+    limbr_auc.append(get_auc('output/simdata/mb_denoised_circ_lowess_'+str(i)+'__jtkout_GammaP.txt','output/simdata/mb_simulated_data_key_'+str(i)+'.txt'))
 
 auc = pd.DataFrame({'baseline' : baseline_auc, 'noise' : noise_auc, 'eigenms' : eigenms_auc, 'LIMBR' : limbr_auc})
 
@@ -450,7 +450,7 @@ phase_hist(defcirc['delta_p'].values,r'Histogram of Phase Lags Between'"\n"r'Exp
 
 
 #Figure 1d
-to_impute = imputable("data/Formatted_input.txt",.3)
+to_impute = imputation.imputable("data/Formatted_input.txt",.3)
 to_impute.deduplicate()
 miss = []
 blocks = []
