@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 import pickle
-import random
 import string
 from sklearn.preprocessing import scale
 from sklearn.metrics import roc_curve
 import matplotlib.pyplot as plt
+import random
 
 class simulate:
     """
