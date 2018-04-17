@@ -455,10 +455,10 @@ class sva:
             time.sleep(40)
         else:
             output = []
-            pbar = tqdm(total=int(nperm), desc='permuting', position=0, smoothing=0)
-            for x in range(int(nperm)):
-                output.append(single_it(x))
-                pbar.update(1)
+            with tqdm(total=int(nperm), desc='permuting', position=0, smoothing=0) as pbar:
+                for x in range(int(nperm)):
+                    output.append(single_it(x))
+                    pbar.update(1)
             self.sigs = np.sum(np.asarray(output), axis=0)/float(nperm)
 
     def eig_reg(self,alpha=0.05):
