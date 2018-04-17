@@ -167,8 +167,8 @@ class simulate:
         self.out_name = str(out_name)
         
         self.simndf = pd.DataFrame(self.sim_miss,columns=self.cols).fillna('NULL')
-        peps = [''.join(random.choices(string.ascii_uppercase, k=12)) for i in range(len(self.simndf))]
-        prots = [''.join(random.choices(string.ascii_uppercase, k=12)) for i in range(len(self.simndf))]
+        peps = [''.join([random.choice(string.ascii_uppercase) for j in range(12)]) for i in range(len(self.simndf))]
+        prots = [''.join([random.choice(string.ascii_uppercase) for j in range(12)]) for i in range(len(self.simndf))]
         self.simndf.insert(0, 'Protein', prots)
         self.simndf.insert(0, 'Peptide', peps)
         self.simndf.set_index('Peptide',inplace=True)

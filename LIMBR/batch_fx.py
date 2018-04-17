@@ -33,7 +33,7 @@ class sva:
     filename : str
         Path to the input dataset.
     design : str
-        Experimental design, one of: 'c', 'l', 'b'.  'c' indicates a circadian timecourse. 'l' indicates a general timecourse (lowess fit used).  'b' indicates a block design.
+        Experimental design, one of: 'c', 't', 'b'.  'c' indicates a circadian timecourse. 't' indicates a general timecourse (lowess fit used).  'b' indicates a block design.
     data_type : str
         Type of dataset, one of 'p' or 'r'.  'p' indicates proteomic with two index columns specifying peptide and protein.  'r' indicates RNAseq with one index column indicating gene.
     blocks : str
@@ -280,7 +280,7 @@ class sva:
             circ_cor()
         elif self.designtype == 'b':
             block_cor()
-        elif self.designtype == 'l':
+        elif self.designtype == 't':
             l_cor()
 
 
@@ -352,7 +352,7 @@ class sva:
             res_mat = get_l_res(in_arr)
         elif self.designtype == 'b':
             res_mat = get_b_res(in_arr)
-        elif self.designtype == 'l':
+        elif self.designtype == 't':
             res_mat = get_l_res(in_arr)
         return res_mat
 
@@ -411,9 +411,6 @@ class sva:
             Estimated significances for each batch effect.
 
         """
-
-        mgr = Manager()
-        output = mgr.list()
         def single_it(rseed):
             """
             Single iteration of permutation testing.
@@ -441,6 +438,8 @@ class sva:
             return out
 
         if int(npr) > 1:
+            mgr = Manager()
+            output = mgr.list()
             l = mgr.Lock()
             with Pool(int(npr)) as pool:
                 pbar = tqdm(total=int(nperm), desc='permuting', position=0, smoothing=0)
