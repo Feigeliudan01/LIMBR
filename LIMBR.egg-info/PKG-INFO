@@ -1,12 +1,12 @@
 Metadata-Version: 1.1
 Name: LIMBR
-Version: 0.2.8.8
+Version: 0.2.8.9
 Summary: Learning and Imputation for Mass-spec Bias Reduction
 Home-page: https://github.com/aleccrowell/LIMBR
 Author: Alec Crowell
 Author-email: alexander.m.crowell@gmail.com
 License: BSD-3
-Download-URL: https://github.com/aleccrowell/LIMBR/releases/tag/v0.2.8.8-alpha
+Download-URL: https://github.com/aleccrowell/LIMBR/releases/tag/v0.2.8.9-alpha
 Description: LIMBR: Learning and Imputation for Mass-spec Bias Reduction
         ===========================================================
         

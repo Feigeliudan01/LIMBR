@@ -1,12 +1,12 @@
 from setuptools import setup
 
 setup(name='LIMBR',
-      version='0.2.8.9',
+      version='0.2.8.10',
       packages=['LIMBR'],
       py_modules=['batch_fx','imputation','old_fashioned'],
       description='Learning and Imputation for Mass-spec Bias Reduction',
       url='https://github.com/aleccrowell/LIMBR',
-      download_url='https://github.com/aleccrowell/LIMBR/releases/tag/v0.2.8.9-alpha',
+      download_url='https://github.com/aleccrowell/LIMBR/releases/tag/v0.2.8.10-alpha',
       author='Alec Crowell',
       author_email='alexander.m.crowell@gmail.com',
       license='BSD-3',
