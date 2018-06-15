@@ -69,7 +69,7 @@ How to Use?
 -----------
 
 ### A Note on Data Formatting
-LIMBR expects input files to be formatted as tab seperated.  For Proteomics data, The first column should contain the Peptide and the second column the protein to which that peptide corresponds.  In the case of RNAseq data, the first column should indicate the gene or transcript identifier.  The header should start with 'Peptide' and 'Protein' for proteomics data or '#' for rnaseq data.  For time series datasets, the rest of the header should be either of the form 02_1 for data with the first number indicating the timepoint and the second the replicate or of the form pool_01 for pooled controls.  It is important that single digit timepoints include the leading zero for formatting.  Example data file:
+LIMBR expects input files to be formatted as tab seperated.  For Proteomics data, The first column should contain the Peptide and the second column the protein to which that peptide corresponds.  In the case of RNAseq data, the first column should indicate the gene or transcript identifier.  The header should start with 'Peptide' and 'Protein' for proteomics data or '#' for rnaseq data.  For time series datasets, the rest of the header should be either of the form 02_1 for data with the first number indicating the timepoint and the second the replicate or of the form pool_01 for pooled controls.  It is important that single digit timepoints include the leading zero for formatting. Missing values should bbe indicated by the string 'NULL'.  Example data file:
 
 | Peptide | Protein | 00_1 | 00_2 | 00_3 | 02_1 | 02_2 | 02_3 |
 |---|---|---|---|---|---|---|---|
@@ -260,6 +260,19 @@ Credits
 K nearest neighbors as an imputation method was originally proposed by Gustavo Batista in 2002 (http://conteudo.icmc.usp.br/pessoas/gbatista/files/his2002.pdf) and has seen a great deal of success since.
 
 The sva based methods build on work for micro-array datasets by Jeffrey Leek, with particular reliance on his PhD Thesis from the University of Washington (https://digital.lib.washington.edu/researchworks/bitstream/handle/1773/9586/3290558.pdf?sequence=1).
+
+----
+Built With
+----
+
+* numpy
+* pandas
+* scipy 
+* sklearn 
+* statsmodels 
+* tqdm 
+* multiprocess 
+* matplotlib
 
 -------
 License
