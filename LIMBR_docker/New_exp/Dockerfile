@@ -8,10 +8,6 @@ ENV LANG C.UTF-8
 RUN apt-get -qq update
 RUN apt-get -y install software-properties-common curl
 RUN apt-get install -y wget git python python3 nano python-tk python3-pip python-pip python3-tk
-RUN add-apt-repository ppa:git-core/ppa
-RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
-RUN apt-get install git-lfs
-RUN git lfs install
 RUN pip2 install --upgrade pip
 RUN pip3 install --upgrade pip
 RUN pip3 install -U numpy cython matplotlib seaborn astroML jinja2 limbr
@@ -27,7 +23,32 @@ RUN python setup.py build_ext --inplace
 
 WORKDIR /LIMBR/New_exp
 RUN python3 Generate_data.py
-RUN for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do sed -e 's/_[[:digit:]]//g' standard_$i_baseline.txt  > temp_$i.txt; done
-RUN for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do cut -f 1,5- temp_$i.txt > standard_$i_baseline.txt; done
+RUN for i in $(seq 1 20); do sed -e 's/_[[:digit:]]//g' standard_$i\_baseline.txt  > temp_$i.txt; done
+RUN for i in $(seq 1 20); do cut -f 1,5- temp_$i.txt > standard_$i\_baseline.txt; done
 WORKDIR /LIMBR/
-RUN for i in  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do python2 src/eJTK-CalcP.py -f New_exp/standard_$i_baseline.txt -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt; done
+RUN for i in  $(seq 1 20); do python2 src/eJTK-CalcP.py -f New_exp/standard_$i\_baseline.txt -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt; done
+
+WORKDIR /LIMBR/New_exp
+RUN rm temp_*.txt
+RUN for i in $(seq 1 20); do sed -e 's/_[[:digit:]]//g' double_noise_$i\_baseline.txt  > temp_$i.txt; done
+RUN for i in $(seq 1 20); do cut -f 1,5- temp_$i.txt > double_noise_$i\_baseline.txt; done
+WORKDIR /LIMBR/
+RUN for i in  $(seq 1 20); do python2 src/eJTK-CalcP.py -f New_exp/double_noise_$i\_baseline.txt -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt; done
+
+WORKDIR /LIMBR/New_exp
+RUN rm temp_*.txt
+RUN for i in $(seq 1 20); do sed -e 's/_[[:digit:]]//g' half_noise_$i\_baseline.txt  > temp_$i.txt; done
+RUN for i in $(seq 1 20); do cut -f 1,5- temp_$i.txt > half_noise_$i\_baseline.txt; done
+WORKDIR /LIMBR/
+RUN for i in  $(seq 1 20); do python2 src/eJTK-CalcP.py -f New_exp/half_noise_$i\_baseline.txt -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt; done
+
+WORKDIR /LIMBR/New_exp
+RUN rm temp_*.txt
+RUN for i in $(seq 1 20); do sed -e 's/_[[:digit:]]//g' tenth_noise_$i\_baseline.txt  > temp_$i.txt; done
+RUN for i in $(seq 1 20); do cut -f 1,5- temp_$i.txt > tenth_noise_$i\_baseline.txt; done
+WORKDIR /LIMBR/
+RUN for i in  $(seq 1 20); do python2 src/eJTK-CalcP.py -f New_exp/tenth_noise_$i\_baseline.txt -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt; done
+
+WORKDIR /LIMBR/New_exp
+RUN python3 limbr_process.py
+
