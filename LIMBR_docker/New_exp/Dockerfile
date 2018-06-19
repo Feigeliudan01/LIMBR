@@ -106,3 +106,24 @@ RUN for i in $(seq 1 20); do cut -f 1,5- temp_$i.txt > tenth_noise_$i\_old_proce
 WORKDIR /LIMBR/
 RUN for i in  $(seq 1 20); do python2 src/eJTK-CalcP.py -f New_exp/tenth_noise_$i\_old_processed.txt -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt; done
 
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+RUN apt-get -y build-dep r-base
+RUN mkdir /usr/local/src/R
+WORKDIR /usr/local/src/R
+RUN curl -O http://cran.utstat.utoronto.ca/src/base/R-3/R-3.4.1.tar.gz
+RUN tar xzvf R-3.4.1.tar.gz
+WORKDIR R-3.4.1
+RUN ./configure --enable-R-shlib  --with-blas --with-lapack
+RUN make
+RUN make install
+WORKDIR /usr/local/src/R
+RUN rm -f R Rscript
+RUN ln -s R-3.4.1/bin/R R
+RUN ln -s R-3.4.1/bin/Rscript Rscript
+WORKDIR /
+RUN su - -c "R -e \"install.packages('circular', repos = 'http://cran.rstudio.com/')\""
+WORKDIR /LIMBR/
+RUN pip3 install -U rpy2
+COPY ./Karpeivitch_comparison.r /LIMBR/New_exp/Karpeivitch_comparison.r
+COPY ./analysis/gen_figs.py /LIMBR/New_exp/EigenMS.R
+RUN Rscript src/Karpeivitch_comparison.r
