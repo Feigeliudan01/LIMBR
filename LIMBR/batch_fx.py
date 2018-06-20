@@ -625,7 +625,7 @@ class sva:
         pd.DataFrame(self.sigs).to_csv(outname.split('.txt')[0]+'_perms.txt',sep='\t')
         pd.DataFrame(self.tks).to_csv(outname.split('.txt')[0]+'_tks.txt',sep='\t')
         pd.DataFrame(np.asarray(self.pepts).T,index=self.data_reduced.index).to_csv(outname.split('.txt')[0]+'_pep_bias.txt',sep='\t')
-        fin_res = np.dot(np.linalg.lstsq(np.asarray(self.ts).T,self.data.values.T,rcond=None)[0].T,np.asarray(self.ts))
+        fin_res = np.dot(np.dot(self.data.values,np.linalg.lstsq(self.ts,np.identity(np.shape(self.ts)[0]),rcond=None)[0]),self.ts)
         self.svd_norm = self.scaler.inverse_transform((self.data.values - fin_res).T).T
         self.svd_norm = pd.DataFrame(self.svd_norm,index=self.data.index,columns=self.data.columns)
         if self.data_type == 'p':

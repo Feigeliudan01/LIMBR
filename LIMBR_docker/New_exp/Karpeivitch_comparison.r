@@ -1,8 +1,8 @@
-source("src/EigenMS.R")
+source("EigenMS.R")
 
 for (j in 1:20){
   
-ddata = read.table(paste(c("standard_",toString(j),"_with_noise.txt"),collapse=""), header=TRUE)
+ddata = read.table(paste(c("standard_",toString(j),"_old_processed.txt"),collapse=""), header=TRUE)
 ddata = ddata[,c(2,1,3:74)]
 ddata[,1] <- seq.int(nrow(ddata))
 m_logInts = ddata[,3:74]
@@ -28,7 +28,7 @@ detach(TREAT)
 
 for (j in 1:20){
   
-  ddata = read.table(paste(c("double_noise_",toString(j),"_with_noise.txt"),collapse=""), header=TRUE)
+  ddata = read.table(paste(c("double_noise_",toString(j),"_old_processed.txt"),collapse=""), header=TRUE)
   ddata = ddata[,c(2,1,3:74)]
   ddata[,1] <- seq.int(nrow(ddata))
   m_logInts = ddata[,3:74]
@@ -54,7 +54,7 @@ for (j in 1:20){
 
 for (j in 1:20){
   
-ddata = read.table(paste(c("half_noise_",toString(j),"_with_noise.txt"),collapse=""), header=TRUE)
+ddata = read.table(paste(c("half_noise_",toString(j),"_old_processed.txt"),collapse=""), header=TRUE)
   ddata = ddata[,c(2,1,3:74)]
   ddata[,1] <- seq.int(nrow(ddata))
   m_logInts = ddata[,3:74]
@@ -80,7 +80,7 @@ ddata = read.table(paste(c("half_noise_",toString(j),"_with_noise.txt"),collapse
 
 for (j in 1:20){
   
-  ddata = read.table(paste(c("tenth_noise_",toString(j),"_with_noise.txt"),collapse=""), header=TRUE)
+  ddata = read.table(paste(c("tenth_noise_",toString(j),"_old_processed.txt"),collapse=""), header=TRUE)
   ddata = ddata[,c(2,1,3:74)]
   ddata[,1] <- seq.int(nrow(ddata))
   m_logInts = ddata[,3:74]

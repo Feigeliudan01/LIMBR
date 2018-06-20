@@ -122,8 +122,20 @@ RUN ln -s R-3.4.1/bin/R R
 RUN ln -s R-3.4.1/bin/Rscript Rscript
 WORKDIR /
 RUN su - -c "R -e \"install.packages('circular', repos = 'http://cran.rstudio.com/')\""
-WORKDIR /LIMBR/
-RUN pip3 install -U rpy2
+WORKDIR /LIMBR/New_exp
+RUN pip3 install -U rpy2 jinja2
 COPY ./Karpeivitch_comparison.r /LIMBR/New_exp/Karpeivitch_comparison.r
-COPY ./analysis/gen_figs.py /LIMBR/New_exp/EigenMS.R
-RUN Rscript src/Karpeivitch_comparison.r
+COPY ./EigenMS.R /LIMBR/New_exp/EigenMS.R
+RUN for i in $(seq 1 20); do sed -e 's/_[[:digit:]]//g' standard_$i\_old_processed.txt  > temp_$i.txt; done
+RUN for i in $(seq 1 20); do cut -f 1,5- temp_$i.txt > standard_$i\_old_processed.txt; done
+RUN rm temp_*.txt
+RUN for i in $(seq 1 20); do sed -e 's/_[[:digit:]]//g' double_noise_$i\_old_processed.txt  > temp_$i.txt; done
+RUN for i in $(seq 1 20); do cut -f 1,5- temp_$i.txt > double_noise_$i\_old_processed.txt; done
+RUN rm temp_*.txt
+RUN for i in $(seq 1 20); do sed -e 's/_[[:digit:]]//g' half_noise_$i\_old_processed.txt  > temp_$i.txt; done
+RUN for i in $(seq 1 20); do cut -f 1,5- temp_$i.txt > half_noise_$i\_old_processed.txt; done
+RUN rm temp_*.txt
+RUN for i in $(seq 1 20); do sed -e 's/_[[:digit:]]//g' tenth_noise_$i\_old_processed.txt  > temp_$i.txt; done
+RUN for i in $(seq 1 20); do cut -f 1,5- temp_$i.txt > tenth_noise_$i\_old_processed.txt; done
+RUN rm temp_*.txt
+RUN Rscript Karpeivitch_comparison.r
