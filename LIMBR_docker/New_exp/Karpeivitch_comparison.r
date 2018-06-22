@@ -3,11 +3,11 @@ source("EigenMS.R")
 for (j in 1:20){
   
 ddata = read.table(paste(c("standard_",toString(j),"_old_processed.txt"),collapse=""), header=TRUE)
-ddata = ddata[,c(2,1,3:74)]
+#ddata = ddata[,c(2,1,3:74)]
 ddata[,1] <- seq.int(nrow(ddata))
-m_logInts = ddata[,3:74]
+m_logInts = ddata[,2:74]
 
-m_prot.info = ddata[,1:2]
+m_prot.info = ddata[,1]
 
 grps = as.factor(rep(1:24, times=1, each=3))
 m_ints_eig1 = eig_norm1(m=m_logInts,treatment=grps,prot.info=m_prot.info)
@@ -29,11 +29,11 @@ detach(TREAT)
 for (j in 1:20){
   
   ddata = read.table(paste(c("double_noise_",toString(j),"_old_processed.txt"),collapse=""), header=TRUE)
-  ddata = ddata[,c(2,1,3:74)]
+  #ddata = ddata[,c(2,1,3:74)]
   ddata[,1] <- seq.int(nrow(ddata))
-  m_logInts = ddata[,3:74]
+  m_logInts = ddata[,2:74]
   
-  m_prot.info = ddata[,1:2]
+  m_prot.info = ddata[,1]
   
   grps = as.factor(rep(1:24, times=1, each=3))
   m_ints_eig1 = eig_norm1(m=m_logInts,treatment=grps,prot.info=m_prot.info)
@@ -55,11 +55,11 @@ for (j in 1:20){
 for (j in 1:20){
   
 ddata = read.table(paste(c("half_noise_",toString(j),"_old_processed.txt"),collapse=""), header=TRUE)
-  ddata = ddata[,c(2,1,3:74)]
+  #ddata = ddata[,c(2,1,3:74)]
   ddata[,1] <- seq.int(nrow(ddata))
-  m_logInts = ddata[,3:74]
+  m_logInts = ddata[,2:74]
   
-  m_prot.info = ddata[,1:2]
+  m_prot.info = ddata[,1]
   
   grps = as.factor(rep(1:24, times=1, each=3))
   m_ints_eig1 = eig_norm1(m=m_logInts,treatment=grps,prot.info=m_prot.info)
@@ -81,11 +81,11 @@ ddata = read.table(paste(c("half_noise_",toString(j),"_old_processed.txt"),colla
 for (j in 1:20){
   
   ddata = read.table(paste(c("tenth_noise_",toString(j),"_old_processed.txt"),collapse=""), header=TRUE)
-  ddata = ddata[,c(2,1,3:74)]
+  #ddata = ddata[,c(2,1,3:74)]
   ddata[,1] <- seq.int(nrow(ddata))
-  m_logInts = ddata[,3:74]
+  m_logInts = ddata[,2:74]
   
-  m_prot.info = ddata[,1:2]
+  m_prot.info = ddata[,1]
   
   grps = as.factor(rep(1:24, times=1, each=3))
   m_ints_eig1 = eig_norm1(m=m_logInts,treatment=grps,prot.info=m_prot.info)
