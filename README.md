@@ -182,11 +182,11 @@ If you have eJTK installed in a ./src directory relative to the location of the 
 
 ```bash
 sed -e 's/_[[:digit:]]//g' LIMBR_processed.txt > temp.txt
-cut -f 1,5- temp.txt > LIMBR_processed.txt
+cut -f 1,3- temp.txt > LIMBR_processed.txt
 sed -e 's/_[[:digit:]]//g' old_processed.txt > temp.txt
-cut -f 1,5- temp.txt > old_processed.txt
+cut -f 1,3- temp.txt > old_processed.txt
 sed -e 's/_[[:digit:]]//g' simulated_data_baseline.txt > temp.txt
-cut -f 1,5- temp.txt > simulated_data_baseline.txt
+cut -f 1,3- temp.txt > simulated_data_baseline.txt
 rm temp.txt
 
 python2 src/eJTK-CalcP.py -f LIMBR_processed.txt -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt
