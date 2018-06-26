@@ -138,4 +138,4 @@ RUN for i in  $(seq 1 20); do python2 src/eJTK-CalcP.py -f New_exp/double_noise_
 RUN for i in  $(seq 1 20); do python2 src/eJTK-CalcP.py -f New_exp/half_noise_eigenMS_$i\.txt -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt; done
 RUN for i in  $(seq 1 20); do python2 src/eJTK-CalcP.py -f New_exp/tenth_noise_eigenMS_$i\.txt -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt; done
 
-COPY ../../LIMBR /LIMBR/LIMBR
+RUN python3 analyze_ejtk.py
