@@ -3,7 +3,7 @@ import pandas as pd
 import pickle
 import string
 from sklearn.preprocessing import scale
-from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 import random
 
@@ -214,5 +214,9 @@ class analyze:
         plt.title('Receiver Operating Characteristic Comparison')
         plt.legend(loc="lower right")
         plt.savefig('ROC.pdf')
-            
+
+    def calculate_auc(self):
+        for j in self.tags.keys():
+            fpr, tpr, thresholds = roc_curve(self.merged[self.tags[j]]['Circadian'].values, (1-self.merged[self.tags[j]]['GammaBH'].values), pos_label=1)
+        self.roc_auc = auc(fpr, tpr) 
 
