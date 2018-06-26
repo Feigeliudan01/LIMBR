@@ -216,7 +216,9 @@ class analyze:
         plt.savefig('ROC.pdf')
 
     def calculate_auc(self):
+        out = {}
         for j in self.tags.keys():
             fpr, tpr, thresholds = roc_curve(self.merged[self.tags[j]]['Circadian'].values, (1-self.merged[self.tags[j]]['GammaBH'].values), pos_label=1)
-        self.roc_auc = auc(fpr, tpr) 
+            out[j] = auc(fpr, tpr)
+        self.roc_auc = out 
 
