@@ -46,17 +46,18 @@ class imputable:
 
     """
 
-    def __init__(self, filename, missingness):
+    def __init__(self, filename, missingness, neighbors=10):
         """
         Constructor, takes input data and missingness threshold and initializes imputable object.
 
-        This is the initialization function for imputation.  It reads the input file of raw data and sets the user specified value for the missingness threshold.
+        This is the initialization function for imputation.  It reads the input file of raw data and sets the user specified value for the missingness threshold and number of nearest neighbors.
 
         """
         self.data = pd.read_csv(filename,sep='\t')
         self.miss = float(missingness)
         self.pats = {}
         self.notdone = True
+        self.NN = neighbors
 
     def deduplicate(self):
         """
@@ -155,7 +156,7 @@ missing values with corresponding averages.
             #drop missing columns given missingness pattern
             newarr = comparr[:,~np.array(list(pattern)).astype(bool)]
             #fit nearest neighbors
-            nbrs = NearestNeighbors(n_neighbors=10).fit(newarr)
+            nbrs = NearestNeighbors(n_neighbors=self.NN).fit(newarr)
             outa = []
             #iterate over rows matching missingness pattern
             for rowind, row in enumerate(origarr[inds]):
