@@ -47,6 +47,9 @@ class simulate:
 
     probability of missing data
 
+    lam_miss : float
+
+    poisson lambda for # of missing columns in row with missing data
 
 
 
@@ -137,7 +140,7 @@ class simulate:
                 mini_mask = self.tpoints*self.nreps*[0]
             m.append(mini_mask)
 
-        self.sim_miss = np.ma.masked_array(np.asarray(self.simnoise), mask=m).filled(np.nan)
+        self.sim_miss = np.ma.masked_array(np.asarray(self.simnoise, dtype=object), mask=m).filled(np.nan)
 
 
     def generate_pool_map(self, out_name='pool_map'):
