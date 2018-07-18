@@ -80,5 +80,6 @@ WORKDIR /LIMBR/
 RUN for i in  $(seq 1 20); do python2 src/eJTK-CalcP.py -f grid/forty_miss_15_NN_$i\_LIMBR_processed.txt -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt; done
 
 COPY ./analyze_ejtk.py /LIMBR/grid/analyze_ejtk.py
+RUN pip install -U limbr
 WORKDIR /LIMBR/grid
 RUN python3 analyze_ejtk.py

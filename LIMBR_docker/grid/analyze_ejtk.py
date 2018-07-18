@@ -5,7 +5,7 @@ sims = {}
 
 for i in range(1,21):
     analysis = simulations.analyze('twenty_miss_5_NN_' + str(i) + '_true_classes.txt')
-    analysis.add_data('twenty_miss_5_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR')
+    analysis.add_data('twenty_miss_5_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR', include_missing=True)
     analysis.calculate_auc()
     sims[i] = analysis.roc_auc
 
@@ -16,7 +16,7 @@ sims = {}
 
 for i in range(1,21):
     analysis = simulations.analyze('twenty_miss_10_NN_' + str(i) + '_true_classes.txt')
-    analysis.add_data('twenty_miss_10_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR')
+    analysis.add_data('twenty_miss_10_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR', include_missing=True)
     analysis.calculate_auc()
     sims[i] = analysis.roc_auc
 
@@ -26,7 +26,7 @@ data = pd.concat([data, temp_data])
 
 for i in range(1,21):
     analysis = simulations.analyze('twenty_miss_15_NN_' + str(i) + '_true_classes.txt')
-    analysis.add_data('twenty_miss_15_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR')
+    analysis.add_data('twenty_miss_15_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR', include_missing=True)
     analysis.calculate_auc()
     sims[i] = analysis.roc_auc
 
@@ -36,7 +36,7 @@ data = pd.concat([data, temp_data])
 
 for i in range(1,21):
     analysis = simulations.analyze('thirty_miss_5_NN_' + str(i) + '_true_classes.txt')
-    analysis.add_data('thirty_miss_5_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR')
+    analysis.add_data('thirty_miss_5_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR', include_missing=True)
     analysis.calculate_auc()
     sims[i] = analysis.roc_auc
 
@@ -46,7 +46,7 @@ data = pd.concat([data, temp_data])
 
 for i in range(1,21):
     analysis = simulations.analyze('thirty_miss_10_NN_' + str(i) + '_true_classes.txt')
-    analysis.add_data('thirty_miss_10_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR')
+    analysis.add_data('thirty_miss_10_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR', include_missing=True)
     analysis.calculate_auc()
     sims[i] = analysis.roc_auc
 
@@ -56,7 +56,7 @@ data = pd.concat([data, temp_data])
 
 for i in range(1,21):
     analysis = simulations.analyze('thirty_miss_15_NN_' + str(i) + '_true_classes.txt')
-    analysis.add_data('thirty_miss_15_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR')
+    analysis.add_data('thirty_miss_15_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR', include_missing=True)
     analysis.calculate_auc()
     sims[i] = analysis.roc_auc
 
@@ -66,7 +66,7 @@ data = pd.concat([data, temp_data])
 
 for i in range(1,21):
     analysis = simulations.analyze('forty_miss_5_NN_' + str(i) + '_true_classes.txt')
-    analysis.add_data('forty_miss_5_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR')
+    analysis.add_data('forty_miss_5_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR', include_missing=True)
     analysis.calculate_auc()
     sims[i] = analysis.roc_auc
 
@@ -76,7 +76,7 @@ data = pd.concat([data, temp_data])
 
 for i in range(1,21):
     analysis = simulations.analyze('forty_miss_10_NN_' + str(i) + '_true_classes.txt')
-    analysis.add_data('forty_miss_10_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR')
+    analysis.add_data('forty_miss_10_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR', include_missing=True)
     analysis.calculate_auc()
     sims[i] = analysis.roc_auc
 
@@ -86,7 +86,7 @@ data = pd.concat([data, temp_data])
 
 for i in range(1,21):
     analysis = simulations.analyze('forty_miss_15_NN_' + str(i) + '_true_classes.txt')
-    analysis.add_data('forty_miss_15_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR')
+    analysis.add_data('forty_miss_15_NN_' + str(i) + '_LIMBR_processed__jtkout_GammaP.txt','LIMBR', include_missing=True)
     analysis.calculate_auc()
     sims[i] = analysis.roc_auc
 
