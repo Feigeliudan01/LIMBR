@@ -197,13 +197,13 @@ class analyze:
         self.merged = []
         self.i = 0
 
-    def add_data(self,filename_ejtk,tag,include_missing=False):
+    def add_data(self,filename_ejtk,tag,include_missing=True):
         self.tags[tag] = self.i
         ejtk = pd.read_csv(filename_ejtk,sep='\t')
-        if include_missing == False:
+        if include_missing == True:
             self.merged.append(pd.merge(self.true_classes[['Protein','Circadian']], ejtk[['ID','GammaBH']], left_on='Protein', right_on='ID',how='left'))
         else:
-            self.merged.append(pd.merge(self.true_classes[['Protein','Circadian']], ejtk[['ID','GammaBH']], left_on='Protein', right_on='ID',how='outer'))
+            self.merged.append(pd.merge(self.true_classes[['Protein','Circadian']], ejtk[['ID','GammaBH']], left_on='Protein', right_on='ID',how='inner'))
         self.merged[self.i].set_index('Protein',inplace=True)
         self.merged[self.i].drop('ID',axis=1,inplace=True)
         self.merged[self.i].fillna(1.0,inplace=True)
