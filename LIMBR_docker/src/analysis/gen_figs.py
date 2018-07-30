@@ -458,13 +458,65 @@ for i in range(1,20):
     miss.append(len((to_impute.data[to_impute.data.columns[0:(i*10)]]).dropna()))
     blocks.append(i)
 
+def fit_exp_linear(t, y, C=0):
+    y = y - C
+    y = np.log(y)
+    K, A_log = np.polyfit(t, y, 1)
+    A = np.exp(A_log)
+    return A, K
+
+def model_func(t, tau):
+    return np.multiply((np.max(miss)-np.min(miss)), np.exp(-t / tau)) + np.min(miss)
+
+def fit_exp_nonlinear(x, y):
+    opt_parms, parm_cov = sp.optimize.curve_fit(model_func, x, y, maxfev=10000)
+    tau = opt_parms
+    return tau
+
+tau = fit_exp_nonlinear(blocks, miss)
+
+
 fig, ax1 = plt.subplots()
-ax1.plot(blocks,miss, color='b')[0]
+ax1.plot(blocks, [model_func(i, tau) for i in blocks], color='r',ls='--',lw=0.5)[0]
+ax1.plot(blocks, miss, color='b', marker='.', lw=0, ms=5)[0]
 ax1.set_ylabel('Number of peptides without any missing values', color='k')
 ax1.set_xlabel('Number of MS runs', color='k')
 ax1.set_xticks(range(1,20))
+ax1.set_ylim(bottom=0)
 plt.savefig('output/figs/missingness_vs_experiments.pdf')
 plt.close()
+
+
+#Figure S1
+noisea = pd.read_csv("grid/melted_aucs.txt", sep='\t').sort_values(by=['Noise'])
+
+fig, ax1 = plt.subplots()
+ax1.plot(noisea[noisea['Method'] == 'LIMBR']['Noise'].values, noisea[noisea['Method'] == 'LIMBR']['AUC'].values, color='b', marker='.', lw=0.5, ms=2)[0]
+ax1.plot(noisea[noisea['Method'] == 'baseline']['Noise'].values, noisea[noisea['Method'] == 'baseline']['AUC'].values, color='g', marker='.', lw=0.5, ms=2)[0]
+ax1.plot(noisea[noisea['Method'] == 'eigenMS']['Noise'].values, noisea[noisea['Method'] == 'eigenMS']['AUC'].values, color='y', marker='.', lw=0.5, ms=2)[0]
+ax1.plot(noisea[noisea['Method'] == 'traditional']['Noise'].values, noisea[noisea['Method'] == 'traditional']['AUC'].values, color='r', marker='.', lw=0.5, ms=2)[0]
+ax1.set_ylabel('Area Under the Receiver Operating Curve', color='k')
+ax1.set_xlabel('Relative Noise Level', color='k')
+ax1.set_xticks([0.1,0.5,1,2])
+ax1.set_ylim(bottom=0)
+plt.savefig('output/figs/AUC_vs_noise.pdf')
+plt.close()
+
+#Figure S2
+noisea = pd.read_csv("grid/melted_aucs.txt", sep='\t').sort_values(by=['Noise'])
+
+fig, ax1 = plt.subplots()
+ax1.plot(noisea[noisea['Method'] == 'LIMBR']['Noise'].values, noisea[noisea['Method'] == 'LIMBR']['AUC'].values, color='b', marker='.', lw=0.5, ms=2)[0]
+ax1.plot(noisea[noisea['Method'] == 'baseline']['Noise'].values, noisea[noisea['Method']    == 'baseline']['AUC'].values, color='g', marker='.', lw=0.5, ms=2)[0]
+ax1.plot(noisea[noisea['Method'] == 'eigenMS']['Noise'].values, noisea[noisea['Method']   == 'eigenMS']['AUC'].values, color='y', marker='.', lw=0.5, ms=2)[0]
+ax1.plot(noisea[noisea['Method'] == 'traditional']['Noise'].values, noisea[noisea['Method']  == 'traditional']['AUC'].values, color='r', marker='.', lw=0.5, ms=2)[0]
+ax1.set_ylabel('Area Under the Receiver Operating Curve', color='k')
+ax1.set_xlabel('Relative Noise Level', color='k')
+ax1.set_xticks([0.1, 0.5, 1, 2])
+ax1.set_ylim(bottom=0)
+plt.savefig('output/figs/AUC_vs_noise.pdf')
+plt.close()
+
 
 #Figure ???
 #ax = plt.subplot(111)

@@ -77,7 +77,6 @@ class simulate:
 
         """
 
-        np.random.seed(4574)
         self.tpoints = int(tpoints)
         self.nreps = int(nreps)
         self.nrows = int(nrows)

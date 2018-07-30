@@ -117,9 +117,7 @@ RUN ln -s R-3.4.1/bin/Rscript Rscript
 WORKDIR /
 RUN su - -c "R -e \"install.packages('circular', repos = 'http://cran.rstudio.com/')\""
 WORKDIR /LIMBR/New_exp
-RUN pip3 install -U rpy2 jinja2
-COPY ./Karpeivitch_comparison.r /LIMBR/New_exp/Karpeivitch_comparison.r
-COPY ./EigenMS.R /LIMBR/New_exp/EigenMS.R
+RUN pip3 install -U rpy2
 RUN for i in $(seq 1 20); do sed -e 's/_[[:digit:]]//g' standard_$i\_old_processed.txt  > temp_$i.txt; done
 RUN for i in $(seq 1 20); do mv temp_$i.txt standard_$i\_old_processed.txt; done
 RUN for i in $(seq 1 20); do sed -e 's/_[[:digit:]]//g' double_noise_$i\_old_processed.txt  > temp_$i.txt; done
@@ -138,4 +136,6 @@ RUN for i in  $(seq 1 20); do python2 src/eJTK-CalcP.py -f New_exp/double_noise_
 RUN for i in  $(seq 1 20); do python2 src/eJTK-CalcP.py -f New_exp/half_noise_eigenMS_$i\.txt -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt; done
 RUN for i in  $(seq 1 20); do python2 src/eJTK-CalcP.py -f New_exp/tenth_noise_eigenMS_$i\.txt -w src/ref_files/waveform_cosine.txt -a src/ref_files/asymmetries_02-22_by2.txt -s src/ref_files/phases_00-22_by2.txt -p src/ref_files/period24.txt; done
 
+COPY ./analyze_ejtk.py /LIMBR/New_exp/analyze_ejtk.py
+WORKDIR /LIMBR/New_exp
 RUN python3 analyze_ejtk.py
