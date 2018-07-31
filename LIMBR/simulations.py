@@ -69,7 +69,7 @@ class simulate:
 
     """
 
-    def __init__(self,tpoints=24,nrows=1000, nreps=3, tpoint_space=2, pcirc=.5, phase_prop=.5, phase_noise=.25, amp_noise=.75, n_batch_effects=3, pbatch=.5, effect_size=2, p_miss=.2,lam_miss=5):
+    def __init__(self,tpoints=24,nrows=1000, nreps=3, tpoint_space=2, pcirc=.5, phase_prop=.5, phase_noise=.25, amp_noise=.75, n_batch_effects=3, pbatch=.5, effect_size=2, p_miss=.2,lam_miss=5,rseed=4574):
         """
         Simulates circadian data and saves as a properly formatted example .csv file.
 
@@ -77,6 +77,7 @@ class simulate:
 
         """
 
+        np.random.seed(rseed)
         self.tpoints = int(tpoints)
         self.nreps = int(nreps)
         self.nrows = int(nrows)
