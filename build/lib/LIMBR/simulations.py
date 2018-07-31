@@ -3,7 +3,7 @@ import pandas as pd
 import pickle
 import string
 from sklearn.preprocessing import scale
-from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 import random
 
@@ -47,6 +47,9 @@ class simulate:
 
     probability of missing data
 
+    lam_miss : float
+
+    poisson lambda for # of missing columns in row with missing data
 
 
 
@@ -74,7 +77,6 @@ class simulate:
 
         """
 
-        np.random.seed(4574)
         self.tpoints = int(tpoints)
         self.nreps = int(nreps)
         self.nrows = int(nrows)
@@ -92,7 +94,7 @@ class simulate:
         self.cols = []
         for i in range(self.tpoints):
             for j in range(self.nreps):
-                self.cols.append('CT'+("{0:0=2d}".format(self.tpoint_space*i+self.tpoint_space))+'_'+str(j+1))
+                self.cols.append(("{0:0=2d}".format(self.tpoint_space*i+self.tpoint_space))+'_'+str(j+1))
 
         #randomly determine which rows are circadian
         self.circ = np.random.binomial(1, self.pcirc, self.nrows)
@@ -137,7 +139,7 @@ class simulate:
                 mini_mask = self.tpoints*self.nreps*[0]
             m.append(mini_mask)
 
-        self.sim_miss = np.ma.masked_array(np.asarray(self.simnoise), mask=m).filled(np.nan)
+        self.sim_miss = np.ma.masked_array(np.asarray(self.simnoise, dtype=object), mask=m).filled(np.nan)
 
 
     def generate_pool_map(self, out_name='pool_map'):
@@ -194,10 +196,13 @@ class analyze:
         self.merged = []
         self.i = 0
 
-    def add_data(self,filename_ejtk,tag):
+    def add_data(self,filename_ejtk,tag,include_missing=True):
         self.tags[tag] = self.i
         ejtk = pd.read_csv(filename_ejtk,sep='\t')
-        self.merged.append(pd.merge(self.true_classes[['Protein','Circadian']], ejtk[['ID','GammaBH']], left_on='Protein', right_on='ID',how='left'))
+        if include_missing == True:
+            self.merged.append(pd.merge(self.true_classes[['Protein','Circadian']], ejtk[['ID','GammaBH']], left_on='Protein', right_on='ID',how='left'))
+        else:
+            self.merged.append(pd.merge(self.true_classes[['Protein','Circadian']], ejtk[['ID','GammaBH']], left_on='Protein', right_on='ID',how='inner'))
         self.merged[self.i].set_index('Protein',inplace=True)
         self.merged[self.i].drop('ID',axis=1,inplace=True)
         self.merged[self.i].fillna(1.0,inplace=True)
@@ -214,5 +219,11 @@ class analyze:
         plt.title('Receiver Operating Characteristic Comparison')
         plt.legend(loc="lower right")
         plt.savefig('ROC.pdf')
-            
+
+    def calculate_auc(self):
+        out = {}
+        for j in self.tags.keys():
+            fpr, tpr, thresholds = roc_curve(self.merged[self.tags[j]]['Circadian'].values, (1-self.merged[self.tags[j]]['GammaBH'].values), pos_label=1)
+            out[j] = auc(fpr, tpr)
+        self.roc_auc = out 
 
