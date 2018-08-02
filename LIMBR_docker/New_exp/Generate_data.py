@@ -16,6 +16,6 @@ for i in range(1, 21):
     simulation.write_output('half_noise_'+str(i))
 
 for i in range(1, 21):
-    simulation = simulations.simulate(effect_size=6,p_miss=.4, lam_miss=15, phase_noise=.5, amp_noise=1.5, rseed=i)
+    simulation = simulations.simulate(effect_size=3, p_miss=.4, lam_miss=15, phase_noise=.5, amp_noise=1.5, rseed=i)
     simulation.generate_pool_map()
     simulation.write_output('tenth_noise_'+str(i))
