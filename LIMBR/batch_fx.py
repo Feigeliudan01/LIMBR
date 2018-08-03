@@ -589,13 +589,14 @@ class sva:
             for i in range(len(entry)):
                 if entry[i] < thresh:
                     sub.append(self.data_reduced.values[i])
-            U, s, V = np.linalg.svd(sub)
-            temp = []
-            for trend in V:
-                _, _, _, p_value, _ = linregress(bt[j],trend)
-                temp.append(p_value)
-            trends.append(V.T[:,np.argmin(temp)])
-            pep_trends.append(pt[:,j])
+            if len(sub) > 0:
+                U, s, V = np.linalg.svd(sub)
+                temp = []
+                for trend in V:
+                    _, _, _, p_value, _ = linregress(bt[j],trend)
+                    temp.append(p_value)
+                trends.append(V.T[:,np.argmin(temp)])
+                pep_trends.append(pt[:,j])
         self.pepts = pep_trends
         self.ts = trends
 
