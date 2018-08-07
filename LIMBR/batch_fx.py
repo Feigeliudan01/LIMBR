@@ -625,8 +625,12 @@ class sva:
         pd.DataFrame(self.ts,columns=self.data.columns).to_csv(outname.split('.txt')[0]+'_trends.txt',sep='\t')
         pd.DataFrame(self.sigs).to_csv(outname.split('.txt')[0]+'_perms.txt',sep='\t')
         pd.DataFrame(self.tks).to_csv(outname.split('.txt')[0]+'_tks.txt',sep='\t')
-        pd.DataFrame(np.asarray(self.pepts).T,index=self.data_reduced.index).to_csv(outname.split('.txt')[0]+'_pep_bias.txt',sep='\t')
-        fin_res = np.dot(np.dot(self.data.values,np.linalg.lstsq(self.ts,np.identity(np.shape(self.ts)[0]),rcond=None)[0]),self.ts)
+        if len(self.pepts) > 0:
+            pd.DataFrame(np.asarray(self.pepts).T,index=self.data_reduced.index).to_csv(outname.split('.txt')[0]+'_pep_bias.txt',sep='\t')
+        if len(self.ts) > 0:
+            fin_res = np.dot(np.dot(self.data.values,np.linalg.lstsq(self.ts,np.identity(np.shape(self.ts)[0]),rcond=None)[0]),self.ts)
+        else:
+            fin_res = 0
         self.svd_norm = self.scaler.inverse_transform((self.data.values - fin_res).T).T
         self.svd_norm = pd.DataFrame(self.svd_norm,index=self.data.index,columns=self.data.columns)
         if self.data_type == 'p':
