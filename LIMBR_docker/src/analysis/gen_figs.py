@@ -31,9 +31,9 @@ def plot_cormat(df,fname,ptitle):
         ax.axhline(y=i, linestyle='-', color='black', linewidth=0.7,    zorder=3)
     tpts = [i*2 for i in range(1,(int(cors.shape[1]/3)+1))]
     ax.set_xticks([i+1.5 for i in range(0,cors.shape[1],3)])
-    ax.set_xticklabels([(i-12)%22 for i in tpts])
+    ax.set_xticklabels([(i-12) % 22 for i in tpts], fontsize=18)
     ax.set_yticks([i+1.5 for i in range(0,cors.shape[1],3)])
-    ax.set_yticklabels([(i-12)%22 for i in tpts])
+    ax.set_yticklabels([(i-12) % 22 for i in tpts], fontsize=18)
     ax.set_title(ptitle, fontsize=16)
     fig.subplots_adjust(right=0.85)
     cbar_ax = fig.add_axes([0.87, 0.15, 0.02, 0.7])
@@ -52,14 +52,14 @@ def plot_cormat_prep(df,fname,ptitle):
     for i in prep_breaks:
         ax.axhline(y=i, linestyle='-', color='black', linewidth=0.7,    zorder=3)
     ax.set_xticks([prep_breaks[i] + prep_diffs[i]/2 for i in range(len(prep_breaks))])
-    ax.set_xticklabels([i+1 for i in range(16)])
+    ax.set_xticklabels([i+1 for i in range(16)], fontsize=18)
     ax.set_yticks([prep_breaks[i] + prep_diffs[i]/2 for i in range(len(prep_breaks))])
-    ax.set_yticklabels([i+1 for i in range(16)])
+    ax.set_yticklabels([i+1 for i in range(16)], fontsize=18)
     ax.set_title(ptitle, fontsize=16)
     fig.subplots_adjust(right=0.85)
     cbar_ax = fig.add_axes([0.87, 0.15, 0.02, 0.7])
     cb = fig.colorbar(pc, cax=cbar_ax)
-    cb.set_label('Correlation', fontsize=12)
+    cb.set_label('Correlation', fontsize=18)
     plt.savefig(fname+'.pdf')
     plt.close()
 
@@ -84,7 +84,7 @@ def plot_heatmap(df,fname,ptitle):
     for i in range(0,ordered.shape[1],3):
         ax.axvline(x=i, linestyle='-', color='black', linewidth=0.4,    zorder=3)
     ax.set_xticks([i+1.5 for i in range(0,ordered.shape[1],3)])
-    ax.set_xticklabels([i*2 for i in range(1,(int(ordered.shape[1]/3)+1))])
+    ax.set_xticklabels([i*2 for i in range(1, (int(ordered.shape[1]/3)+1))], fontsize=18)
     ax.set_yticks([])
     ax.set_title(ptitle, fontsize=16)
     fig.subplots_adjust(right=0.85)
@@ -148,11 +148,11 @@ def gen_biasmap(df1,df2,fname,ptitle):
     fig, ax = plt.subplots(nrows=1, ncols=1)
     pc = ax.pcolor(df1.values, cmap='viridis')
     ax.set_xticks([i+.5 for i in range(len(df1.columns.values))])
-    ax.set_xticklabels(df1.columns.values)
+    ax.set_xticklabels(df1.columns.values, fontsize=18)
     ax.set_yticks([i+.5 for i in range(len(df1))])
     ylabs = [i for i in range(1,len(df1)+1)]
     ylabs.reverse()
-    ax.set_yticklabels(ylabs)
+    ax.set_yticklabels(ylabs, fontsize=18)
     ax.xaxis.tick_top()
     ax.set_ylabel('Bias Trend')
     ax.set_title(ptitle, fontsize=16, y=1.08)
@@ -186,8 +186,8 @@ def plot_cormat_pep(arr,fname,ptitle):
     pc = ax.pcolor(arr, cmap='seismic', vmin=z_min, vmax=z_max)
     ax.set_xticks([i+.5 for i in range(0,arr.shape[1],1)])
     ax.set_yticks([i+.5 for i in range(0,arr.shape[1],1)])
-    ax.set_xticklabels(range(1,arr.shape[1]+1))
-    ax.set_yticklabels(range(1,arr.shape[1]+1))
+    ax.set_xticklabels(range(1, arr.shape[1]+1), fontsize=18)
+    ax.set_yticklabels(range(1, arr.shape[1]+1), fontsize=18)
     ax.set_title(ptitle, fontsize=16)
     fig.subplots_adjust(right=0.85)
     cbar_ax = fig.add_axes([0.87, 0.15, 0.02, 0.7])
@@ -208,7 +208,7 @@ def phase_hist(phases,ptitle):
     ax.set_theta_direction(-1)
     ax.set_rlabel_position(180)
     ax.set_xticks(np.pi/180. * np.linspace(0,  360, N, endpoint=False))
-    ax.set_xticklabels([str(i)+' hrs' for i in range(0,2*N+1,2)])
+    ax.set_xticklabels([str(i)+' hrs' for i in range(0, 2*N+1, 2)], fontsize=18)
     bars = ax.bar(theta, radii, width=width, bottom=bottom)
     # Use custom colors and opacity
     for r, bar in zip(radii, bars):
@@ -503,18 +503,15 @@ plt.savefig('output/figs/AUC_vs_noise.pdf')
 plt.close()
 
 #Figure S2
-noisea = pd.read_csv("grid/melted_aucs.txt", sep='\t').sort_values(by=['Noise'])
+grid = pd.read_csv("grid/grid.txt", sep='\t')
 
 fig, ax1 = plt.subplots()
-ax1.plot(noisea[noisea['Method'] == 'LIMBR']['Noise'].values, noisea[noisea['Method'] == 'LIMBR']['AUC'].values, color='b', marker='.', lw=0.5, ms=2)[0]
-ax1.plot(noisea[noisea['Method'] == 'baseline']['Noise'].values, noisea[noisea['Method']    == 'baseline']['AUC'].values, color='g', marker='.', lw=0.5, ms=2)[0]
-ax1.plot(noisea[noisea['Method'] == 'eigenMS']['Noise'].values, noisea[noisea['Method']   == 'eigenMS']['AUC'].values, color='y', marker='.', lw=0.5, ms=2)[0]
-ax1.plot(noisea[noisea['Method'] == 'traditional']['Noise'].values, noisea[noisea['Method']  == 'traditional']['AUC'].values, color='r', marker='.', lw=0.5, ms=2)[0]
+ax1.plot(grid[grid['NN'] == 5]['Missing'].values, grid[grid['NN'] == 5]['AUC'].values, color='b', marker='.', lw=0.5, ms=2)[0]
 ax1.set_ylabel('Area Under the Receiver Operating Curve', color='k')
 ax1.set_xlabel('Relative Noise Level', color='k')
-ax1.set_xticks([0.1, 0.5, 1, 2])
-ax1.set_ylim(bottom=0)
-plt.savefig('output/figs/AUC_vs_noise.pdf')
+ax1.set_xticks([0.2, 0.3, 0.4, 0.5,0.6,0.7])
+ax1.set_ylim(bottom=0,top=1)
+plt.savefig('output/figs/AUC_vs_NN.pdf')
 plt.close()
 
 
